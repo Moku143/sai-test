@@ -666,6 +666,34 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .qf-btns{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr;gap:8px;padding:12px 16px 0}
 .qf-btns button{height:50px;border-radius:25px;border:1px solid #3a2a1d;background:#24160d;color:#f3e3c4;font:inherit;font-size:14px;font-weight:600;padding:0 4px;white-space:nowrap}
 .qf-btns .qf-main{background:#f3e3c4;color:#24160d;border:0;font-weight:700}
+
+/* ===== v47: first run, legal, settings ===== */
+.ob-intro{margin:0;font-size:14px;line-height:1.6;color:#c9b597}
+.ob-terms{display:flex;gap:12px;align-items:flex-start;padding:4px 2px;font-size:13.5px;line-height:1.5;color:#e9d7b8}
+.ob-terms .ob-link{display:inline;padding:0;font-size:13.5px}
+.ob-consent{max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;padding-right:2px}
+.legal{position:fixed;inset:0;z-index:1200;background:#000a;display:flex;align-items:flex-end;justify-content:center}.legal[hidden]{display:none}
+.legal-card{width:min(560px,100%);max-height:88vh;display:flex;flex-direction:column;background:#1b110a;color:#f3e3c4;border-radius:22px 22px 0 0;border:1px solid #3a2a1d;padding:16px 0 calc(16px + env(safe-area-inset-bottom))}
+.legal-top{display:flex;align-items:center;justify-content:space-between;padding:0 18px 10px}.legal-top h2{margin:0;font-family:'MaruBuri',serif;font-size:18px}
+.legal-x{width:40px;height:40px;border-radius:20px;border:1px solid #3a2a1d;background:#24160d;color:#f3e3c4;font:inherit}
+.legal-body{overflow:auto;padding:0 18px;font-size:13.5px;line-height:1.65;color:#e9d7b8}.legal-body h3{margin:16px 0 6px;font-size:14.5px;color:#f3e3c4}.legal-body ul{margin:0;padding-left:18px}.legal-body li{margin:4px 0}
+.legal-note{margin:0 0 8px;padding:8px 12px;border-radius:10px;background:#3a2a1d;font-size:12.5px;color:#e8c27a}
+.set-btn{position:fixed;right:max(14px,env(safe-area-inset-right));top:calc(10px + env(safe-area-inset-top));z-index:30;width:36px;height:36px;border-radius:18px;border:1px solid #f3e3c433;background:#1b110acc;color:#f3e3c4;display:grid;place-items:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 14px #0006}
+.set-btn[hidden],.clean .set-btn,.modal.open~.set-btn{display:none!important}
+.settings{position:fixed;inset:0;z-index:1100;background:#000a;display:flex;align-items:flex-end;justify-content:center}.settings[hidden]{display:none}
+.set-card{width:min(560px,100%);max-height:92vh;overflow:auto;background:#1b110a;color:#f3e3c4;border-radius:22px 22px 0 0;border:1px solid #3a2a1d;padding:16px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.set-top{display:flex;align-items:center;justify-content:space-between}.set-top h2{margin:0;font-family:'MaruBuri',serif;font-size:20px}
+.set-x{width:40px;height:40px;border-radius:20px;border:1px solid #3a2a1d;background:#24160d;color:#f3e3c4;font:inherit}
+.set-pass{display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#3a2414,#24160d);border:1px solid #6b5238}
+.set-pass>div{flex:1;display:flex;flex-direction:column;gap:3px}.set-pass b{font-size:16px}.set-pass span{font-size:12.5px;color:#c9b597}
+.set-pass button{height:42px;padding:0 16px;border-radius:21px;border:0;background:#f3e3c4;color:#24160d;font:inherit;font-size:14px;font-weight:700}
+.set-group{border-radius:16px;background:#24160d;border:1px solid #3a2a1d;display:flex;flex-direction:column}
+.set-row{display:flex;align-items:center;gap:10px;min-height:50px;padding:0 14px;font-size:14.5px;color:#f3e3c4;border:0;background:none;font:inherit;text-align:left;width:100%}
+.set-row+.set-row{border-top:1px solid #3a2a1d}.set-row>span:first-child{flex:1}.set-val{color:#c9b597;font-size:13px;text-align:right}
+.set-sw{position:relative;width:46px;height:28px;border-radius:14px;background:#3a2a1d;flex:none;transition:background .2s}.set-sw.on{background:#e8c27a}
+.set-sw input{position:absolute;inset:0;opacity:0;margin:0}.set-sw i{pointer-events:none;position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:11px;background:#f3e3c4;transition:left .2s}.set-sw.on i{left:21px;background:#24160d}
+.set-info{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;background:#24160d;border:1px solid #3a2a1d}.set-info b{font-size:14.5px}.set-info span{font-size:13px;line-height:1.55;color:#c9b597}
+.set-ver{text-align:center;font-size:12px;color:#8a7760}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -1909,7 +1937,7 @@ const dyUid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const dyLum=hex=>{const n=parseInt(hex.slice(1),16);return .2126*(n>>16&255)+.7152*(n>>8&255)+.0722*(n&255)};
 const dyInk=hex=>dyLum(hex)>150?'#2a211a':'#f6ecd8';
 const WEEK=['일','월','화','수','목','금','토'];
-const DY_LANG=(navigator.language||'ko').split('@')[0];
+const DY_LANG=(()=>{try{const l=localStorage.getItem('sai-lang');if(l)return l}catch(e){}return (navigator.language||'ko').split('@')[0]})(); // the language chosen at first run, else the phone's
 function dyDate(iso){const d=new Date(iso);if(DY_LANG.startsWith('ko'))return `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}. ${WEEK[d.getDay()]}요일`;
   try{return new Intl.DateTimeFormat(DY_LANG,{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(d)}catch(e){return d.toDateString()}}
 const todayISO=()=>{const d=new Date();d.setHours(12,0,0,0);return d.toISOString()};
@@ -3065,8 +3093,9 @@ async function ocrSpineTitle(spineSrc,onResult){
     for(const rot of [-90,90,0]){if(run!==OCR_RUN)break;const img=await ocrPrep(spineSrc,rot);if(!img)continue;
       let r;try{r=await worker.recognize(img)}catch(e){continue}
       const text=ocrClean(r.data.text),conf=r.data.confidence||0,letters=(text.match(/\p{L}/gu)||[]).length;
-      const score=conf*Math.min(1,letters/3);if(letters>=2&&(!best||score>best.score))best={text,conf,score,rot}}
-    if(run===OCR_RUN&&best&&best.conf>=45)onResult(best.text.slice(0,40),best.conf);
+      // mostly letters, read with some confidence — otherwise the field is better left empty than filled with noise
+      const solid=(text.replace(/\s/g,'').length||1),ratio=letters/solid,score=conf*Math.min(1,letters/3)*ratio;if(letters>=2&&ratio>=.6&&(!best||score>best.score))best={text,conf,score,rot}}
+    if(run===OCR_RUN&&best&&best.conf>=62)onResult(best.text.slice(0,40),best.conf);
   }finally{try{await worker.terminate()}catch(e){}}
 }
 // turning the shot: the spine image is rotated in place; a quarter turn swaps the proportions too
@@ -3412,6 +3441,120 @@ $('camShot').onclick=async()=>{
  const wire=(inp,face)=>{if(!inp)return;inp.onchange=async e=>{const f=e.target.files[0];e.target.value='';const b=current;if(!f||!b||!f.type.startsWith('image/'))return;
    const out=await viaFile(f,face);if(!out)return;b[face]=out.toDataURL('image/jpeg',.9);if(b.user)await store.put(userRecord(b));else await saveBook(b);if(current===b)updatePhoto();showToast(face==='front'?'앞표지를 넣었어요':'뒤표지를 넣었어요',1400)}};
  wire($('upload'),'front');wire($('uploadBack'),'back')}
+
+// ===== v47: the first-run screens rewritten (clear, honest copy in five languages; no pretend download),
+// a settings screen (sounds, see the first screens again, where records live, licences), and the tutorial
+// brought in line with how the camera now works. =====
+
+// ---------- first run copy ----------
+Object.assign(OB_T,{
+  ko:{pick:'언어를 골라 주세요',next:'다음',agreeT:'시작하기 전에 알아 두세요',intro:'사이는 내 책장과 일기장을 폰 안에만 두는 앱이에요. 아래 네 가지만 확인해 주세요.',all:'모두 확인했어요',go:'동의하고 시작하기',terms:'이용약관 · 개인정보 처리방침',termsAgree:'이용약관과 개인정보 처리방침에 동의해요',
+    items:[['모든 기록은 이 폰에만 저장돼요','책 사진·독후감·일기는 서버에 올라가지 않아요. 백업이 없어서 앱을 지우거나 폰을 바꾸면 사라져요. 일기장은 \'보내기\'로 따로 보관해 둘 수 있어요.'],
+      ['책 사진은 나만 보는 개인 사본이에요','내가 가진 책의 표지와 책등을 찍어 책장에 꽂아요. 책 사진은 앱 밖으로 보낼 수 없고, 남의 책이나 작품을 찍어 나누는 용도로는 쓸 수 없어요.'],
+      ['일기장은 처음 주고받은 두 사람만 열어요','일기장을 보내면 처음 받은 사람과 나 사이에서만 오가요. 그 사람이 다른 사람에게 보내면 열리지 않아요.'],
+      ['광고와 이용권은 내가 고를 때만','책장 칸을 더 열고 싶을 때 광고를 보거나 이용권을 살 수 있어요. 광고는 \'광고 보기\'를 눌렀을 때만 나와요.']]},
+  en:{pick:'Choose your language',next:'Next',agreeT:'Before you start',intro:'Sai keeps your bookshelf and diaries on this phone only. Please read these four points.',all:'I have read all four',go:'Agree and start',terms:'Terms of use · Privacy policy',termsAgree:'I agree to the terms of use and the privacy policy',
+    items:[['Everything is stored on this phone only','Book photos, reading notes and diaries are never uploaded. There is no backup: deleting the app or changing phones loses them. A diary can be kept separately with \'Send\'.'],
+      ['Book photos are a private copy for you','You photograph the covers and spines of books you own and shelve them. Book photos cannot leave the app, and the app is not for sharing other people\'s books or artwork.'],
+      ['A diary opens only for the first two people','When you send a diary, it travels only between you and the first person who receives it. If they pass it on, it will not open.'],
+      ['Ads and the pass are your choice','When you want more shelf bays you can watch an ad or buy the pass. An ad appears only when you tap \'Watch an ad\'.']]},
+  ja:{pick:'言語を選んでください',next:'次へ',agreeT:'はじめる前に',intro:'サイは本棚と日記をこのスマホの中だけに置くアプリです。次の4つをご確認ください。',all:'4つとも確認しました',go:'同意してはじめる',terms:'利用規約・プライバシーポリシー',termsAgree:'利用規約とプライバシーポリシーに同意します',
+    items:[['記録はすべてこのスマホだけに保存されます','本の写真・読書ノート・日記はサーバーに送られません。バックアップはなく、アプリを削除したりスマホを替えると消えます。日記は「送る」で別に保管できます。'],
+      ['本の写真は自分だけの私的な複製です','自分が持っている本の表紙と背表紙を撮って棚に並べます。本の写真はアプリの外へ出せず、他人の本や作品を撮って共有する用途には使えません。'],
+      ['日記は最初の二人だけが開けます','日記を送ると、自分と最初に受け取った人の間だけでやりとりされます。その人が別の人に送っても開きません。'],
+      ['広告とパスは自分で選んだときだけ','棚を増やしたいときに広告を見るかパスを買えます。広告は「広告を見る」を押したときだけ表示されます。']]},
+  zh:{pick:'请选择语言',next:'下一步',agreeT:'开始之前',intro:'Sai 只把你的书架和日记保存在这部手机里。请确认以下四点。',all:'四点都已确认',go:'同意并开始',terms:'使用条款 · 隐私政策',termsAgree:'我同意使用条款和隐私政策',
+    items:[['所有记录只保存在这部手机上','书的照片、读书笔记和日记不会上传到服务器。没有备份：删除应用或更换手机后会丢失。日记可以用"发送"另外保存。'],
+      ['书的照片是只属于你的私人副本','你拍下自己拥有的书的封面和书脊，放进书架。书的照片不能离开应用，也不能用来分享别人的书或作品。'],
+      ['日记只有最初的两个人能打开','发送日记后，它只在你和第一个收到的人之间往来。如果对方再转发给别人，将无法打开。'],
+      ['广告和通行证由你决定','想多开书格时，可以看广告或购买通行证。只有在你点"看广告"时才会出现广告。']]},
+  es:{pick:'Elige tu idioma',next:'Siguiente',agreeT:'Antes de empezar',intro:'Sai guarda tu estantería y tus diarios solo en este teléfono. Lee estos cuatro puntos.',all:'He leído los cuatro',go:'Aceptar y empezar',terms:'Términos de uso · Política de privacidad',termsAgree:'Acepto los términos de uso y la política de privacidad',
+    items:[['Todo se guarda solo en este teléfono','Las fotos de libros, notas de lectura y diarios nunca se suben. No hay copia de seguridad: si borras la app o cambias de teléfono, se pierden. Un diario se puede guardar aparte con \'Enviar\'.'],
+      ['Las fotos de libros son una copia privada para ti','Fotografías las portadas y lomos de los libros que tienes y los colocas en la estantería. Las fotos no salen de la app y la app no sirve para compartir libros u obras de otras personas.'],
+      ['Un diario solo lo abren las dos primeras personas','Cuando envías un diario, solo va y viene entre tú y la primera persona que lo recibe. Si esa persona lo reenvía, no se abrirá.'],
+      ['Anuncios y pase, solo si tú quieres','Cuando quieras más huecos en la estantería puedes ver un anuncio o comprar el pase. Un anuncio aparece solo cuando tocas \'Ver anuncio\'.']]}});
+// no pretend download: the fonts this build needs are already inside it
+obDownload=function(){return Promise.resolve()};
+obConsent=function(l){return new Promise(res=>{
+  const o=obShell(),t=obT(l),fallback=!OB_T[l]&&!OB_T[(l||'').split('-')[0]];
+  o.innerHTML=`<div class="ob-card ob-consent" lang="${fallback?'en':l}"><small class="ob-step">2 / 2</small><h2>${t.agreeT}</h2><p class="ob-intro">${t.intro}</p>${fallback?'<p class="ob-note">This language is shown in English until its translation is ready.</p>':''}
+    <div class="ob-items">${t.items.map(([h,p],i)=>`<label class="ob-item"><input type="checkbox" data-i="${i}"><span><b>${h}</b><span>${p}</span></span></label>`).join('')}</div>
+    <label class="ob-all"><input type="checkbox" id="obAll"><b>${t.all}</b></label>
+    <label class="ob-terms"><input type="checkbox" id="obTerms"><span>${t.termsAgree} · <button class="ob-link" type="button">${t.terms}</button></span></label>
+    <button class="ob-go" disabled>${t.go}</button></div>`;
+  const boxes=[...o.querySelectorAll('.ob-item input')],go=o.querySelector('.ob-go'),all=$('obAll'),terms=$('obTerms');
+  const sync=()=>{const ok=boxes.every(b=>b.checked);all.checked=ok;go.disabled=!(ok&&terms.checked)};
+  boxes.forEach(b=>b.onchange=sync);all.onchange=()=>{boxes.forEach(b=>b.checked=all.checked);sync()};terms.onchange=sync;
+  o.querySelector('.ob-link').onclick=e=>{e.preventDefault();showLegal()};
+  go.onclick=()=>{try{localStorage.setItem('sai-consent',JSON.stringify({v:2,lang:l,at:new Date().toISOString()}))}catch(e){}o.hidden=true;o.innerHTML='';res()}})};
+// the language step (1 / 2)
+obLang=function(){return new Promise(res=>{
+  const o=obShell(),guess=(navigator.language||'ko').toLowerCase();let pick=(OB_LANGS.find(([c])=>guess.startsWith(c.toLowerCase()))||OB_LANGS[0])[0];
+  const draw=()=>{const t=obT(pick);o.innerHTML=`<div class="ob-card"><small class="ob-step">1 / 2</small><h2>${t.pick}</h2><div class="ob-langs" role="radiogroup" aria-label="${t.pick}">${OB_LANGS.map(([c,n])=>`<button role="radio" aria-checked="${c===pick}" data-c="${c}" lang="${c}">${v38esc(n)}</button>`).join('')}</div><button class="ob-go">${t.next}</button></div>`;
+    o.querySelectorAll('.ob-langs button').forEach(b=>b.onclick=()=>{pick=b.dataset.c;const sc=o.querySelector('.ob-langs').scrollTop;draw();o.querySelector('.ob-langs').scrollTop=sc});
+    o.querySelector('.ob-go').onclick=()=>{try{localStorage.setItem('sai-lang',pick)}catch(e){}res(pick)}};
+  draw()})};
+// tutorial copy, matching the camera as it works now
+TUT[0][0]='책 찍어서 꽂기';TUT[0][1]='＋ 책 추가 → 책등 찍기. 틀 안에 책등을 넣고 찍은 다음, 네 모서리 점을 맞추면 반듯하게 꽂혀요. 앞·뒤표지도 이어서 찍을 수 있어요.';
+TUT[1][1]='책을 잠깐 누르면 들려요. 든 채로 다른 손가락으로 위아래를 쓸면 책장이 움직여서 먼 칸에도 꽂을 수 있어요. 옆으로 빠르게 밀면 바로 집혀요.';
+TUT[2][1]='두 손가락으로 벌리면 책장이 커지고, 한 손가락으로 밀어 옮길 수 있어요. 빈 곳을 톡 누르면 메뉴가 사라져서 캡처하기 좋고, 다시 누르면 돌아와요.';
+TUT[3][0]='독후감과 일기장';TUT[3][1]='책을 톡 치면 독후감이 펼쳐져요. 날짜별로 여러 장 쓸 수 있어요. 일기장은 ＋ 추가에서 만들고, 처음 받은 사람과만 주고받아요.';
+TUT_EN[0]=['Photograph a book and shelve it','＋ Add → Photograph the spine. Put the spine inside the frame, take the shot, then set the four corner points and the book is shelved straight. You can take the front and back covers next.'];
+TUT_EN[1]=['Pick up and move','Press a book for a moment and it lifts. While holding it, slide another finger up or down to scroll, so you can shelve it in a faraway bay. A quick sideways swipe picks it up at once.'];
+TUT_EN[2]=['Zoom in, clear the screen','Spread two fingers to zoom the bookcase and slide one finger to move around. Tap an empty spot to hide the menus for a clean screenshot; tap again to bring them back.'];
+TUT_EN[3]=['Reading notes and diaries','Tap a book to open its reading notes, with dated pages. Diaries are made from ＋ Add and go back and forth with the first person who receives one.'];
+
+// ---------- legal text (placeholder wording clearly marked until the real documents exist) ----------
+function showLegal(){const box=$('legalBox')||(()=>{const d=document.createElement('div');d.id='legalBox';d.className='legal';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','약관과 개인정보 처리방침');document.body.append(d);return d})();
+  box.innerHTML=`<div class="legal-card"><div class="legal-top"><h2>이용약관 · 개인정보 처리방침</h2><button class="legal-x" aria-label="닫기">✕</button></div><div class="legal-body">
+  <p class="legal-note">출시 전 초안이에요. 최종 문서는 법률 검토 후 바뀔 수 있어요.</p>
+  <h3>개인정보 처리방침 (요약)</h3>
+  <ul><li><b>수집하는 정보:</b> 없어요. 책 사진·독후감·일기·책장 설정은 모두 이 기기 안에만 저장되고, 앱 운영자에게 전송되지 않아요.</li>
+  <li><b>저장 위치:</b> 이 기기. 백업이나 동기화는 제공하지 않아요. 앱을 삭제하면 모든 기록이 함께 삭제돼요.</li>
+  <li><b>일기장 보내기:</b> 에어드롭 등 기기의 공유 기능으로 일기장 파일을 보낼 때, 그 파일은 받는 사람의 기기로만 전달돼요. 보낼 때 사진을 뺄 수 있어요.</li>
+  <li><b>광고:</b> 보상형 광고는 '광고 보기'를 눌렀을 때만 표시돼요. 광고 제공사는 기기 식별자 사용 전에 iOS의 추적 허용 여부를 별도로 물어요. 광고 제공사의 처리방침은 출시 시 링크로 안내해요.</li>
+  <li><b>구매:</b> 이용권 구매와 복원은 App Store 결제로 처리되고, 앱은 결제 정보를 보관하지 않아요.</li></ul>
+  <h3>이용약관 (요약)</h3>
+  <ul><li>사이는 개인이 소장한 책을 기록하고 일기를 쓰기 위한 앱이에요.</li>
+  <li>책 사진은 사용자 본인만 보는 개인 사본이며, 앱 밖으로 내보내는 기능은 제공하지 않아요. 타인의 저작물을 찍어 배포하는 데 쓰지 말아 주세요.</li>
+  <li>일기장 파일은 처음 주고받은 두 사람 사이에서만 열려요. 받은 일기장을 제3자에게 전달해도 열리지 않아요.</li>
+  <li>앱 운영자는 기기 안의 기록을 복구할 수 없어요. 소중한 기록은 일기장 보내기 등으로 따로 보관해 주세요.</li></ul>
+  <h3>오픈소스 · 글꼴</h3>
+  <ul><li>planck.js — MIT License</li><li>OpenCV — Apache License 2.0</li><li>Tesseract.js — Apache License 2.0</li><li>Galmuri11 · 마루 부리 · 나눔손글씨 — SIL Open Font License 1.1</li></ul>
+  </div></div>`;box.hidden=false;box.querySelector('.legal-x').onclick=()=>{box.hidden=true};box.onclick=e=>{if(e.target===box)box.hidden=true}}
+
+// ---------- settings ----------
+(()=>{const btn=document.createElement('button');btn.id='setBtn';btn.className='set-btn';btn.setAttribute('aria-label','설정');
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>';
+  const sheet=document.createElement('div');sheet.id='settings';sheet.className='settings';sheet.hidden=true;sheet.setAttribute('role','dialog');sheet.setAttribute('aria-label','설정');document.body.append(btn,sheet);
+  const get=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
+  const draw=()=>{const typeOn=get('sai-type-sound','1')!=='0',sfx=get('sai-sfx','1')!=='0',open=typeof openBays==='function'?openBays():4,cap=typeof designCap==='function'?designCap():1,used=typeof customLooks==='function'?customLooks().length:0;
+    sheet.innerHTML=`<div class="set-card"><div class="set-top"><h2>설정</h2><button class="set-x" aria-label="닫기">✕</button></div>
+    <div class="set-pass"><div><b>평생 이용권</b><span>광고 없이 모든 칸 · 디자인 · 일기장</span></div><button id="setPass">${unlock.pass?'이용 중':'6,900원'}</button></div>
+    <div class="set-group">
+      <div class="set-row"><span>열린 책장 칸</span><span class="set-val">${unlock.pass?'무제한':open+'칸'}</span></div>
+      <div class="set-row"><span>한 단에 칸 수</span><span class="set-val">${SAI_GRID}칸 · 책장 왼쪽 위에서 바꿔요</span></div>
+      <div class="set-row"><span>내 디자인 저장 칸</span><span class="set-val">${cap===Infinity?used+'개 · 무제한':used+' / '+cap}</span></div>
+      <label class="set-row"><span>일기 쓸 때 타자 소리</span><span class="set-sw ${typeOn?'on':''}"><input type="checkbox" id="setType" ${typeOn?'checked':''}><i></i></span></label>
+      <label class="set-row"><span>책 집고 놓는 소리</span><span class="set-sw ${sfx?'on':''}"><input type="checkbox" id="setSfx" ${sfx?'checked':''}><i></i></span></label>
+    </div>
+    <div class="set-info"><b>기록은 이 폰에만 있어요</b><span>앱을 지우면 책·사진·일기가 모두 지워지고 광고로 연 칸도 다시 잠겨요. 이용권은 '구매 복원'으로 되살릴 수 있어요. 일기장은 보내기로 따로 보관할 수 있어요.</span></div>
+    <div class="set-group">
+      <button class="set-row set-act" id="setTut"><span>처음 화면 다시 보기</span><span class="set-val">튜토리얼 ›</span></button>
+      <button class="set-row set-act" id="setLegal"><span>이용약관 · 개인정보 처리방침 · 라이선스</span><span class="set-val">›</span></button>
+      <button class="set-row set-act" id="setRestore"><span>구매 복원</span><span class="set-val">›</span></button>
+    </div>
+    <small class="set-ver">사이 · 시험판 v47 · 기록 ${(typeof books!=='undefined'?books.filter(b=>b.user&&!b.gone).length:0)}권</small></div>`;
+    sheet.querySelector('.set-x').onclick=close;sheet.onclick=e=>{if(e.target===sheet)close()};
+    $('setType').onchange=e=>{try{localStorage.setItem('sai-type-sound',e.target.checked?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',e.target.checked);if(e.target.checked)typeClick()};
+    $('setSfx').onchange=e=>{try{localStorage.setItem('sai-sfx',e.target.checked?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',e.target.checked);if(e.target.checked)bookSfx('drop')};
+    $('setTut').onclick=async()=>{close();await obTutorial()};
+    $('setLegal').onclick=()=>showLegal();
+    $('setRestore').onclick=()=>showToast('구매 복원은 App Store 연결 뒤에 동작해요',1800);
+    $('setPass').onclick=()=>{if(unlock.pass){showToast('이미 이용 중이에요',1400);return}close();askUnlock('bay')}};
+  const open=()=>{draw();sheet.hidden=false;document.body.style.overflow='hidden'},close=()=>{sheet.hidden=true;document.body.style.overflow=''};
+  btn.onclick=open;
+  const main=document.querySelector('main'),style=$('styleSheet');const sync=()=>{btn.hidden=main.hidden||!style.hidden};new MutationObserver(sync).observe(main,{attributes:true,attributeFilter:['hidden']});new MutationObserver(sync).observe(style,{attributes:true,attributeFilter:['hidden']});sync()})();
 
 
 
