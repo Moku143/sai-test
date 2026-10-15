@@ -694,6 +694,34 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .set-sw input{position:absolute;inset:0;opacity:0;margin:0}.set-sw i{pointer-events:none;position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:11px;background:#f3e3c4;transition:left .2s}.set-sw.on i{left:21px;background:#24160d}
 .set-info{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;background:#24160d;border:1px solid #3a2a1d}.set-info b{font-size:14.5px}.set-info span{font-size:13px;line-height:1.55;color:#c9b597}
 .set-ver{text-align:center;font-size:12px;color:#8a7760}
+
+/* ===== v49: icons, translucent brown surfaces, camera guide, book realism ===== */
+.nav-ico{display:inline-grid;place-items:center;width:18px;height:18px}.nav-ico svg{width:18px;height:18px;display:block}
+.app-nav button .nav-ico{width:17px;height:17px;opacity:.9}.app-nav button.nav-add .nav-ico{width:16px;height:16px}
+.grid-btn .nav-ico{width:15px;height:15px}.set-btn .nav-ico{width:18px;height:18px}
+.menu-ico{position:absolute;left:14px;top:14px;width:20px;height:20px;color:#e8c27a}.menu-ico svg{width:20px;height:20px;display:block}
+.add-menu button{position:relative;padding-left:46px!important}
+/* one surface language: deep brown, slightly see-through, softly blurred */
+.sheet,.send-sheet .ss-card,.set-card,.legal-card,.ask-card,#unlock .ul-card,.add-menu,.grid-pop,.dv-menu,#dvStyleSheet,.ob-card,.shot-ok,.quad-fix,.guide-card{-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.sheet{background:#1b110ae6!important}.set-card,.legal-card,.guide-card{background:#1b110af0}.add-menu,.grid-pop{background:#24160de8}
+.shot-ok,.quad-fix{background:#1b110af5}
+/* camera guide */
+.guide{position:fixed;inset:0;z-index:990;background:#000a;display:grid;place-items:center;padding:16px}.guide[hidden]{display:none}
+.guide-card{width:min(440px,100%);max-height:calc(100dvh - 32px);overflow:auto;border-radius:22px;border:1px solid #3a2a1d;padding:18px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;color:#f3e3c4}
+.guide-card h2{margin:0;font-family:'MaruBuri',serif;font-size:20px}
+.guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.guide-item{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:14px;background:#24160d;border:1px solid #3a2a1d}
+.guide-art{aspect-ratio:4/3;border-radius:10px;background:#140b06;overflow:hidden}.guide-art svg{width:100%;height:100%;display:block}
+.guide-item b{font-size:13.5px}.guide-item span{font-size:12px;line-height:1.5;color:#c9b597}
+.guide-go{height:50px;border-radius:25px;border:0;background:#f3e3c4;color:#24160d;font:inherit;font-size:15px;font-weight:700}
+#camHelp{width:44px;height:44px;border-radius:22px;border:0;background:#0009;color:#f3e3c4;display:grid;place-items:center}#camHelp svg{width:22px;height:22px}
+.set-sub{display:block;font-size:11.5px;color:#8a7760;font-weight:400;margin-top:2px}
+/* books in the viewer: a page block that reads as paper, a cover with a hint of gloss */
+.object .right{background:repeating-linear-gradient(90deg,#e9e3d3 0px,#f6f1e3 1px,#ddd6c3 2px,#f1ebdc 3px)!important;box-shadow:inset 0 0 12px #0002}
+.object .bottom{background:repeating-linear-gradient(0deg,#e9e3d3 0px,#f6f1e3 1px,#ddd6c3 2px,#f1ebdc 3px)!important}
+.object .face.front::after,.object .face.back::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,#fff0 30%,#ffffff14 45%,#fff0 60%),linear-gradient(90deg,#0000001a 0,#0000 6%)}
+.object .face.front::before,.object .face.back::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.07;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+.ask-card{background:#24170ef0!important}.ul-card{background:#1b110af2!important}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -3569,6 +3597,95 @@ function showLegal(){const box=$('legalBox')||(()=>{const d=document.createEleme
   const open=()=>{draw();sheet.hidden=false;document.body.style.overflow='hidden'},close=()=>{sheet.hidden=true;document.body.style.overflow=''};
   btn.onclick=open;
   const main=document.querySelector('main'),style=$('styleSheet');const sync=()=>{btn.hidden=main.hidden||!style.hidden};new MutationObserver(sync).observe(main,{attributes:true,attributeFilter:['hidden']});new MutationObserver(sync).observe(style,{attributes:true,attributeFilter:['hidden']});sync()})();
+
+// ===== background music: a quiet, endless music-box tune made on the spot (no files, no loop seam). A slow
+// pentatonic melody over soft sustained chords, in the spirit of a calm village theme; never loud, never busy.
+// Starts on the first touch (iOS rule), remembered on/off in settings. =====
+const BGM={on:false,ctx:null,master:null,timer:0,step:0,key:0,next:0,started:false};
+const bgmPref=()=>{try{return localStorage.getItem('sai-bgm')!=='0'}catch(e){return true}};
+function bgmCtx(){if(BGM.ctx)return BGM.ctx;const a=audioCtx||(audioCtx=new (window.AudioContext||window.webkitAudioContext)());BGM.ctx=a;
+  const m=a.createGain();m.gain.value=0;const comp=a.createDynamicsCompressor();comp.threshold.value=-24;comp.ratio.value=3;m.connect(comp).connect(a.destination);BGM.master=m;
+  // a little room: a short, dark reverb made from noise
+  const len=Math.round(a.sampleRate*1.6),buf=a.createBuffer(2,len,a.sampleRate);for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)*.5}
+  const rv=a.createConvolver();rv.buffer=buf;const rg=a.createGain();rg.gain.value=.35;const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;rv.connect(lp).connect(rg).connect(m);BGM.verb=rv;return a}
+// scale: C major pentatonic across two octaves (C D E G A); chords move I–vi–IV–V slowly
+const BGM_SCALE=[0,2,4,7,9,12,14,16,19,21,24];
+const BGM_CHORDS=[[0,4,7,11],[9,12,16,19],[5,9,12,16],[7,11,14,17]];
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function bgmVoice(a,freq,t,dur,vol,kind){const g=a.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+(kind==='pad'?dur*.5:.012));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  const o=a.createOscillator();o.type=kind==='pad'?'triangle':'sine';o.frequency.value=freq;
+  if(kind==='bell'){const o2=a.createOscillator(),g2=a.createGain();o2.type='sine';o2.frequency.value=freq*3;g2.gain.setValueAtTime(vol*.18,t);g2.gain.exponentialRampToValueAtTime(.0001,t+dur*.4);o2.connect(g2).connect(BGM.master);o2.start(t);o2.stop(t+dur)}
+  const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=kind==='pad'?900:3200;o.connect(f).connect(g);g.connect(BGM.master);g.connect(BGM.verb);o.start(t);o.stop(t+dur+.05)}
+function bgmBar(a,t){const beat=.62,ch=BGM_CHORDS[BGM.step%4],root=48; // one bar = 4 beats, chord changes each bar
+  // pad: three soft notes for the whole bar
+  for(const n of ch.slice(0,3))bgmVoice(a,midi(root+n),t,beat*4.4,.028,'pad');
+  // melody: a few music-box notes on a lazy rhythm, stepping mostly to neighbours
+  let last=BGM.last??5;const slots=[0,1,1.5,2,3,3.5];let count=0;
+  for(const s of slots){if(Math.random()<(s%1?.35:.62)){const jump=Math.random()<.7?(Math.random()<.5?-1:1):(Math.random()<.5?-2:2);let i=Math.max(2,Math.min(BGM_SCALE.length-1,last+jump));
+      // land on a chord tone more often on the strong beats
+      if(s%2===0&&Math.random()<.6){const tones=ch.map(c=>c%12);for(let k=0;k<3&&!tones.includes(BGM_SCALE[i]%12);k++)i=Math.max(2,Math.min(BGM_SCALE.length-1,i+(Math.random()<.5?-1:1)))}
+      last=i;bgmVoice(a,midi(72+BGM_SCALE[i]),t+s*beat,beat*1.6,.07,'bell');count++}}
+  BGM.last=last;BGM.step++;return beat*4}
+function bgmLoop(){if(!BGM.on||!BGM.ctx)return;const a=BGM.ctx,now=a.currentTime;while(BGM.next<now+1.2){if(BGM.next<now)BGM.next=now+.05;BGM.next+=bgmBar(a,BGM.next)}BGM.timer=setTimeout(bgmLoop,400)}
+function bgmStart(){try{const a=bgmCtx();if(a.state==='suspended')a.resume();BGM.on=true;BGM.next=0;clearTimeout(BGM.timer);BGM.master.gain.cancelScheduledValues(a.currentTime);BGM.master.gain.setValueAtTime(BGM.master.gain.value,a.currentTime);BGM.master.gain.linearRampToValueAtTime(.9,a.currentTime+2.5);bgmLoop();BGM.started=true}catch(e){}}
+function bgmStop(){BGM.on=false;clearTimeout(BGM.timer);if(BGM.master&&BGM.ctx){const t=BGM.ctx.currentTime;BGM.master.gain.cancelScheduledValues(t);BGM.master.gain.setValueAtTime(BGM.master.gain.value,t);BGM.master.gain.linearRampToValueAtTime(0,t+1.2)}}
+function bgmSet(on){try{localStorage.setItem('sai-bgm',on?'1':'0')}catch(e){}if(on)bgmStart();else bgmStop()}
+// the first touch anywhere wakes it (when it is on), and it pauses while the page is hidden
+{let armed=false;const arm=()=>{if(armed)return;armed=true;if(bgmPref())bgmStart()};for(const ev of ['touchend','pointerup','keydown'])document.addEventListener(ev,arm,{passive:true,capture:true});
+ document.addEventListener('visibilitychange',()=>{if(!BGM.started)return;if(document.hidden){clearTimeout(BGM.timer);BGM.on=false}else if(bgmPref())bgmStart()})}
+
+// ===== v49: one visual language everywhere — drawn icons, translucent brown surfaces, a short illustrated camera
+// guide, background music, the title read only where it can be read well (Claude), sturdier pinch zoom, and a
+// little more paper and cloth on the books. =====
+
+// ---------- icons (inline SVG, 1.7px strokes, same cream everywhere) ----------
+const ICO={
+  shelf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 12h16"/><path d="M8 4v8M12 4v8M15 5l2 7M8 12v8M13 12v8"/></svg>',
+  notes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4"/></svg>',
+  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  style:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c4.7 0 8.5 3.4 8.5 7.6 0 2.3-1.7 3.4-3.4 3.4h-1.6c-1 0-1.6.8-1.3 1.7.4 1.1.2 2.6-1.1 3.3-.4.2-.7.3-1.1.3C7.3 19.8 3.5 16.4 3.5 11.1 3.5 6.9 7.3 3.5 12 3.5z"/><circle cx="8" cy="10" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.5" cy="7.3" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.6" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
+  grid:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1"/><rect x="9" y="9" width="5.5" height="5.5" rx="1"/></svg>',
+  help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg>',
+  diary:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17H6a1.5 1.5 0 0 1 0-3h12"/><path d="M14 3.5v7l-1.8-1.3L10.4 10.5v-7"/></svg>',
+  music:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>'};
+for(const [id,k,label] of [['navShelf','shelf','책장'],['navNotes','notes','기록'],['navAdd','add','책 추가'],['navStyle','style','꾸미기']]){const b=$(id);if(b)b.innerHTML=`<span class="nav-ico">${ICO[k]}</span>${label}`}
+{const g=$('gridBtn');if(g){const _paint=markGrid;markGrid=function(){_paint();g.innerHTML=`<span class="nav-ico">${ICO.grid}</span>${SAI_GRID}칸`};markGrid()}}
+{const s=$('setBtn');if(s)s.innerHTML=`<span class="nav-ico">${ICO.gear}</span>`}
+{const m=$('addMenu');if(m){const sh=$('addShoot'),dm=$('addDiary'),cd=$('addCard');if(sh)sh.insertAdjacentHTML('afterbegin',`<span class="menu-ico">${ICO.camera}</span>`);if(dm)dm.insertAdjacentHTML('afterbegin',`<span class="menu-ico">${ICO.diary}</span>`);if(cd)cd.insertAdjacentHTML('afterbegin',`<span class="menu-ico">${ICO.notes}</span>`)}}
+
+// ---------- camera guide: four small pictures, one line each; shown before the first shot and from ? ----------
+const GUIDE_ART={
+  light:`<svg viewBox="0 0 120 90"><rect x="8" y="58" width="104" height="22" rx="3" fill="#8a5a33"/><rect x="48" y="14" width="24" height="46" rx="2" fill="#efe3c8"/><rect x="50" y="18" width="20" height="8" fill="#c8552f"/><circle cx="20" cy="18" r="9" fill="#f3e3c4" opacity=".9"/><path d="M34 18h8M30 8l5 5M30 28l5-5" stroke="#f3e3c4" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  glare:`<svg viewBox="0 0 120 90"><rect x="8" y="58" width="104" height="22" rx="3" fill="#8a5a33"/><rect x="48" y="14" width="24" height="46" rx="2" fill="#efe3c8"/><path d="M52 14l8 46" stroke="#fff" stroke-width="7" opacity=".85" stroke-linecap="round"/><path d="M60 2v8M50 4l3 6M70 4l-3 6" stroke="#f3e3c4" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12l96 66" stroke="#d94a5a" stroke-width="3" stroke-linecap="round"/></svg>`,
+  center:`<svg viewBox="0 0 120 90"><rect x="8" y="58" width="104" height="22" rx="3" fill="#8a5a33"/><rect x="24" y="16" width="16" height="44" fill="#5b6b8a" opacity=".55"/><rect x="42" y="14" width="16" height="46" fill="#9c3b3b" opacity=".55"/><rect x="60" y="12" width="16" height="48" rx="1" fill="#efe3c8"/><rect x="78" y="16" width="16" height="44" fill="#3e6b45" opacity=".55"/><path d="M68 30v-6M68 42v6M62 36h-6M74 36h6" stroke="#9fe0a8" stroke-width="1.8" stroke-linecap="round"/><rect x="56" y="8" width="24" height="56" rx="3" fill="none" stroke="#f3e3c4" stroke-width="1.5" stroke-dasharray="3 2"/></svg>`,
+  corners:`<svg viewBox="0 0 120 90"><rect x="8" y="8" width="104" height="74" rx="3" fill="#8a5a33"/><rect x="32" y="16" width="56" height="58" rx="2" fill="#efe3c8" transform="rotate(-4 60 45)"/><g fill="#9fe0a8"><circle cx="34" cy="20" r="3"/><circle cx="88" cy="16" r="3"/><circle cx="90" cy="74" r="3"/><circle cx="36" cy="78" r="3"/></g><path d="M34 20L88 16 90 74 36 78z" fill="none" stroke="#9fe0a8" stroke-width="1.2"/></svg>`};
+const GUIDE_TEXT={spine:[['light','밝고 고른 빛에서','창가나 밝은 실내가 좋아요. 그림자가 책 위로 지지 않게요.'],['glare','반사와 기울기는 피해요','형광등·스탠드가 책에 비치면 글자가 날아가요. 폰은 책과 나란히.'],['center','찍을 책을 틀 가운데에','여러 권이 붙어 있어도 괜찮아요. 찍을 책만 틀 한가운데에 두세요.'],['corners','찍은 뒤 네 점을 맞춰요','자동으로 잡힌 네 점을 책 모서리에 끌어다 놓으면 반듯하게 들어가요.']],
+  cover:[['light','밝고 고른 빛에서','창가나 밝은 실내가 좋아요. 표지에 그림자가 지지 않게요.'],['glare','반사는 피해요','코팅 표지는 조명이 비치기 쉬워요. 빛이 비치면 각도를 살짝 바꿔요.'],['corners','표지와 나란히, 틀 안에','폰을 표지와 평행하게 들고 틀 안에 꽉 차게. 조금 비뚤어도 뒤에서 바로잡아요.'],['center','찍은 뒤 네 점을 맞춰요','네 점을 표지 모서리에 끌어다 놓으면 러그·책상은 잘려 나가요.']]};
+function showGuide(kind){return new Promise(res=>{let box=$('camGuide');if(!box){box=document.createElement('div');box.id='camGuide';box.className='guide';box.setAttribute('role','dialog');box.setAttribute('aria-label','찍기 안내');document.body.append(box)}
+  const list=GUIDE_TEXT[kind==='spine'?'spine':'cover'];
+  box.innerHTML=`<div class="guide-card"><h2>${kind==='spine'?'책등 잘 찍는 법':'표지 잘 찍는 법'}</h2><div class="guide-grid">${list.map(([a,h,p])=>`<div class="guide-item"><div class="guide-art">${GUIDE_ART[a]}</div><b>${h}</b><span>${p}</span></div>`).join('')}</div><button class="guide-go">알겠어요</button></div>`;
+  box.hidden=false;box.querySelector('.guide-go').onclick=()=>{box.hidden=true;try{localStorage.setItem('sai-guide-'+(kind==='spine'?'spine':'cover'),'1')}catch(e){}res()}})}
+{const _open=openCamera;openCamera=async function(mode,o){let seen=false;try{seen=!!localStorage.getItem('sai-guide-'+(mode==='spine'?'spine':'cover'))}catch(e){}if(!seen)await showGuide(mode);return _open(mode,o)}}
+{const top=document.querySelector('#cam .cam-top');if(top){const sp=top.querySelector('.cam-sp');const h=document.createElement('button');h.id='camHelp';h.setAttribute('aria-label','찍기 안내');h.innerHTML=ICO.help;if(sp)sp.replaceWith(h);else top.append(h);h.onclick=()=>showGuide(CAM.mode)}}
+
+// ---------- the title: only Claude reads it (inside the Claude viewer); elsewhere the field just asks ----------
+{const _ocr=ocrSpineTitle;ocrSpineTitle=async function(src,onResult){const s=await getSample();if(!s)return;return _ocr(src,onResult)}}
+{const _confirm=confirmSpine;confirmSpine=function(cut){const p=_confirm(cut);getSample().then(s=>{const n=document.querySelector('#soInfo .so-ocr');if(!s&&n)n.textContent='제목을 적어 두면 기록에서 찾기 쉬워요'});return p}}
+
+// ---------- settings: background music ----------
+{const sheet=$('settings');if(sheet){const mo=new MutationObserver(()=>{if(sheet.hidden)return;const row=sheet.querySelector('#setSfx')?.closest('.set-row');if(!row||$('setBgm'))return;
+    const on=bgmPref();const r=document.createElement('label');r.className='set-row';r.innerHTML=`<span>배경 음악 <small class="set-sub">잔잔한 오르골, 방해되지 않게</small></span><span class="set-sw ${on?'on':''}"><input type="checkbox" id="setBgm" ${on?'checked':''}><i></i></span>`;row.after(r);
+    $('setBgm').onchange=e=>{e.target.parentElement.classList.toggle('on',e.target.checked);bgmSet(e.target.checked)}});mo.observe(sheet,{attributes:true,attributeFilter:['hidden'],childList:true})}}
+
+// ---------- pinch zoom on the bookcase: the second finger may land late ----------
+document.addEventListener('touchmove',e=>{if(e.touches.length<2||ZM.pinch||pinchBlocked(e.target))return;
+  // a book just lifted and not yet moved: a second finger means a pinch, not a scroll — put the book back
+  if(shelfDrag?.active){const d=shelfDrag;if(performance.now()-(d.hist0||0)<500&&Math.hypot(d.x-d.startX,d.y-d.startY)<10)finishShelfMove(true);else return}
+  if(shelfDrag){clearTimeout(shelfDrag.timer);shelfDrag.source.classList.remove('pressing');shelfDrag=null}
+  const [a,b]=e.touches,cx=(a.clientX+b.clientX)/2,cy=(a.clientY+b.clientY)/2,top=libraryEl.offsetTop;
+  ZM.pinch={d0:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z0:ZM.z,lx:(cx+ZM.px)/ZM.z,ly:(cy+scrollY-top)/ZM.z,top};e.preventDefault()},{passive:false,capture:true});
 
 
 
