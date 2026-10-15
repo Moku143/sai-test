@@ -3397,12 +3397,12 @@ function warpOrCrop(full,q,maxSide){
   c.getContext('2d').drawImage(full,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);return c}
 function quadFix(crop,mode,guide){return new Promise(res=>{
   const box=$('quadFix'),img=$('qfImg'),svg=$('qfSvg'),stage=$('qfStage');img.src=crop.toDataURL('image/jpeg',.9);box.hidden=false;document.body.style.overflow='hidden';
-  $('qfTitle').textContent=mode==='spine'?'책등 모서리를 맞춰 주세요':'표지 모서리를 맞춰 주세요';
+  $('qfTitle').textContent=mode==='spine'?'책등 모서리를 맞춰 주세요':'표지 모서리를 맞춰 주세요';img.style.transform='';
   let q=null,auto=true;
   const geo=()=>{const r=img.getBoundingClientRect(),s=stage.getBoundingClientRect();return {x:r.left-s.left,y:r.top-s.top,w:r.width,h:r.height}};
   const draw=()=>{const g=geo();svg.setAttribute('viewBox',`0 0 ${stage.clientWidth} ${stage.clientHeight}`);const P=q.map(p=>({x:g.x+p.x*g.w,y:g.y+p.y*g.h}));
     svg.innerHTML=`<polygon points="${P.map(p=>p.x+','+p.y).join(' ')}" class="qf-poly"/>`+P.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="18" class="qf-hit" data-i="${i}"/><circle cx="${p.x}" cy="${p.y}" r="7" class="qf-dot"/>`).join('')};
-  const find=()=>{const f=stillFindQuad(crop,mode);if(f){q=f;auto=true;$('qfNote').textContent='자동으로 찾은 자리예요 · 점을 끌어서 책 모서리에 맞추세요'}
+  const find=()=>{const f=stillFindQuad(crop,mode);if(f){q=f;auto=true;$('qfNote').textContent='자동으로 찾은 자리예요 · 점을 끌어서 맞추고, 두 손가락으로 키워서 자세히 볼 수 있어요'}
     else{q=[{x:.1,y:.06},{x:.9,y:.06},{x:.9,y:.94},{x:.1,y:.94}];auto=false;$('qfNote').textContent='책 모서리를 찾지 못했어요 · 점을 끌어서 맞춰 주세요'}draw()};
   const useGuide=()=>{const g=guide||{x:.1,y:.06,w:.8,h:.88};q=[{x:g.x,y:g.y},{x:g.x+g.w,y:g.y},{x:g.x+g.w,y:g.y+g.h},{x:g.x,y:g.y+g.h}];auto=false;$('qfNote').textContent='카메라의 틀 그대로예요 · 점을 끌어서 책 모서리에 맞추세요';draw()};
   const ready=()=>{find()};if(img.complete&&img.naturalWidth)requestAnimationFrame(ready);else img.onload=()=>requestAnimationFrame(ready);
@@ -3414,7 +3414,21 @@ function quadFix(crop,mode,guide){return new Promise(res=>{
   svg.addEventListener('pointerdown',e=>{const t=e.target.closest('.qf-hit');if(!t)return;drag={i:+t.dataset.i,id:e.pointerId};svg.setPointerCapture(e.pointerId);e.preventDefault();showLoupe(q[drag.i])});
   svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const g=geo(),s=stage.getBoundingClientRect();
     q[drag.i]={x:Math.max(0,Math.min(1,(e.clientX-s.left-g.x)/g.w)),y:Math.max(0,Math.min(1,(e.clientY-s.top-g.y)/g.h))};auto=false;$('qfNote').textContent='점을 놓으면 그 자리로 잘라요';draw();showLoupe(q[drag.i])});
-  const up=e=>{if(drag&&e.pointerId===drag.id){drag=null;loupe.hidden=true}};svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  const up=e=>{if(drag&&e.pointerId===drag.id){drag=null;loupe.hidden=true}if(pan&&e.pointerId===pan.id)pan=null};svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  // zoom: two fingers pinch the photo (1–4×), one finger slides it around when zoomed; the corners follow the photo
+  const V={z:1,tx:0,ty:0};let pan=null,pinch=null;img.style.transformOrigin='0 0';
+  const apply=()=>{
+    img.style.transform=V.z>1.001?`translate(${V.tx}px,${V.ty}px) scale(${V.z})`:'';draw()};
+  const limit=()=>{const base=img.getBoundingClientRect(),s=stage.getBoundingClientRect();const w=base.width,h=base.height; // current (transformed) size
+    const minX=Math.min(0,s.width-(base.left-s.left-V.tx)-w),maxX=Math.max(0,-(base.left-s.left-V.tx));V.tx=Math.max(minX,Math.min(maxX,V.tx));
+    const minY=Math.min(0,s.height-(base.top-s.top-V.ty)-h),maxY=Math.max(0,-(base.top-s.top-V.ty));V.ty=Math.max(minY,Math.min(maxY,V.ty))};
+  stage.addEventListener('touchstart',e=>{if(e.touches.length===2){drag=null;loupe.hidden=true;pan=null;const [a,b]=e.touches,s=stage.getBoundingClientRect();pinch={d0:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z0:V.z,cx:(a.clientX+b.clientX)/2-s.left,cy:(a.clientY+b.clientY)/2-s.top,tx0:V.tx,ty0:V.ty};e.preventDefault()}},{passive:false});
+  stage.addEventListener('touchmove',e=>{if(!pinch||e.touches.length<2)return;e.preventDefault();const [a,b]=e.touches,s=stage.getBoundingClientRect();const z=Math.max(1,Math.min(4,pinch.z0*Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)/pinch.d0));
+    const cx=(a.clientX+b.clientX)/2-s.left,cy=(a.clientY+b.clientY)/2-s.top;const k=z/pinch.z0;V.tx=cx-(pinch.cx-pinch.tx0)*k;V.ty=cy-(pinch.cy-pinch.ty0)*k;V.z=z;if(z<=1.001){V.z=1;V.tx=0;V.ty=0}apply();limit();apply()},{passive:false});
+  stage.addEventListener('touchend',e=>{if(pinch&&e.touches.length<2)pinch=null});
+  svg.addEventListener('pointerdown',e=>{if(e.target.closest('.qf-hit')||V.z<=1.001||pinch)return;pan={id:e.pointerId,x:e.clientX,y:e.clientY,tx:V.tx,ty:V.ty};svg.setPointerCapture(e.pointerId)});
+  svg.addEventListener('pointermove',e=>{if(!pan||e.pointerId!==pan.id||pinch)return;V.tx=pan.tx+(e.clientX-pan.x);V.ty=pan.ty+(e.clientY-pan.y);apply();limit();apply()});
+  svg.addEventListener('dblclick',()=>{V.z=1;V.tx=0;V.ty=0;apply()});
   const done=v=>{box.hidden=true;document.body.style.overflow='';$('qfAuto').onclick=$('qfRetake').onclick=$('qfOk').onclick=$('qfGuide').onclick=null;window.removeEventListener('resize',draw);res(v)};
   window.addEventListener('resize',draw);
   $('qfAuto').onclick=find;$('qfGuide').onclick=useGuide;$('qfRetake').onclick=()=>done('retake');$('qfOk').onclick=()=>done(orderQuad(q))})}
