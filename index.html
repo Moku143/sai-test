@@ -2650,7 +2650,7 @@ function camFit(){ // video is shown like object-fit: cover; map normalized vide
 function camDraw(){
   const c=$('camO'),W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);if(c.width!==Math.round(W*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
   const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
-  const t=CAM.target||CAM_DEF[CAM.mode];CAM.rect=CAM.rect||{...t};for(const k of ['x','y','w','h'])CAM.rect[k]+=(t[k]-CAM.rect[k])*.14;
+  const t=CAM.target||CAM_DEF[CAM.mode];CAM.rect=CAM.rect||{...t};for(const k of ['x','y','w','h'])CAM.rect[k]+=(t[k]-CAM.rect[k])*.3;
   const f=camFit(),r=CAM.rect,x=f.ox+r.x*f.vw*f.s,y=f.oy+r.y*f.vh*f.s,w=r.w*f.vw*f.s,h=r.h*f.vh*f.s;
   g.fillStyle='rgba(0,0,0,.42)';g.fillRect(0,0,W,H);g.clearRect(x,y,w,h);
   const ok=CAM.lock>2,col=ok?'#9fe0a8':'#f3e3c4',L=Math.min(28,w/3,h/3);g.strokeStyle=col;g.lineWidth=3;g.lineCap='round';
@@ -2658,7 +2658,7 @@ function camDraw(){
   if(ok){g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(x,y,w,h);g.globalAlpha=1}
   $('camHint').textContent=ok?`${CAM_NAME[CAM.mode]}을(를) 찾았어요 · 찍어 주세요`:CAM.mode==='spine'?'책등을 세로로 비춰 주세요 · 틀이 책에 맞춰져요':'표지 전체가 보이게 비춰 주세요 · 틀이 표지에 맞춰져요';
   $('camHint').classList.toggle('ok',ok);
-  const now=performance.now();if(now-CAM.lastDet>110){CAM.lastDet=now;camDetect()}
+  const now=performance.now();if(now-CAM.lastDet>75){CAM.lastDet=now;camDetect()}
   CAM.raf=requestAnimationFrame(camDraw);
 }
 // edges in a small copy of the frame: the strongest pair of vertical edges (spine sides or cover sides), then the
@@ -3129,6 +3129,64 @@ async function dataToBlob(src){const im=await loadImageEl(src);if(!im)return nul
        return}
      catch(e){console.warn('claude read',e&&e.code);if(e&&(e.code==='not_granted'||e.code==='sampling_disabled'||e.code==='images_unavailable'))SAMPLE=null;}}
    return _ocr(src,onResult)}}
+
+// ===== v44: a faster, surer camera frame. Instead of adding up all the edge pixels in a column (texture and
+// pictures add up too), each column and row is scored by its LONGEST unbroken edge: a book's border is one long
+// straight line, a rug or an illustration is many short ones. The frame then accepts a place after two looks
+// that agree, not three, and glides faster. =====
+const CAM2={h:170,every:75,hist:[],stable:null,jump:0};
+// the longest run of edge pixels down a column (or across a row), tolerating one-pixel gaps and a 1px drift
+function longestRun(get,n,thr,out){let best=0,run=0,gap=0,s=0,bs=0,be=0,streak=0,solid=-1;
+  for(let i=0;i<n;i++){if(get(i)>thr){if(!run)s=i;run+=1+gap;gap=0;streak++;if(streak>=3)solid=i;if(run>best){best=run;bs=s;be=solid}}else{streak=0;if(run&&gap<2)gap++;else{run=0;gap=0}}}
+  // the ends of the run are where the edge was solid (three pixels in a row), so stray texture pixels do not stretch it
+  if(out){let st=bs;{let k=0;for(let i=bs;i<Math.min(n,bs+best+2);i++){if(get(i)>thr){k++;if(k>=3){st=i-2;break}}else k=0}}out.start=st;out.end=Math.max(st+1,be+1)}return best}
+camDetect=function(srcEl){
+  const v=srcEl||$('camV');const vw=v.videoWidth||v.width,vh=v.videoHeight||v.height;if(!vw||(!srcEl&&v.readyState<2))return;
+  const h=CAM2.h,w=Math.max(40,Math.round(vw*h/vh));
+  const c=camDetect.c||(camDetect.c=document.createElement('canvas'));if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,0,0,w,h);
+  const px=g.getImageData(0,0,w,h).data,L=new Float32Array(w*h);for(let i=0;i<w*h;i++)L[i]=.299*px[i*4]+.587*px[i*4+1]+.114*px[i*4+2];
+  const AX=new Float32Array(w*h),AY=new Float32Array(w*h);let sum=0,cnt=0;
+  for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x,gx=Math.abs(L[i+1]-L[i-1]),gy=Math.abs(L[i+w]-L[i-w]);AX[i]=Math.max(0,gx-gy*.6);AY[i]=Math.max(0,gy-gx*.6);sum+=gx+gy;cnt++}
+  const thr=Math.max(10,(sum/cnt)*1.3); // an edge must stand clearly above the frame's average contrast
+  // columns: longest vertical run (3px wide band so a slightly tilted line still counts)
+  const spine=CAM.mode==='spine',bw=spine?1:2; // a wider band for covers, so a slightly tilted side still reads as one line
+  const colAt=(x,y)=>{let m=0;for(let d=-bw;d<=bw;d++){const xx=x+d;if(xx>0&&xx<w-1){const v=AX[y*w+xx];if(v>m)m=v}}return m};
+  const colRun=new Float32Array(w);for(let x=1;x<w-1;x++)colRun[x]=longestRun(y=>colAt(x,y),h,thr);
+  const [wmin,wmax]=spine?[.04,.5]:[.3,.97],minRun=h*(spine?.5:.42);
+  // candidate side lines: local maxima of run length that are long enough
+  const lines=[];for(let x=2;x<w-2;x++)if(colRun[x]>=minRun&&colRun[x]>=colRun[x-1]&&colRun[x]>=colRun[x+1]&&colRun[x]>=colRun[x-2]&&colRun[x]>=colRun[x+2])lines.push(x);
+  let best=null;
+  for(let i=0;i<lines.length;i++)for(let j=i+1;j<lines.length;j++){const a=lines[i],b=lines[j],ww=(b-a)/w;if(ww<wmin||ww>wmax)continue;
+    let inner=0;for(let k=i+1;k<j;k++)if(colRun[lines[k]]>=Math.min(colRun[a],colRun[b])*.8)inner++;
+    const cx=(a+b)/2/w,cw=Math.max(.08,1-Math.abs(cx-.5)*(spine?2.4:.9)),score=(colRun[a]+colRun[b])*cw/(1+inner*(spine?1:.3));
+    if(!best||score>best.score)best={a,b,score}}
+  if(!best){CAM.lock=Math.max(0,CAM.lock-1);CAM.target=CAM.lock?CAM.target:null;return}
+  // rows between the sides: longest horizontal run, top in the upper part and bottom in the lower part
+  // top and bottom: where the two side lines begin and end (a horizontal line nearby, if any, refines it)
+  const a=best.a,b=best.b,span=b-a,ea={},eb={};
+  longestRun(y=>colAt(a,y),h,thr,ea);longestRun(y=>colAt(b,y),h,thr,eb);
+  let yt=Math.round((ea.start+eb.start)/2),yb=Math.round((ea.end+eb.end)/2);
+  const rowRun=y=>longestRun(x=>Math.max(AY[(y-1)*w+a+x],AY[y*w+a+x],AY[(y+1)*w+a+x]),span,thr),need=span*.6,r=Math.round(h*.04);
+  let bt=0,bb=0,ft=-1,fb=-1;for(let y=Math.max(2,yt-r);y<=Math.min(h-3,yt+r);y++){const v=rowRun(y);if(v>=need&&v>bt){bt=v;ft=y}}for(let y=Math.max(2,yb-r);y<=Math.min(h-3,yb+r);y++){const v=rowRun(y);if(v>=need&&v>bb){bb=v;fb=y}}
+  if(ft>=0)yt=ft;if(fb>=0)yb=fb;
+  const conf=(colRun[a]+colRun[b])/(2*h); // 1 = both sides run the whole height
+  if(conf<(spine?.5:.42)){CAM.lock=Math.max(0,CAM.lock-1);if(!CAM.lock)CAM.target=null;return}
+  CAM.lock=Math.min(6,CAM.lock+2);const pad=spine?.006:.008;
+  CAM.target={x:Math.max(0,a/w-pad),y:Math.max(0,yt/h-pad),w:Math.min(1,span/w+pad*2),h:Math.min(1,(yb-yt)/h+pad*2)};
+};
+// steadier, but quicker to settle: two agreeing looks out of the last five are enough
+{const _det=camDetect;
+ camDetect=function(srcEl){_det(srcEl);const raw=CAM.target;const H=CAM2.hist;H.push(raw?{...raw}:null);if(H.length>5)H.shift();
+   const good=H.filter(Boolean);
+   if(good.length<2){if(H.slice(-3).every(r=>!r)){CAM2.stable=null;CAM2.jump=0;CAM.lock=0}CAM.target=CAM2.stable;return}
+   const med=k=>{const z=good.map(r=>r[k]).sort((p,q)=>p-q);return z[z.length>>1]};const m={x:med('x'),y:med('y'),w:med('w'),h:med('h')};
+   const agree=good.filter(r=>camNear(r,m,.05)).length;
+   if(agree>=2){if(!CAM2.stable)CAM2.stable=m;
+     else if(camNear(CAM2.stable,m,.035)){CAM2.jump=0;for(const k of ['x','y','w','h'])CAM2.stable[k]+=(m[k]-CAM2.stable[k])*.4}
+     else{CAM2.jump++;if(CAM2.jump>=2){CAM2.stable=m;CAM2.jump=0}}}
+   CAM.target=CAM2.stable;if(!CAM2.stable)CAM.lock=0}}
+{const _open=openCamera;openCamera=function(mode,o){CAM2.hist=[];CAM2.stable=null;CAM2.jump=0;return _open(mode,o)}}
 
 
 
