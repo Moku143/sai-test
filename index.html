@@ -3188,6 +3188,122 @@ camDetect=function(srcEl){
    CAM.target=CAM2.stable;if(!CAM2.stable)CAM.lock=0}}
 {const _open=openCamera;openCamera=function(mode,o){CAM2.hist=[];CAM2.stable=null;CAM2.jump=0;return _open(mode,o)}}
 
+// ===== v45: real rectangle finding with OpenCV (loaded once from the site itself, ~11 MB, cached after that):
+// edges → contours → the best four-cornered shape → the frame follows its corners, and the shot is straightened
+// (perspective-corrected) to that quadrilateral. Where OpenCV cannot load (the artifact viewer, offline), the
+// v44 line finder stays in charge. =====
+const CV={m:null,loading:null,failed:false,quad:null,hist:[],miss:0};
+function loadCV(){if(CV.m)return Promise.resolve(CV.m);if(CV.failed)return Promise.resolve(null);
+  return CV.loading||(CV.loading=new Promise(res=>{const s=document.createElement('script');s.src='./opencv.js';s.async=true;
+    s.onload=async()=>{try{let m=window.cv;if(m&&typeof m.then==='function')m=await m;else if(m&&!m.Mat)await new Promise(r=>{m.onRuntimeInitialized=r});if(!m||!m.Mat)throw new Error('no cv');CV.m=m;res(m)}catch(e){CV.failed=true;res(null)}};
+    s.onerror=()=>{CV.failed=true;res(null)};document.head.append(s)}))}
+// order corners: top-left, top-right, bottom-right, bottom-left
+function orderQuad(pts){const c={x:(pts[0].x+pts[1].x+pts[2].x+pts[3].x)/4,y:(pts[0].y+pts[1].y+pts[2].y+pts[3].y)/4};
+  const q=pts.slice().sort((p,r)=>Math.atan2(p.y-c.y,p.x-c.x)-Math.atan2(r.y-c.y,r.x-c.x)); // clockwise on screen
+  let k=0;for(let i=1;i<4;i++)if(q[i].x+q[i].y<q[k].x+q[k].y)k=i;return q.slice(k).concat(q.slice(0,k))}
+const quadNear=(a,b,t)=>a&&b&&a.every((p,i)=>Math.abs(p.x-b[i].x)<t&&Math.abs(p.y-b[i].y)<t);
+// find the book in a frame from its long straight edges (Hough lines): two near-vertical lines a plausible
+// width apart with nothing long between them make the sides; the top and bottom come from horizontal lines near
+// the ends of those sides, or from the sides' own ends. The corners are taken on the actual lines, so a tilted
+// or slightly keystoned book gives a tilted quad, and the shot can be straightened.
+function cvFindQuad(cv,srcEl){
+  const vw=srcEl.videoWidth||srcEl.width,vh=srcEl.videoHeight||srcEl.height,h=320,w=Math.max(60,Math.round(vw*h/vh));
+  const c=cvFindQuad.c||(cvFindQuad.c=document.createElement('canvas'));if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  c.getContext('2d',{willReadFrequently:true}).drawImage(srcEl,0,0,w,h);
+  const src=cv.imread(c),gray=new cv.Mat(),edges=new cv.Mat(),lines=new cv.Mat();let out=null;
+  try{cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gray,gray,new cv.Size(3,3),0);cv.Canny(gray,edges,50,140);
+    const spine=CAM.mode==='spine';
+    cv.HoughLinesP(edges,lines,1,Math.PI/180,Math.round(h*.12),h*(spine?.28:.3),h*.05);
+    const V=[],Hh=[];
+    for(let i=0;i<lines.rows;i++){const d=lines.data32S,x1=d[i*4],y1=d[i*4+1],x2=d[i*4+2],y2=d[i*4+3],dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);
+      if(Math.abs(dx)<Math.abs(dy)*.27){const t=y1<y2?{x1,y1,x2,y2}:{x1:x2,y1:y2,x2:x1,y2:y1};const sl=(t.x2-t.x1)/(t.y2-t.y1||1);V.push({...t,len,sl,xm:t.x1+sl*(h/2-t.y1)})}
+      else if(Math.abs(dy)<Math.abs(dx)*.27){const t=x1<x2?{x1,y1,x2,y2}:{x1:x2,y1:y2,x2:x1,y2:y1};Hh.push({...t,len,ym:(t.y1+t.y2)/2})}}
+    // merge pieces of the same vertical line (same x at mid-height, same slope)
+    V.sort((a,b)=>a.xm-b.xm);const S=[];
+    for(const l of V){const g=S.find(q=>Math.abs(q.xm-l.xm)<w*.012&&Math.abs(q.sl-l.sl)<.08);
+      if(g){g.len+=l.len;if(l.y1<g.y1){g.y1=l.y1;g.x1=l.x1}if(l.y2>g.y2){g.y2=l.y2;g.x2=l.x2}g.sl=(g.x2-g.x1)/(g.y2-g.y1||1);g.xm=g.x1+g.sl*(h/2-g.y1)}else S.push({...l})}
+    for(const q of S)q.span=q.y2-q.y1;
+    const sides=S.filter(q=>q.span>=h*(spine?.4:.38));
+    const [wmin,wmax]=spine?[.035,.5]:[.3,.97];let best=null;
+    for(let i=0;i<sides.length;i++)for(let j=i+1;j<sides.length;j++){const a=sides[i],b=sides[j],ww=(b.xm-a.xm)/w;if(ww<wmin||ww>wmax)continue;
+      let inner=0;for(let k=i+1;k<j;k++)if(sides[k].span>=Math.min(a.span,b.span)*.7)inner++;
+      const cx=(a.xm+b.xm)/2/w,hasC=a.xm/w<.5&&b.xm/w>.5;
+      // a spine: the narrowest pair around the middle of the frame; a cover: the widest clean pair near the middle
+      // the longest pair of sides wins; a pair around the middle of the frame is preferred, lines in between count
+      // against it, and of two near-equal pairs the wider (outer) one is taken, since decoration sits inside the sides
+      const score=spine?(a.span+b.span)*(1+ww*.3)*(hasC?1.6:Math.max(.15,1-Math.abs(cx-.5)*2.5))/(1+inner*.2):
+                        (a.span+b.span)*ww*Math.max(.1,1-Math.abs(cx-.5)*1.2)/(1+inner*.4);
+      if(!best||score>best.score)best={a,b,score}}
+    cvFindQuad.sides=sides.map(q=>[+(q.xm/w).toFixed(3),+(q.span/h).toFixed(2)]);
+    if(best){const {a,b}=best;const xAt=(l,y)=>l.x1+l.sl*(y-l.y1);
+      let yt=Math.max(a.y1,b.y1),yb=Math.min(a.y2,b.y2);if(yb-yt<h*.3){yt=Math.min(a.y1,b.y1);yb=Math.max(a.y2,b.y2)}
+      // a horizontal line spanning the sides near either end gives the exact top or bottom
+      const span=b.xm-a.xm,near=h*.08;let tl=null,bl=null;
+      for(const l of Hh){if(l.x1>a.xm+span*.3||l.x2<b.xm-span*.3)continue;if(l.len<span*.55)continue;
+        if(Math.abs(l.ym-yt)<near&&(!tl||Math.abs(l.ym-yt)<Math.abs(tl.ym-yt)))tl=l;if(Math.abs(l.ym-yb)<near&&(!bl||Math.abs(l.ym-yb)<Math.abs(bl.ym-yb)))bl=l}
+      const yT=tl?tl.ym:yt,yB=bl?bl.ym:yb;
+      out=[{x:xAt(a,yT)/w,y:yT/h},{x:xAt(b,yT)/w,y:yT/h},{x:xAt(b,yB)/w,y:yB/h},{x:xAt(a,yB)/w,y:yB/h}].map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))}))}
+  }catch(e){console.warn('cv',e)}finally{src.delete();gray.delete();edges.delete();lines.delete()}
+  return out}
+// the live detector: with OpenCV ready, the quad is used (steadied over a few looks); otherwise the line finder
+{const _det=camDetect;
+ camDetect=function(srcEl){
+   if(!CV.m){if(!CV.failed)loadCV();return _det(srcEl)}
+   const v=srcEl||$('camV');if(!(v.videoWidth||v.width)||(!srcEl&&v.readyState<2))return;
+   const q=cvFindQuad(CV.m,v);const H=CV.hist;H.push(q);if(H.length>4)H.shift();
+   const good=H.filter(Boolean);
+   if(q&&good.length>=2){const ref=good[good.length-1];const agree=good.filter(g=>quadNear(g,ref,.06));
+     if(agree.length>=2){const avg=ref.map((_,i)=>({x:agree.reduce((s,g)=>s+g[i].x,0)/agree.length,y:agree.reduce((s,g)=>s+g[i].y,0)/agree.length}));
+       CV.quad=CV.quad&&quadNear(CV.quad,avg,.04)?CV.quad.map((p,i)=>({x:p.x+(avg[i].x-p.x)*.45,y:p.y+(avg[i].y-p.y)*.45})):avg;CV.miss=0}}
+   else if(!q){CV.miss++;if(CV.miss>4)CV.quad=null}
+   if(CV.quad){const xs=CV.quad.map(p=>p.x),ys=CV.quad.map(p=>p.y);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+     CAM.target={x:x0,y:y0,w:x1-x0,h:y1-y0};CAM.lock=Math.min(6,CAM.lock+2)}
+   else{CAM.target=null;CAM.lock=0}}}
+{const _open=openCamera;openCamera=function(mode,o){CV.quad=null;CV.hist=[];CV.miss=0;loadCV();return _open(mode,o)}}
+// drawing: the quad's own outline on top of the usual frame, and a note while the engine loads
+{const _draw=camDraw;
+ camDraw=function(){_draw();if(!$('cam')||$('cam').hidden)return;const c=$('camO'),g=c.getContext('2d'),f=camFit();
+   if(CV.quad&&CAM.lock>2){g.save();g.setTransform(Math.min(2,devicePixelRatio||1),0,0,Math.min(2,devicePixelRatio||1),0,0);g.strokeStyle='#9fe0a8';g.lineWidth=2.5;g.lineJoin='round';g.beginPath();
+     CV.quad.forEach((p,i)=>{const x=f.ox+p.x*f.vw*f.s,y=f.oy+p.y*f.vh*f.s;i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath();g.stroke();g.restore()}
+   // a small cross at the middle: the book to take is the one under it
+   {const d=Math.min(2,devicePixelRatio||1);g.save();g.setTransform(d,0,0,d,0,0);g.strokeStyle='rgba(243,227,196,.55)';g.lineWidth=1.5;const cx=innerWidth/2,cy=innerHeight/2;g.beginPath();g.moveTo(cx-10,cy);g.lineTo(cx+10,cy);g.moveTo(cx,cy-10);g.lineTo(cx,cy+10);g.stroke();g.restore()}
+   if(!CV.m&&!CV.failed&&CV.loading)$('camHint').textContent='인식 엔진을 준비하는 중… (처음 한 번만)';
+   else if(CV.m&&CAM.mode==='spine'&&CAM.lock<=2)$('camHint').textContent='찍을 책등을 가운데 + 표시에 맞춰 주세요';}}
+// the shot: straightened to the quad when there is one
+function warpQuad(cv,full,q,maxSide){
+  const W=full.width,H=full.height,P=q.map(p=>({x:p.x*W,y:p.y*H}));
+  const tw=Math.round((Math.hypot(P[1].x-P[0].x,P[1].y-P[0].y)+Math.hypot(P[2].x-P[3].x,P[2].y-P[3].y))/2),th=Math.round((Math.hypot(P[3].x-P[0].x,P[3].y-P[0].y)+Math.hypot(P[2].x-P[1].x,P[2].y-P[1].y))/2);
+  const k=Math.min(1,maxSide/Math.max(tw,th)),ow=Math.max(8,Math.round(tw*k)),oh=Math.max(8,Math.round(th*k));
+  const src=cv.imread(full),dst=new cv.Mat(),s=cv.matFromArray(4,1,cv.CV_32FC2,[P[0].x,P[0].y,P[1].x,P[1].y,P[2].x,P[2].y,P[3].x,P[3].y]),d=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,ow,0,ow,oh,0,oh]);
+  try{const M=cv.getPerspectiveTransform(s,d);cv.warpPerspective(src,dst,M,new cv.Size(ow,oh),cv.INTER_LINEAR,cv.BORDER_REPLICATE);M.delete();const out=document.createElement('canvas');out.width=ow;out.height=oh;cv.imshow(out,dst);return out}
+  finally{src.delete();dst.delete();s.delete();d.delete()}}
+// a straightened spine becomes a finished cut (colour and ink from the picture itself)
+function cutFromCanvas(c){const g=c.getContext('2d'),d=g.getImageData(0,0,c.width,c.height).data;let r=0,gg=0,b=0,n=0;for(let i=0;i<d.length;i+=16){r+=d[i];gg+=d[i+1];b+=d[i+2];n++}r/=n;gg/=n;b/=n;
+  const hex=v=>Math.round(v).toString(16).padStart(2,'0'),color='#'+hex(r)+hex(gg)+hex(b),lum=.299*r+.587*gg+.114*b;
+  return {spine:c.toDataURL('image/jpeg',.92),color,ink:lum>140?'#2a2420':'#f3ede0',aspect:c.height/Math.max(1,c.width),conf:.9}}
+{const _shot=$('camShot').onclick;
+ $('camShot').onclick=async()=>{const v=$('camV');if(!v.videoWidth)return;
+   if(!(CV.m&&CV.quad&&CAM.lock>2))return _shot();
+   $('cam').classList.add('flash');setTimeout(()=>$('cam').classList.remove('flash'),180);
+   const full=document.createElement('canvas');full.width=v.videoWidth;full.height=v.videoHeight;full.getContext('2d').drawImage(v,0,0);
+   // a hair of margin so the border itself is kept
+   const c=[(CV.quad[0].x+CV.quad[1].x+CV.quad[2].x+CV.quad[3].x)/4,(CV.quad[0].y+CV.quad[1].y+CV.quad[2].y+CV.quad[3].y)/4];
+   const q=CV.quad.map(p=>({x:p.x+(p.x-c[0])*.012,y:p.y+(p.y-c[1])*.012}));
+   const mode=CAM.mode;let out;try{out=warpQuad(CV.m,full,q,mode==='spine'?1400:1500)}catch(e){console.warn('warp',e);return _shot()}
+   if(mode==='spine')camClose({mode,cut:cutFromCanvas(out)});else{CV.lastTight=true;camClose({mode,img:out.toDataURL('image/jpeg',.9)})}}}
+// a cut that arrives ready skips the spine detector; a straightened cover skips the edge trimming
+shootNewBook=async function(){
+  for(;;){
+    const r=await openCamera('spine',{title:'책등 찍기'});
+    if(r==='fallback'){$('addPhoto').click();return}
+    if(!r)return;
+    let cut=r.cut;
+    if(!cut){showToast('책등을 다듬는 중이에요…',0);try{cut=await detectSpine(r.src)}catch(e){showToast('사진을 읽지 못했어요. 다시 찍어 볼까요?',2200);continue}$('toast').style.display='none'}
+    const ok=await confirmSpine(cut);if(ok==='retake')continue;
+    const b=await shelveShot(cut,ok);if(b){showToast('책을 꽂았어요',1600);if(ok.covers)await shootCovers(b)}return}};
+// a straightened cover is already tight: the edge trimming of v43 is skipped for it
+{const _t=tightenCover;tightenCover=async function(src){if(CV.lastTight){CV.lastTight=false;return src}return _t(src)}}
+
 
 
 
