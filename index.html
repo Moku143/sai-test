@@ -646,6 +646,9 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 /* ===== v40 ===== */
 .dy-leaf.dy-board .dy-face.dy-b .dy-closed.dy-frontc{border-radius:3px 7px 7px 3px}
 .stage .object{cursor:pointer}
+
+/* ===== v42 ===== */
+.so-ocr{display:block;font-size:12px;color:#c9b597;margin-top:4px}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -2646,7 +2649,7 @@ function camFit(){ // video is shown like object-fit: cover; map normalized vide
 function camDraw(){
   const c=$('camO'),W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);if(c.width!==Math.round(W*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
   const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
-  const t=CAM.target||CAM_DEF[CAM.mode];CAM.rect=CAM.rect||{...t};for(const k of ['x','y','w','h'])CAM.rect[k]+=(t[k]-CAM.rect[k])*.28;
+  const t=CAM.target||CAM_DEF[CAM.mode];CAM.rect=CAM.rect||{...t};for(const k of ['x','y','w','h'])CAM.rect[k]+=(t[k]-CAM.rect[k])*.14;
   const f=camFit(),r=CAM.rect,x=f.ox+r.x*f.vw*f.s,y=f.oy+r.y*f.vh*f.s,w=r.w*f.vw*f.s,h=r.h*f.vh*f.s;
   g.fillStyle='rgba(0,0,0,.42)';g.fillRect(0,0,W,H);g.clearRect(x,y,w,h);
   const ok=CAM.lock>2,col=ok?'#9fe0a8':'#f3e3c4',L=Math.min(28,w/3,h/3);g.strokeStyle=col;g.lineWidth=3;g.lineCap='round';
@@ -2654,7 +2657,7 @@ function camDraw(){
   if(ok){g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(x,y,w,h);g.globalAlpha=1}
   $('camHint').textContent=ok?`${CAM_NAME[CAM.mode]}을(를) 찾았어요 · 찍어 주세요`:CAM.mode==='spine'?'책등을 세로로 비춰 주세요 · 틀이 책에 맞춰져요':'표지 전체가 보이게 비춰 주세요 · 틀이 표지에 맞춰져요';
   $('camHint').classList.toggle('ok',ok);
-  const now=performance.now();if(now-CAM.lastDet>160){CAM.lastDet=now;camDetect()}
+  const now=performance.now();if(now-CAM.lastDet>110){CAM.lastDet=now;camDetect()}
   CAM.raf=requestAnimationFrame(camDraw);
 }
 // edges in a small copy of the frame: the strongest pair of vertical edges (spine sides or cover sides), then the
@@ -3001,6 +3004,55 @@ saveDraft=async function(){
    // the real render sets backgroundImage itself; when it lands, drop the flat swatch's extras
    const mo=new MutationObserver(()=>{if(el.dataset.flat&&!el.style.backgroundImage.startsWith('linear')){el.style.backgroundSize='';el.style.backgroundColor='transparent';delete el.dataset.flat;mo.disconnect()}});
    mo.observe(el,{attributes:true,attributeFilter:['style']})}}
+
+// ===== v42: a steadier camera frame (it moves only when several looks agree), and the title read off the spine =====
+
+// ---------- steadier frame: the raw detection goes into a short history; the frame follows the median of the
+// history, and only jumps to a new place when three looks in a row agree on it ----------
+const camNear=(a,b,t)=>a&&b&&Math.abs(a.x-b.x)<t&&Math.abs(a.y-b.y)<t&&Math.abs(a.w-b.w)<t&&Math.abs(a.h-b.h)<t;
+{const _det=camDetect;
+ camDetect=function(){_det();const raw=CAM.target;const H=CAM.hist||(CAM.hist=[]);H.push(raw?{...raw}:null);if(H.length>7)H.shift();
+   const good=H.filter(Boolean);
+   if(good.length<3){if(H.slice(-3).every(r=>!r)){CAM.stable=null;CAM.jump=0}CAM.target=CAM.stable;return}
+   const med=k=>{const a=good.map(r=>r[k]).sort((p,q)=>p-q);return a[a.length>>1]};const m={x:med('x'),y:med('y'),w:med('w'),h:med('h')};
+   const agree=good.filter(r=>camNear(r,m,.045)).length;
+   if(agree>=3){
+     if(!CAM.stable){CAM.stable=m;CAM.jump=0}
+     else if(camNear(CAM.stable,m,.03)){CAM.jump=0;for(const k of ['x','y','w','h'])CAM.stable[k]+=(m[k]-CAM.stable[k])*.25} // settle gently
+     else{CAM.jump=(CAM.jump||0)+1;if(CAM.jump>=3){CAM.stable=m;CAM.jump=0}}}  // a real move: three looks in a row elsewhere
+   CAM.target=CAM.stable;if(!CAM.stable)CAM.lock=0}}
+{const _open=openCamera;openCamera=function(mode,o){CAM.hist=[];CAM.stable=null;CAM.jump=0;return _open(mode,o)}}
+
+// ---------- the title, read off the spine (Tesseract.js, loaded only when the camera is used on a real site;
+// inside the artifact viewer the download is blocked and the field simply stays empty) ----------
+let ocrLoad=null;
+function loadOCR(){return ocrLoad||(ocrLoad=new Promise((res,rej)=>{if(window.Tesseract)return res(window.Tesseract);const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';s.onload=()=>res(window.Tesseract);s.onerror=()=>{ocrLoad=null;rej(new Error('no ocr'))};document.head.append(s)}))}
+function ocrPrep(src,rot){return new Promise(res=>{const im=new Image();im.onload=()=>{const long=900,k=Math.min(1,long/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);
+  const c=document.createElement('canvas');const sw=rot?h:w,sh=rot?w:h;c.width=sw;c.height=sh;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,sw,sh);
+  g.translate(sw/2,sh/2);g.rotate(rot*Math.PI/180);g.drawImage(im,-w/2,-h/2,w,h);
+  // more contrast helps the letters stand out from a coloured spine
+  const d=g.getImageData(0,0,sw,sh),p=d.data;for(let i=0;i<p.length;i+=4){const l=.299*p[i]+.587*p[i+1]+.114*p[i+2];const v=Math.max(0,Math.min(255,(l-128)*1.6+128));p[i]=p[i+1]=p[i+2]=v}g.putImageData(d,0,0);
+  res(c.toDataURL('image/png'))};im.onerror=()=>res(null);im.src=src})}
+const ocrClean=t=>String(t||'').replace(/[\r\n]+/g,' ').replace(/[^\p{L}\p{N} .,:!?'’\-·&]/gu,'').replace(/\s+/g,' ').trim();
+let OCR_RUN=0;
+async function ocrSpineTitle(spineSrc,onResult){
+  const run=++OCR_RUN;let T;try{T=await loadOCR()}catch(e){return}
+  if(run!==OCR_RUN)return;
+  let worker;try{worker=await T.createWorker(['kor','eng'],1,{});}catch(e){console.warn('ocr worker',e);return}
+  try{let best=null;
+    for(const rot of [-90,90,0]){if(run!==OCR_RUN)break;const img=await ocrPrep(spineSrc,rot);if(!img)continue;
+      let r;try{r=await worker.recognize(img)}catch(e){continue}
+      const text=ocrClean(r.data.text),conf=r.data.confidence||0,letters=(text.match(/\p{L}/gu)||[]).length;
+      const score=conf*Math.min(1,letters/3);if(letters>=2&&(!best||score>best.score))best={text,conf,score,rot}}
+    if(run===OCR_RUN&&best&&best.conf>=45)onResult(best.text.slice(0,40),best.conf);
+  }finally{try{await worker.terminate()}catch(e){}}
+}
+// the confirm screen asks for the title while it is still being read; a read title fills the empty field
+{const _confirm=confirmSpine;
+ confirmSpine=function(cut){const p=_confirm(cut);
+   const info=$('soInfo'),note=document.createElement('span');note.className='so-ocr';note.textContent='책등의 글자를 읽는 중…';info.append(note);
+   ocrSpineTitle(cut.spine,(t,conf)=>{const f=$('soTitle');if($('shotOk').hidden)return;if(!f.value.trim()){f.value=t;note.textContent=`책등에서 읽은 제목이에요 · 틀리면 고쳐 주세요`}else note.textContent=`읽은 글자: ${t}`}).then(()=>{if(note.textContent.endsWith('중…'))note.textContent='글자를 읽지 못했어요. 제목을 직접 적어 주세요'}).catch(()=>{note.textContent=''});
+   return p}}
 
 
 
