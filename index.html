@@ -3585,6 +3585,7 @@ function showLegal(){const box=$('legalBox')||(()=>{const d=document.createEleme
     <div class="set-info"><b>기록은 이 폰에만 있어요</b><span>앱을 지우면 책·사진·일기가 모두 지워지고 광고로 연 칸도 다시 잠겨요. 이용권은 '구매 복원'으로 되살릴 수 있어요. 일기장은 보내기로 따로 보관할 수 있어요.</span></div>
     <div class="set-group">
       <button class="set-row set-act" id="setTut"><span>처음 화면 다시 보기</span><span class="set-val">튜토리얼 ›</span></button>
+      <button class="set-row set-act" id="setFirst"><span>언어·동의부터 다시 보기</span><span class="set-val">기록은 그대로 ›</span></button>
       <button class="set-row set-act" id="setLegal"><span>이용약관 · 개인정보 처리방침 · 라이선스</span><span class="set-val">›</span></button>
       <button class="set-row set-act" id="setRestore"><span>구매 복원</span><span class="set-val">›</span></button>
     </div>
@@ -3594,6 +3595,7 @@ function showLegal(){const box=$('legalBox')||(()=>{const d=document.createEleme
     $('setSfx').onchange=e=>{try{localStorage.setItem('sai-sfx',e.target.checked?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',e.target.checked);if(e.target.checked)bookSfx('drop')};
     $('setTut').onclick=async()=>{close();await obTutorial()};
     $('setLegal').onclick=()=>showLegal();
+    $('setFirst').onclick=async()=>{close();if(!await askConfirm('언어 선택과 동의 화면을 처음처럼 다시 보여 드릴까요? 책과 일기는 그대로 남아요.','다시 보기'))return;try{localStorage.removeItem('sai-consent');localStorage.removeItem('sai-tutorial-v1');localStorage.removeItem('sai-guide-spine');localStorage.removeItem('sai-guide-cover')}catch(e){}location.reload()};
     $('setRestore').onclick=()=>showToast('구매 복원은 App Store 연결 뒤에 동작해요',1800);
     $('setPass').onclick=()=>{if(unlock.pass){showToast('이미 이용 중이에요',1400);return}close();askUnlock('bay')}};
   const open=()=>{draw();sheet.hidden=false;document.body.style.overflow='hidden'},close=()=>{sheet.hidden=true;document.body.style.overflow=''};
@@ -3633,7 +3635,7 @@ function bgmStart(){try{const a=bgmCtx();if(a.state==='suspended')a.resume();BGM
 function bgmStop(){BGM.on=false;clearTimeout(BGM.timer);if(BGM.master&&BGM.ctx){const t=BGM.ctx.currentTime;BGM.master.gain.cancelScheduledValues(t);BGM.master.gain.setValueAtTime(BGM.master.gain.value,t);BGM.master.gain.linearRampToValueAtTime(0,t+1.2)}}
 function bgmSet(on){try{localStorage.setItem('sai-bgm',on?'1':'0')}catch(e){}if(on)bgmStart();else bgmStop()}
 // the first touch anywhere wakes it (when it is on), and it pauses while the page is hidden
-{let armed=false;const arm=()=>{if(armed)return;armed=true;if(bgmPref())bgmStart()};for(const ev of ['touchend','pointerup','keydown'])document.addEventListener(ev,arm,{passive:true,capture:true});
+{let armed=false;const arm=()=>{if(armed)return;armed=true;if(bgmPref()){bgmStart();try{if(!localStorage.getItem('sai-bgm-hint')){localStorage.setItem('sai-bgm-hint','1');setTimeout(()=>showToast('배경 음악이 켜져 있어요 · 설정(⚙)에서 끌 수 있어요',2600),1200)}}catch(e){}}};for(const ev of ['touchend','pointerup','keydown'])document.addEventListener(ev,arm,{passive:true,capture:true});
  document.addEventListener('visibilitychange',()=>{if(!BGM.started)return;if(document.hidden){clearTimeout(BGM.timer);BGM.on=false}else if(bgmPref())bgmStart()})}
 
 // ===== v49: one visual language everywhere — drawn icons, translucent brown surfaces, a short illustrated camera
