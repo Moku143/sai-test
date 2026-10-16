@@ -3821,6 +3821,148 @@ new MutationObserver(ms=>{for(const m of ms){const el=m.target;if(el.classList.c
  const fit=()=>{const st=$('dmStage'),bx=$('dmBox');if(!st||!bx)return;const k=Math.min(1,(st.clientHeight-24)/268);bx.style.scale=k.toFixed(3)};
  new ResizeObserver(fit).observe($('dmStage'));fit()}
 
+// ===== v52: a second, careful look at the still — a small Segment-Anything model (miniSAM, MIT; ONNX in the
+// browser) outlines the book from the guide box; the fast GrabCut answer shows first and is replaced when the
+// model's answer arrives, unless the corners have been touched meanwhile. The model (~45MB) is fetched once from
+// the CDN and kept by the browser cache. =====
+const SAM={enc:null,dec:null,load:null,fail:0,busy:null};
+const SAM_URLS={ort:'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js',wasm:'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/',
+  enc:'https://cdn.jsdelivr.net/npm/minisam@0.2.0/dist/encoder.onnx',dec:'https://cdn.jsdelivr.net/npm/minisam@0.2.0/dist/sam.onnx'};
+const samOK=()=>(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&SAM.fail<2;
+function samLoad(){if(SAM.load)return SAM.load;
+  return SAM.load=(async()=>{const U=Object.assign({},SAM_URLS,window.SAM_CFG||{});
+    if(!window.ort)await new Promise((res,rej)=>{const s=document.createElement('script');s.src=U.ort;s.onload=res;s.onerror=()=>rej(new Error('ort script'));document.head.append(s)});
+    ort.env.wasm.wasmPaths=U.wasm;ort.env.wasm.numThreads=1;const o={executionProviders:['wasm'],graphOptimizationLevel:'all'};
+    SAM.enc=await ort.InferenceSession.create(U.enc,o);SAM.dec=await ort.InferenceSession.create(U.dec,o);return true})()
+    .catch(e=>{SAM.load=null;SAM.fail++;console.warn('sam load',e);throw e})}
+// the image, resized to the model's 1024 square (top-left, zero padded), normalised the way SAM expects
+async function samEmbed(canvas){const T=1024,w=canvas.width,h=canvas.height,r=T/Math.max(w,h),a=Math.round(w*r),c=Math.round(h*r);
+  const l=document.createElement('canvas');l.width=a;l.height=c;const d=l.getContext('2d');d.drawImage(canvas,0,0,a,c);const {data}=d.getImageData(0,0,a,c);
+  const g=new Float32Array(3*T*T),m=[123.675,116.28,103.53],s=[58.395,57.12,57.375];
+  for(let y=0;y<c;y++)for(let x=0;x<a;x++){const o=4*(y*a+x),i=y*T+x;g[i]=(data[o]-m[0])/s[0];g[T*T+i]=(data[o+1]-m[1])/s[1];g[2*T*T+i]=(data[o+2]-m[2])/s[2]}
+  const out=await SAM.enc.run({[SAM.enc.inputNames[0]]:new ort.Tensor('float32',g,[1,3,T,T])});return {emb:out[SAM.enc.outputNames[0]],w,h,r}}
+// prompts in image pixels: l=1 include, 0 exclude, 2/3 box corners. Returns a byte mask at image size.
+async function samDecode(E,pts){const n=pts.length,c=new Float32Array(2*(n+1)),l=new Float32Array(n+1);
+  pts.forEach((p,i)=>{c[2*i]=p.x*E.r;c[2*i+1]=p.y*E.r;l[i]=p.l});c[2*n]=0;c[2*n+1]=0;l[n]=-1;
+  const feeds={image_embeddings:E.emb,point_coords:new ort.Tensor('float32',c,[1,n+1,2]),point_labels:new ort.Tensor('float32',l,[1,n+1]),orig_im_size:new ort.Tensor('float32',new Float32Array([E.h,E.w]),[2]),
+    mask_input:new ort.Tensor('float32',new Float32Array(256*256),[1,1,256,256]),has_mask_input:new ort.Tensor('float32',new Float32Array([0]),[1])};
+  const out=await SAM.dec.run(feeds);const names=SAM.dec.outputNames;const mk=out[names.find(k=>/mask/i.test(k))||names[0]],iou=out[names.find(k=>/iou|score/i.test(k))];
+  const W=mk.dims[mk.dims.length-1],H=mk.dims[mk.dims.length-2],K=mk.dims.length>=4?mk.dims[1]:1;let best=0;
+  if(K>1&&iou){let s=-1;for(let k=0;k<K;k++)if(iou.data[k]>s){s=iou.data[k];best=k}}
+  const off=best*W*H,mask=new Uint8Array(W*H);for(let i=0;i<W*H;i++)mask[i]=mk.data[off+i]>0?255:0;return {mask,w:W,h:H}}
+// mask → the four corners, with the spine clean-ups from v50 (hand rows, neighbouring spines)
+function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0){
+  const img=cv.imread(crop),rgb=new cv.Mat(),fg=new cv.Mat(h,w,cv.CV_8UC1),contours=new cv.MatVector(),hier=new cv.Mat();
+  try{cv.cvtColor(img,rgb,cv.COLOR_RGBA2RGB);fg.data.set(maskBytes);
+    const kn=cv.Mat.ones(5,5,cv.CV_8U);cv.morphologyEx(fg,fg,cv.MORPH_OPEN,kn);cv.morphologyEx(fg,fg,cv.MORPH_CLOSE,kn);kn.delete();
+    const g_cx=w*(g.x+g.w/2),g_cy=h*(g.y+g.h/2);
+    if(spine){
+      // only the piece of the mask under the guide's centre (or the nearest piece) is the book
+      cv.findContours(fg,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);let best=-1,bestD=1e9;
+      for(let i=0;i<contours.size();i++){const ct=contours.get(i);if(cv.contourArea(ct)<w*h*.003)continue;const d=-cv.pointPolygonTest(ct,new cv.Point(g_cx,g_cy),true);if(d<bestD){bestD=d;best=i}}
+      if(best<0||bestD>w*.15){if(SAM.dbg)SAM.dbg.why=['contour',best,bestD];return null}
+      fg.setTo(new cv.Scalar(0));cv.drawContours(fg,contours,best,new cv.Scalar(255),-1);
+      // a spine is an upright strip: its width is what the middle rows agree on (a hand at the top or a rug at the
+      // bottom does not change it); its rows are the ones filled across that strip
+      const bb=cv.boundingRect(contours.get(best));const ya=bb.y+Math.round(bb.height*.25),yb=bb.y+Math.round(bb.height*.75);
+      const ls=[],rs=[];for(let y=ya;y<=yb;y++){let a=-1,b=-1;for(let x=bb.x;x<bb.x+bb.width;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0){ls.push(a);rs.push(b)}}
+      if(ls.length<5){if(SAM.dbg)SAM.dbg.why=['rows',ls.length];return null}ls.sort((a,b)=>a-b);rs.sort((a,b)=>a-b);let L=ls[ls.length>>1],R=rs[rs.length>>1];
+      // dark seams inside the strip (neighbouring spines standing together): keep the piece under the guide's centre
+      const n=R-L+1;if(n>w*.04){const gray=new cv.Mat();try{cv.cvtColor(rgb,gray,cv.COLOR_RGB2GRAY);
+          const prof=new Float32Array(n);for(let i=0;i<n;i++){const x=L+i;let s=0,c=0;for(let y=ya;y<=yb;y++)if(fg.data[y*w+x]){s+=gray.data[y*w+x];c++}prof[i]=c?s/c:0}
+          // a seam between two books is a NARROW dark dip in the column brightness; a dark title band is wide and is not one
+          const win=Math.max(4,Math.round(n*.06)),seams=[],maxW=Math.max(3,Math.round(n*.1));
+          for(let i=2;i<n-2;i++){if(prof[i]>prof[i-1]||prof[i]>prof[i+1]||prof[i]>125)continue;let hi=0;for(let j=Math.max(0,i-win);j<=Math.min(n-1,i+win);j++)hi=Math.max(hi,prof[j]);if(hi-prof[i]<12)continue;
+            let a=i,b=i;while(a>0&&prof[a-1]<=prof[i]+6)a--;while(b<n-1&&prof[b+1]<=prof[i]+6)b++;if(b-a+1>maxW)continue;
+            if(!seams.length||i-seams[seams.length-1]>n*.06)seams.push(i)}
+          if(SAM.dbg)SAM.dbg.seams={n,L,seams:[...seams],prof:Array.from(prof).map(v=>Math.round(v))};
+          const walls=[0,...seams,n],c=g_cx-L;let a=0,b=n;for(let i=0;i<walls.length-1;i++)if(c>=walls[i]&&c<=walls[i+1]){a=walls[i];b=walls[i+1]}
+          if((b-a)<n*.9&&(b-a)>w*.025){R=L+b-(b<n?1:0);L=L+a+(a?1:0)}}
+        finally{gray.delete()}}
+      // the first (colour-model) answer knows the printed face from the book's side seen at an angle: where it sits
+      // inside the model's strip and is not much narrower, the strip is trimmed to it
+      if(q0){const xs=q0.map(p=>p.x*w),gL=Math.round(Math.min(...xs)),gR=Math.round(Math.max(...xs)),iL=Math.max(L,gL),iR=Math.min(R,gR);
+        if(iR-iL>=(R-L)*.3&&iR-iL>=w*.03&&(gR-gL)<=(R-L)*1.15){L=iL;R=iR}}
+      // rows: filled across the strip, from the centre outwards (small gaps allowed)
+      const rc=new Float32Array(h);for(let y=0;y<h;y++){let c=0;for(let x=L;x<=R;x++)if(fg.data[y*w+x])c++;rc[y]=c/(R-L+1)}
+      const cyi=Math.max(0,Math.min(h-1,Math.round(g_cy)));let T=cyi,B=cyi;if(rc[cyi]<.5){let d=1;while(d<h*.3&&(rc[cyi-d]??0)<.5&&(rc[cyi+d]??0)<.5)d++;if((rc[cyi-d]??0)>=.5)T=B=cyi-d;else if((rc[cyi+d]??0)>=.5)T=B=cyi+d;else{if(SAM.dbg)SAM.dbg.why=['centre',cyi,L,R,Array.from(rc.slice(cyi-5,cyi+5)).map(v=>+v.toFixed(2))];return null}}
+      let gap=0;while(T>0&&(rc[T-1]>=.5||gap<3)){gap=rc[T-1]>=.5?0:gap+1;T--}while(T<h-1&&rc[T]<.5)T++;
+      gap=0;while(B<h-1&&(rc[B+1]>=.5||gap<3)){gap=rc[B+1]>=.5?0:gap+1;B++}while(B>0&&rc[B]<.5)B--;
+      // the strip runs on past the first answer's top or bottom (into a shelf, a rug, a reflection): the book ends at the
+      // strongest change of colour between the two answers' ends
+      if(q0){const ys=q0.map(p=>p.y*h),qT=Math.min(...ys),qB=Math.max(...ys),H0=B-T;
+        const rowCol=y=>{let r=0,gg=0,b=0,c=0;for(let x=L;x<=R;x++){const o=(y*w+x)*3;r+=rgb.data[o];gg+=rgb.data[o+1];b+=rgb.data[o+2];c++}return [r/c,gg/c,b/c]};
+        const edgeAt=y=>{if(y<3||y>h-4)return 0;let d=0;for(let k=0;k<3;k++){let a=0,b=0;for(let j=1;j<=3;j++){a+=rowCol(y-j)[k];b+=rowCol(y+j)[k]}d+=Math.abs(a-b)/3}return d/3};
+        const cutTop=(from,to,near)=>{let best=-1,bs=28;const span=Math.max(1,to-from);for(let y=from;y<=to;y++){const e=edgeAt(y);if(e>bs){bs=e;best=y}}return best};
+        if(qT-T>H0*.08){const y=cutTop(T+2,Math.round(qT-H0*.02),Math.round(qT));if(y>0&&B-y>=H0*.5)T=y}
+        if(B-qB>H0*.08){const y=cutTop(Math.round(qB+H0*.02),B-2,Math.round(qB));if(y>0&&y-T>=H0*.5)B=y}}
+      // the strip runs on into a shelf or a rug below: the guide's height is what the user lined up
+      const gT=h*(g.y-g.h*.08),gB=h*(g.y+g.h*1.08);if(B-T>g.h*h*1.15){if(T<gT)T=Math.round(gT);if(B>gB)B=Math.round(gB)}
+      return [{x:L/w,y:T/h},{x:(R+1)/w,y:T/h},{x:(R+1)/w,y:(B+1)/h},{x:L/w,y:(B+1)/h}]}
+    cv.findContours(fg,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
+    const cx=g_cx,cy=g_cy;let best=-1,bestS=0;
+    for(let i=0;i<contours.size();i++){const ct=contours.get(i),a=cv.contourArea(ct);if(a<w*h*.004)continue;const inside=cv.pointPolygonTest(ct,new cv.Point(cx,cy),false)>=0;const sc=a*(inside?4:1);if(sc>bestS){bestS=sc;best=i}}
+    if(best<0)return null;
+    const ct=contours.get(best);let quad=null;
+    const peri=cv.arcLength(ct,true),ap=new cv.Mat();for(const e of [.02,.03,.045,.06,.08]){cv.approxPolyDP(ct,ap,e*peri,true);if(ap.rows===4)break}
+    if(ap.rows===4&&cv.isContourConvex(ap)){quad=[];for(let j=0;j<4;j++)quad.push({x:ap.data32S[j*2]/w,y:ap.data32S[j*2+1]/h})}
+    else{const rr=cv.minAreaRect(ct);quad=cv.RotatedRect.points(rr).map(p=>({x:p.x/w,y:p.y/h}))}ap.delete();
+    quad=orderQuad(quad);
+    return quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))}))}
+  finally{[img,rgb,fg,contours,hier].forEach(m=>{try{m.delete()}catch(e){}})}}
+// the whole look: box from the guide, a few include points down its middle, exclude points to either side
+async function samQuad(crop,mode,guide,q0){const spine=mode==='spine',L=480,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+  const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
+  const g=guide||{x:.1,y:.06,w:.8,h:.88},px=spine?.12:.05,py=spine?.03:.04;
+  const x0=Math.max(0,(g.x-g.w*px)*w),x1=Math.min(w-1,(g.x+g.w*(1+px))*w),y0=Math.max(0,(g.y-g.h*py)*h),y1=Math.min(h-1,(g.y+g.h*(1+py))*h),cx=(g.x+g.w/2)*w;
+  const pts=[{x:x0,y:y0,l:2},{x:x1,y:y1,l:3},{x:cx,y:(g.y+g.h/2)*h,l:1}];
+  if(spine){pts.push({x:cx,y:(g.y+g.h*.25)*h,l:1},{x:cx,y:(g.y+g.h*.75)*h,l:1});const ex=g.w*.7*w;for(const x of [cx-g.w*w/2-ex,cx+g.w*w/2+ex])if(x>2&&x<w-2)pts.push({x,y:(g.y+g.h/2)*h,l:0})}
+  else{for(const [x,y] of [[cx,y0-h*.08],[cx,y1+h*.08],[x0-w*.08,(y0+y1)/2],[x1+w*.08,(y0+y1)/2]])if(x>2&&x<w-2&&y>2&&y<h-2)pts.push({x,y,l:0})}
+  const E=await samEmbed(s);const M=await samDecode(E,pts);if(M.w!==w||M.h!==h)return null;SAM.dbg={M,pts,w,h};
+  const q=maskToQuad(CV.m,M.mask,s,w,h,spine,g,q0);if(!q)return null;
+  // a piece of the book is not the book: too small against the guide means the model missed, and the first answer stays
+  const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
+  if(qh<g.h*.5||qw<(spine?.03:g.w*.55))return null;return q}
+// the corner screen: GrabCut first, the model's answer when it comes
+const SAMC={crop:null,q:null,touched:false,run:null};
+stillFindQuad=(f=>function(crop,mode,guide){if(SAMC.crop===crop&&SAMC.q)return SAMC.q;const q=f(crop,mode,guide);if(samOK())samRefine(crop,mode,guide,q);return q})(stillFindQuad);
+async function samRefine(crop,mode,guide,q0){if(SAMC.crop===crop&&SAMC.run)return;SAMC.crop=crop;SAMC.q=null;SAMC.touched=false;
+  const note=$('qfNote'),alive=()=>SAMC.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
+  SAMC.run=(async()=>{try{if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return;
+      if(!SAM.enc){if(alive())note.textContent='정밀 인식 모델을 준비하는 중입니다 (처음 한 번, 약 45MB)…';await samLoad()}
+      if(!alive())return;note.textContent='책 윤곽을 정밀하게 찾는 중…';
+      const q=await samQuad(crop,mode,guide,q0);if(!alive())return;
+      if(q){SAMC.q=q;$('qfAuto').onclick&&$('qfAuto').onclick();note.textContent='윤곽을 정밀하게 찾았습니다. 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.'}
+      else note.textContent=(window.QF_NOTES||{}).found||'자동으로 찾은 위치입니다'}
+    catch(e){console.warn('sam',e);if(alive())note.textContent=(window.QF_NOTES||{}).found||'자동으로 찾은 위치입니다'}
+    finally{SAMC.run=null}})()}
+// touching a corner or choosing 틀대로 keeps the model from overriding it
+{const svg=$('qfSvg');if(svg)svg.addEventListener('pointerdown',e=>{if(e.target.closest('.qf-hit'))SAMC.touched=true},true);const gb=$('qfGuide');if(gb)gb.addEventListener('click',()=>{SAMC.touched=true},true)}
+
+// ===== the three faces of one book read as one object: the covers take the spine's exposure and white balance
+// (a gentle per-channel gain, never more than ±25%), and the hinge edges get a soft shadow so the seams join =====
+const HZ=new Map();
+function meanRGB(img,edge){const c=document.createElement('canvas'),L=96,k=L/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height),w=Math.max(1,Math.round((img.naturalWidth||img.width)*k)),h=Math.max(1,Math.round((img.naturalHeight||img.height)*k));
+  c.width=w;c.height=h;const g=c.getContext('2d');g.drawImage(img,0,0,w,h);const d=g.getImageData(0,0,w,h).data;let r=0,gg=0,b=0,n=0;
+  const x0=edge==='left'?0:edge==='right'?Math.max(0,w-Math.ceil(w*.15)):0,x1=edge==='left'?Math.ceil(w*.15):w;
+  for(let y=Math.round(h*.1);y<h*.9;y++)for(let x=x0;x<x1;x++){const o=(y*w+x)*4;r+=d[o];gg+=d[o+1];b+=d[o+2];n++}return n?[r/n,gg/n,b/n]:[128,128,128]}
+const loadIm=src=>new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src});
+async function harmonizeCover(b,id){const src=b[id],sp=b.spine;if(!src||!sp||String(src).startsWith('<')||String(sp).startsWith('<'))return null;
+  const key=b.id+':'+id+':'+src.length+':'+sp.length;if(HZ.has(key))return HZ.get(key);
+  const p=(async()=>{const [ci,si]=await Promise.all([loadIm(src),loadIm(sp)]);if(!ci||!si)return null;
+    // the cover's whole tone meets the spine's whole tone; the spine's inner edge sets the hinge (front: left, back: right)
+    const cm=meanRGB(ci),sm=meanRGB(si),gain=[0,1,2].map(k=>Math.max(.75,Math.min(1.25,(sm[k]+8)/(cm[k]+8))));
+    if(gain.every(g=>Math.abs(g-1)<.04))return src;
+    const W=Math.min(1400,ci.naturalWidth),H=Math.round(ci.naturalHeight*W/ci.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(ci,0,0,W,H);
+    const im=g.getImageData(0,0,W,H),d=im.data;for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*gain[0]);d[i+1]=Math.min(255,d[i+1]*gain[1]);d[i+2]=Math.min(255,d[i+2]*gain[2])}g.putImageData(im,0,0);
+    return c.toDataURL('image/jpeg',.9)})();
+  HZ.set(key,p);return p}
+{const _face=face;face=function(id,src){_face(id,src);if(!current||!src||(id!=='front'&&id!=='back'))return;const b=current;
+  harmonizeCover(b,id).then(out=>{if(!out||out===src||current!==b)return;const img=$(id).querySelector('img');if(img)img.src=out}).catch(()=>{})}}
+{const st=document.createElement('style');st.textContent=`.face.front::after,.face.back::after,.face.left::before,.face.left::after{content:'';position:absolute;top:0;bottom:0;width:7%;max-width:14px;pointer-events:none;z-index:2}
+.face.front::after{left:0;background:linear-gradient(90deg,#0000003a,#00000000)}.face.back::after{right:0;background:linear-gradient(270deg,#0000003a,#00000000)}
+.face.left::before{left:0;background:linear-gradient(90deg,#00000030,#00000000)}.face.left::after{right:0;background:linear-gradient(270deg,#00000030,#00000000)}`;document.head.append(st)}
+
 
 
 
