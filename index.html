@@ -724,6 +724,9 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .ask-card{background:#24170ef0!important}.ul-card{background:#1b110af2!important}
 /* press feedback on every main control */
 .app-nav button:active,.ob-go:active,.ob-skip:active,.so-main:active,.so-row button:active,.qf-btns button:active,.set-act:active,.bk-row button:active,.guide-go:active,.ss-go:active,.sheet-save:active,.grid-btn:active,.set-btn:active,.dy-pen:active,.add-menu button:active{transform:scale(.97);transition:transform .08s}
+/* a book found from 기록 */
+.shelf-bay .book-slot.found{animation:foundPulse 2.6s ease-out}
+@keyframes foundPulse{0%,20%{filter:brightness(1.5) drop-shadow(0 0 14px #ffe7b0)}50%{filter:brightness(1.05) drop-shadow(0 0 6px #ffe7b0)}70%{filter:brightness(1.45) drop-shadow(0 0 14px #ffe7b0)}100%{filter:brightness(.92)}}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -3427,14 +3430,14 @@ function warpOrCrop(full,q,maxSide){
   c.getContext('2d').drawImage(full,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);return c}
 function quadFix(crop,mode,guide){return new Promise(res=>{
   const box=$('quadFix'),img=$('qfImg'),svg=$('qfSvg'),stage=$('qfStage');img.src=crop.toDataURL('image/jpeg',.9);box.hidden=false;document.body.style.overflow='hidden';
-  $('qfTitle').textContent=mode==='spine'?'책등 모서리를 맞춰 주세요':'표지 모서리를 맞춰 주세요';img.style.transform='';
+  $('qfTitle').textContent=mode==='spine'?'책등 모서리 확인':'표지 모서리 확인';img.style.transform='';
   let q=null,auto=true;
   const geo=()=>{const r=img.getBoundingClientRect(),s=stage.getBoundingClientRect();return {x:r.left-s.left,y:r.top-s.top,w:r.width,h:r.height}};
   const draw=()=>{const g=geo();svg.setAttribute('viewBox',`0 0 ${stage.clientWidth} ${stage.clientHeight}`);const P=q.map(p=>({x:g.x+p.x*g.w,y:g.y+p.y*g.h}));
     svg.innerHTML=`<polygon points="${P.map(p=>p.x+','+p.y).join(' ')}" class="qf-poly"/>`+P.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="18" class="qf-hit" data-i="${i}"/><circle cx="${p.x}" cy="${p.y}" r="7" class="qf-dot"/>`).join('')};
-  const find=()=>{const f=stillFindQuad(crop,mode);if(f){q=f;auto=true;$('qfNote').textContent='자동으로 찾은 자리예요 · 점을 끌어서 맞추고, 두 손가락으로 키워서 자세히 볼 수 있어요'}
-    else{q=[{x:.1,y:.06},{x:.9,y:.06},{x:.9,y:.94},{x:.1,y:.94}];auto=false;$('qfNote').textContent='책 모서리를 찾지 못했어요 · 점을 끌어서 맞춰 주세요'}draw()};
-  const useGuide=()=>{const g=guide||{x:.1,y:.06,w:.8,h:.88};q=[{x:g.x,y:g.y},{x:g.x+g.w,y:g.y},{x:g.x+g.w,y:g.y+g.h},{x:g.x,y:g.y+g.h}];auto=false;$('qfNote').textContent='카메라의 틀 그대로예요 · 점을 끌어서 책 모서리에 맞추세요';draw()};
+  const find=()=>{const f=stillFindQuad(crop,mode,guide);if(f){q=f;auto=true;$('qfNote').textContent=(window.QF_NOTES||{}).found||'자동으로 찾은 위치입니다'}
+    else{q=[{x:.1,y:.06},{x:.9,y:.06},{x:.9,y:.94},{x:.1,y:.94}];auto=false;$('qfNote').textContent=(window.QF_NOTES||{}).none||'모서리를 찾지 못했습니다'}draw()};
+  const useGuide=()=>{const g=guide||{x:.1,y:.06,w:.8,h:.88};q=[{x:g.x,y:g.y},{x:g.x+g.w,y:g.y},{x:g.x+g.w,y:g.y+g.h},{x:g.x,y:g.y+g.h}];auto=false;$('qfNote').textContent=(window.QF_NOTES||{}).guide||'촬영 틀 위치입니다';draw()};
   const ready=()=>{find()};if(img.complete&&img.naturalWidth)requestAnimationFrame(ready);else img.onload=()=>requestAnimationFrame(ready);
   // dragging a corner: the loupe shows the spot under the finger, enlarged
   let drag=null;const loupe=$('qfLoupe'),lc=$('qfLoupeC').getContext('2d');
@@ -3443,7 +3446,7 @@ function quadFix(crop,mode,guide){return new Promise(res=>{
     const px=g.x+p.x*g.w,py=g.y+p.y*g.h;loupe.style.left=Math.max(0,Math.min(stage.clientWidth-170,px-85))+'px';loupe.style.top=(py>200?py-200:py+40)+'px'};
   svg.addEventListener('pointerdown',e=>{const t=e.target.closest('.qf-hit');if(!t)return;drag={i:+t.dataset.i,id:e.pointerId};svg.setPointerCapture(e.pointerId);e.preventDefault();showLoupe(q[drag.i])});
   svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const g=geo(),s=stage.getBoundingClientRect();
-    q[drag.i]={x:Math.max(0,Math.min(1,(e.clientX-s.left-g.x)/g.w)),y:Math.max(0,Math.min(1,(e.clientY-s.top-g.y)/g.h))};auto=false;$('qfNote').textContent='점을 놓으면 그 자리로 잘라요';draw();showLoupe(q[drag.i])});
+    q[drag.i]={x:Math.max(0,Math.min(1,(e.clientX-s.left-g.x)/g.w)),y:Math.max(0,Math.min(1,(e.clientY-s.top-g.y)/g.h))};auto=false;$('qfNote').textContent=(window.QF_NOTES||{}).drag||'점을 놓으면 그 위치로 자릅니다';draw();showLoupe(q[drag.i])});
   const up=e=>{if(drag&&e.pointerId===drag.id){drag=null;loupe.hidden=true}if(pan&&e.pointerId===pan.id)pan=null};svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
   // zoom: two fingers pinch the photo (1–4×), one finger slides it around when zoomed; the corners follow the photo
   const V={z:1,tx:0,ty:0};let pan=null,pinch=null;img.style.transformOrigin='0 0';
@@ -3572,32 +3575,29 @@ function showLegal(){const box=$('legalBox')||(()=>{const d=document.createEleme
   btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>';
   const sheet=document.createElement('div');sheet.id='settings';sheet.className='settings';sheet.hidden=true;sheet.setAttribute('role','dialog');sheet.setAttribute('aria-label','설정');document.body.append(btn,sheet);
   const get=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
-  const draw=()=>{const typeOn=get('sai-type-sound','1')!=='0',sfx=get('sai-sfx','1')!=='0',open=typeof openBays==='function'?openBays():4,cap=typeof designCap==='function'?designCap():1,used=typeof customLooks==='function'?customLooks().length:0;
+  const draw=()=>{const fx=get('sai-sfx','1')!=='0'&&get('sai-type-sound','1')!=='0',bgm=typeof bgmPref==='function'?bgmPref():true,lang=get('sai-lang','ko'),langName=(OB_LANGS.find(([c])=>c===lang)||OB_LANGS[0])[1];
     sheet.innerHTML=`<div class="set-card"><div class="set-top"><h2>설정</h2><button class="set-x" aria-label="닫기">✕</button></div>
     <div class="set-pass"><div><b>평생 이용권</b><span>광고 없이 모든 칸 · 디자인 · 일기장</span></div><button id="setPass">${unlock.pass?'이용 중':'6,900원'}</button></div>
     <div class="set-group">
-      <div class="set-row"><span>열린 책장 칸</span><span class="set-val">${unlock.pass?'무제한':open+'칸'}</span></div>
-      <div class="set-row"><span>한 단에 칸 수</span><span class="set-val">${SAI_GRID}칸 · 책장 왼쪽 위에서 바꿔요</span></div>
-      <div class="set-row"><span>내 디자인 저장 칸</span><span class="set-val">${cap===Infinity?used+'개 · 무제한':used+' / '+cap}</span></div>
-      <label class="set-row"><span>일기 쓸 때 타자 소리</span><span class="set-sw ${typeOn?'on':''}"><input type="checkbox" id="setType" ${typeOn?'checked':''}><i></i></span></label>
-      <label class="set-row"><span>책 집고 놓는 소리</span><span class="set-sw ${sfx?'on':''}"><input type="checkbox" id="setSfx" ${sfx?'checked':''}><i></i></span></label>
+      <button class="set-row set-act" id="setLang"><span>언어</span><span class="set-val">${langName} ›</span></button>
+      <label class="set-row"><span>효과음</span><span class="set-sw ${fx?'on':''}"><input type="checkbox" id="setFx" ${fx?'checked':''}><i></i></span></label>
+      <label class="set-row"><span>배경 음악</span><span class="set-sw ${bgm?'on':''}"><input type="checkbox" id="setBgm" ${bgm?'checked':''}><i></i></span></label>
     </div>
-    <div class="set-info"><b>기록은 이 폰에만 있어요</b><span>앱을 지우면 책·사진·일기가 모두 지워지고 광고로 연 칸도 다시 잠겨요. 이용권은 '구매 복원'으로 되살릴 수 있어요. 일기장은 보내기로 따로 보관할 수 있어요.</span></div>
     <div class="set-group">
-      <button class="set-row set-act" id="setTut"><span>처음 화면 다시 보기</span><span class="set-val">튜토리얼 ›</span></button>
-      <button class="set-row set-act" id="setFirst"><span>언어·동의부터 다시 보기</span><span class="set-val">기록은 그대로 ›</span></button>
+      <button class="set-row set-act" id="setImport"><span>받은 일기장 파일 열기</span><span class="set-val">.saidiary ›</span></button>
       <button class="set-row set-act" id="setLegal"><span>이용약관 · 개인정보 처리방침 · 라이선스</span><span class="set-val">›</span></button>
       <button class="set-row set-act" id="setRestore"><span>구매 복원</span><span class="set-val">›</span></button>
     </div>
-    <small class="set-ver">사이 · 시험판 v47 · 기록 ${(typeof books!=='undefined'?books.filter(b=>b.user&&!b.gone).length:0)}권</small></div>`;
+    <div class="set-info"><b>모든 기록은 이 기기에만 저장됩니다</b><span>앱을 삭제하면 책, 사진, 일기가 함께 삭제되고 광고로 연 칸도 다시 잠깁니다. 이용권은 구매 복원으로 되살릴 수 있습니다.</span></div>
+    <small class="set-ver">사이 · 시험판 v50</small></div>`;
     sheet.querySelector('.set-x').onclick=close;sheet.onclick=e=>{if(e.target===sheet)close()};
-    $('setType').onchange=e=>{try{localStorage.setItem('sai-type-sound',e.target.checked?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',e.target.checked);if(e.target.checked)typeClick()};
-    $('setSfx').onchange=e=>{try{localStorage.setItem('sai-sfx',e.target.checked?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',e.target.checked);if(e.target.checked)bookSfx('drop')};
-    $('setTut').onclick=async()=>{close();await obTutorial()};
+    $('setFx').onchange=e=>{const on=e.target.checked;try{localStorage.setItem('sai-type-sound',on?'1':'0');localStorage.setItem('sai-sfx',on?'1':'0')}catch(err){}e.target.parentElement.classList.toggle('on',on);if(on)bookSfx('drop')};
+    $('setBgm').onchange=e=>{e.target.parentElement.classList.toggle('on',e.target.checked);bgmSet(e.target.checked)};
+    $('setLang').onclick=async()=>{close();requestAnimationFrame(()=>{const st=document.querySelector('#ob .ob-step');if(st)st.remove()});const l=await obLang();$('ob').hidden=true;$('ob').innerHTML='';showToast('언어를 바꿨습니다. 다음 실행부터 적용됩니다',2000)};
+    $('setImport').onclick=()=>{close();if($('addDiaryOpen'))$('addDiaryOpen').click();else $('importDiary')?.click()};
     $('setLegal').onclick=()=>showLegal();
-    $('setFirst').onclick=async()=>{close();if(!await askConfirm('언어 선택과 동의 화면을 처음처럼 다시 보여 드릴까요? 책과 일기는 그대로 남아요.','다시 보기'))return;try{localStorage.removeItem('sai-consent');localStorage.removeItem('sai-tutorial-v1');localStorage.removeItem('sai-guide-spine');localStorage.removeItem('sai-guide-cover')}catch(e){}location.reload()};
-    $('setRestore').onclick=()=>showToast('구매 복원은 App Store 연결 뒤에 동작해요',1800);
-    $('setPass').onclick=()=>{if(unlock.pass){showToast('이미 이용 중이에요',1400);return}close();askUnlock('bay')}};
+    $('setRestore').onclick=()=>showToast('구매 복원은 App Store 연결 후 동작합니다',1800);
+    $('setPass').onclick=()=>{if(unlock.pass){showToast('이미 이용 중입니다',1400);return}close();askUnlock('bay')}};
   const open=()=>{draw();sheet.hidden=false;document.body.style.overflow='hidden'},close=()=>{sheet.hidden=true;document.body.style.overflow=''};
   btn.onclick=open;
   const main=document.querySelector('main'),style=$('styleSheet');const sync=()=>{btn.hidden=main.hidden||!style.hidden};new MutationObserver(sync).observe(main,{attributes:true,attributeFilter:['hidden']});new MutationObserver(sync).observe(style,{attributes:true,attributeFilter:['hidden']});sync()})();
@@ -3612,30 +3612,29 @@ function bgmCtx(){if(BGM.ctx)return BGM.ctx;const a=audioCtx||(audioCtx=new (win
   // a little room: a short, dark reverb made from noise
   const len=Math.round(a.sampleRate*1.6),buf=a.createBuffer(2,len,a.sampleRate);for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)*.5}
   const rv=a.createConvolver();rv.buffer=buf;const rg=a.createGain();rg.gain.value=.35;const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;rv.connect(lp).connect(rg).connect(m);BGM.verb=rv;return a}
-// scale: C major pentatonic across two octaves (C D E G A); chords move I–vi–IV–V slowly
-const BGM_SCALE=[0,2,4,7,9,12,14,16,19,21,24];
-const BGM_CHORDS=[[0,4,7,11],[9,12,16,19],[5,9,12,16],[7,11,14,17]];
+// a short written tune (music box, G major pentatonic feel), four phrases that loop without a seam.
+// [semitones above C5, beats]; -1 = rest
+const BGM_TUNE=[[7,1],[9,1],[12,2],[9,1],[7,1],[4,2],[2,1],[4,1],[7,2],[4,1],[2,1],[0,2],
+  [7,1],[9,1],[12,1],[14,1],[12,2],[9,1],[7,1],[4,1],[7,1],[9,2],[7,1],[4,1],[2,2],
+  [12,1],[14,1],[16,2],[14,1],[12,1],[9,2],[7,1],[9,1],[12,2],[9,1],[7,1],[4,2],
+  [2,1],[4,1],[7,2],[9,1],[7,1],[4,2],[0,1],[2,1],[4,2],[-1,4]];
+const BGM_PADS=[[0,4,7],[9,0,4],[5,9,0],[7,11,2]]; // one soft chord per 8 beats
 const midi=n=>440*Math.pow(2,(n-69)/12);
-function bgmVoice(a,freq,t,dur,vol,kind){const g=a.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+(kind==='pad'?dur*.5:.012));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-  const o=a.createOscillator();o.type=kind==='pad'?'triangle':'sine';o.frequency.value=freq;
-  if(kind==='bell'){const o2=a.createOscillator(),g2=a.createGain();o2.type='sine';o2.frequency.value=freq*3;g2.gain.setValueAtTime(vol*.18,t);g2.gain.exponentialRampToValueAtTime(.0001,t+dur*.4);o2.connect(g2).connect(BGM.master);o2.start(t);o2.stop(t+dur)}
-  const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=kind==='pad'?900:3200;o.connect(f).connect(g);g.connect(BGM.master);g.connect(BGM.verb);o.start(t);o.stop(t+dur+.05)}
-function bgmBar(a,t){const beat=.62,ch=BGM_CHORDS[BGM.step%4],root=48; // one bar = 4 beats, chord changes each bar
-  // pad: three soft notes for the whole bar
-  for(const n of ch.slice(0,3))bgmVoice(a,midi(root+n),t,beat*4.4,.028,'pad');
-  // melody: a few music-box notes on a lazy rhythm, stepping mostly to neighbours
-  let last=BGM.last??5;const slots=[0,1,1.5,2,3,3.5];let count=0;
-  for(const s of slots){if(Math.random()<(s%1?.35:.62)){const jump=Math.random()<.7?(Math.random()<.5?-1:1):(Math.random()<.5?-2:2);let i=Math.max(2,Math.min(BGM_SCALE.length-1,last+jump));
-      // land on a chord tone more often on the strong beats
-      if(s%2===0&&Math.random()<.6){const tones=ch.map(c=>c%12);for(let k=0;k<3&&!tones.includes(BGM_SCALE[i]%12);k++)i=Math.max(2,Math.min(BGM_SCALE.length-1,i+(Math.random()<.5?-1:1)))}
-      last=i;bgmVoice(a,midi(72+BGM_SCALE[i]),t+s*beat,beat*1.6,.07,'bell');count++}}
-  BGM.last=last;BGM.step++;return beat*4}
+function bgmVoice(a,freq,t,dur,vol,kind){const g=a.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+(kind==='pad'?dur*.6:.008));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  const o=a.createOscillator();o.type='sine';o.frequency.value=freq;
+  if(kind==='bell'){const o2=a.createOscillator(),g2=a.createGain();o2.type='sine';o2.frequency.value=freq*4;g2.gain.setValueAtTime(vol*.12,t);g2.gain.exponentialRampToValueAtTime(.0001,t+dur*.25);o2.connect(g2).connect(BGM.master);o2.start(t);o2.stop(t+dur)}
+  const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=kind==='pad'?700:2600;o.connect(f).connect(g);g.connect(BGM.master);g.connect(BGM.verb);o.start(t);o.stop(t+dur+.05)}
+function bgmBar(a,t){const beat=.78;let i=BGM.step%BGM_TUNE.length;
+  // one phrase of eight beats per call
+  let pos=0,n=0;while(pos<8&&n<32){const [note,len]=BGM_TUNE[(i+n)%BGM_TUNE.length];if(note>=0)bgmVoice(a,midi(72+note),t+pos*beat,beat*len*1.9,.045,'bell');pos+=len;n++}
+  const ch=BGM_PADS[Math.floor(BGM.step/8)%BGM_PADS.length];for(const p of ch)bgmVoice(a,midi(48+p),t,beat*8.6,.02,'pad');
+  BGM.step+=n;return pos*beat}
 function bgmLoop(){if(!BGM.on||!BGM.ctx)return;const a=BGM.ctx,now=a.currentTime;while(BGM.next<now+1.2){if(BGM.next<now)BGM.next=now+.05;BGM.next+=bgmBar(a,BGM.next)}BGM.timer=setTimeout(bgmLoop,400)}
-function bgmStart(){try{const a=bgmCtx();if(a.state==='suspended')a.resume();BGM.on=true;BGM.next=0;clearTimeout(BGM.timer);BGM.master.gain.cancelScheduledValues(a.currentTime);BGM.master.gain.setValueAtTime(BGM.master.gain.value,a.currentTime);BGM.master.gain.linearRampToValueAtTime(.9,a.currentTime+2.5);bgmLoop();BGM.started=true}catch(e){}}
+function bgmStart(){try{const a=bgmCtx();if(a.state==='suspended')a.resume();BGM.on=true;BGM.next=0;clearTimeout(BGM.timer);BGM.master.gain.cancelScheduledValues(a.currentTime);BGM.master.gain.setValueAtTime(BGM.master.gain.value,a.currentTime);BGM.master.gain.linearRampToValueAtTime(.55,a.currentTime+3);bgmLoop();BGM.started=true}catch(e){}}
 function bgmStop(){BGM.on=false;clearTimeout(BGM.timer);if(BGM.master&&BGM.ctx){const t=BGM.ctx.currentTime;BGM.master.gain.cancelScheduledValues(t);BGM.master.gain.setValueAtTime(BGM.master.gain.value,t);BGM.master.gain.linearRampToValueAtTime(0,t+1.2)}}
 function bgmSet(on){try{localStorage.setItem('sai-bgm',on?'1':'0')}catch(e){}if(on)bgmStart();else bgmStop()}
 // the first touch anywhere wakes it (when it is on), and it pauses while the page is hidden
-{let armed=false;const arm=()=>{if(armed)return;armed=true;if(bgmPref()){bgmStart();try{if(!localStorage.getItem('sai-bgm-hint')){localStorage.setItem('sai-bgm-hint','1');setTimeout(()=>showToast('배경 음악이 켜져 있어요 · 설정(⚙)에서 끌 수 있어요',2600),1200)}}catch(e){}}};for(const ev of ['touchend','pointerup','keydown'])document.addEventListener(ev,arm,{passive:true,capture:true});
+{let armed=false;const arm=()=>{if(armed)return;armed=true;if(bgmPref())bgmStart()};for(const ev of ['touchend','pointerup','keydown'])document.addEventListener(ev,arm,{passive:true,capture:true});
  document.addEventListener('visibilitychange',()=>{if(!BGM.started)return;if(document.hidden){clearTimeout(BGM.timer);BGM.on=false}else if(bgmPref())bgmStart()})}
 
 // ===== v49: one visual language everywhere — drawn icons, translucent brown surfaces, a short illustrated camera
@@ -3690,6 +3689,87 @@ document.addEventListener('touchmove',e=>{if(e.touches.length<2||ZM.pinch||pinch
   if(shelfDrag){clearTimeout(shelfDrag.timer);shelfDrag.source.classList.remove('pressing');shelfDrag=null}
   const [a,b]=e.touches,cx=(a.clientX+b.clientX)/2,cy=(a.clientY+b.clientY)/2,top=libraryEl.offsetTop;
   ZM.pinch={d0:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z0:ZM.z,lx:(cx+ZM.px)/ZM.z,ly:(cy+scrollY-top)/ZM.z,top};e.preventDefault()},{passive:false,capture:true});
+
+// ===== v50: the book on a still is found by SEGMENTATION (GrabCut: colour of the inside vs the outside of the
+// guide), not by lines. Lines only refine the sides when several spines stand together. =====
+function grabQuad(cv,crop,mode,guide){
+  const spine=mode==='spine',L=360,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+  const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
+  const img=cv.imread(s),rgb=new cv.Mat(),mask=new cv.Mat(),bgd=new cv.Mat(),fgd=new cv.Mat(),fg=new cv.Mat(h,w,cv.CV_8UC1),contours=new cv.MatVector(),hier=new cv.Mat();
+  try{cv.cvtColor(img,rgb,cv.COLOR_RGBA2RGB);
+    const g=guide||{x:.1,y:.06,w:.8,h:.88},px=spine?.18:.06,py=.04;
+    const rx=Math.max(1,Math.round((g.x-g.w*px)*w)),ry=Math.max(1,Math.round((g.y-g.h*py)*h)),rw=Math.min(w-rx-2,Math.round(g.w*(1+2*px)*w)),rh=Math.min(h-ry-2,Math.round(g.h*(1+2*py)*h));
+    cv.grabCut(rgb,mask,new cv.Rect(rx,ry,rw,rh),bgd,fgd,4,cv.GC_INIT_WITH_RECT);
+    for(let i=0;i<w*h;i++){const v=mask.data[i];fg.data[i]=(v===cv.GC_FGD||v===cv.GC_PR_FGD)?255:0}
+    const kn=cv.Mat.ones(5,5,cv.CV_8U);cv.morphologyEx(fg,fg,cv.MORPH_OPEN,kn);cv.morphologyEx(fg,fg,cv.MORPH_CLOSE,kn);kn.delete();
+    // a spine held in a hand: rows where the foreground is much wider than usual are the hand, not the book
+    if(spine){const wid=new Int32Array(h),l=new Int32Array(h),r=new Int32Array(h);for(let y=0;y<h;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}l[y]=a;r[y]=b;wid[y]=a<0?0:b-a+1}
+      const ws=Array.from(wid).filter(v=>v>0).sort((a,b)=>a-b),med=ws[ws.length>>1]||0;if(med>0)for(let y=0;y<h;y++)if(wid[y]>med*1.7)for(let x=0;x<w;x++)fg.data[y*w+x]=0}
+    cv.findContours(fg,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
+    const cx=w*(g.x+g.w/2),cy=h*(g.y+g.h/2);let best=-1,bestS=0;
+    for(let i=0;i<contours.size();i++){const ct=contours.get(i),a=cv.contourArea(ct);if(a<w*h*.004)continue;const inside=cv.pointPolygonTest(ct,new cv.Point(cx,cy),false)>=0;const sc=a*(inside?4:1);if(sc>bestS){bestS=sc;best=i}}
+    if(best<0)return null;
+    const ct=contours.get(best),bb=cv.boundingRect(ct);let quad=null;
+    const peri=cv.arcLength(ct,true),ap=new cv.Mat();for(const e of [.02,.03,.045,.06,.08]){cv.approxPolyDP(ct,ap,e*peri,true);if(ap.rows===4)break}
+    if(ap.rows===4&&cv.isContourConvex(ap)){quad=[];for(let j=0;j<4;j++)quad.push({x:ap.data32S[j*2]/w,y:ap.data32S[j*2+1]/h})}
+    else{const rr=cv.minAreaRect(ct);quad=cv.RotatedRect.points(rr).map(p=>({x:p.x/w,y:p.y/h}))}ap.delete();
+    quad=orderQuad(quad);
+    // several spines standing together come out as one block: the dark seams between them are vertical lines
+    // inside the block; the pair of seams around the middle of the guide marks the one spine
+    if(spine&&bb.width>w*.12){const gray=new cv.Mat();try{cv.cvtColor(rgb,gray,cv.COLOR_RGB2GRAY);
+        // mean brightness of each column over the block: a seam between two spines is a narrow dark dip
+        const n=bb.width,prof=new Float32Array(n);for(let i=0;i<n;i++){const x=bb.x+i;let sum=0,cnt=0;for(let y=bb.y;y<bb.y+bb.height;y++)if(fg.data[y*w+x]){sum+=gray.data[y*w+x];cnt++}prof[i]=cnt?sum/cnt:0}
+        const sm=prof.map((_,i)=>((prof[i-1]??prof[i])+prof[i]+(prof[i+1]??prof[i]))/3),win=Math.max(4,Math.round(n*.06)),seams=[];
+        for(let i=2;i<n-2;i++){if(sm[i]>sm[i-1]||sm[i]>sm[i+1])continue;let hi=0;for(let j=Math.max(0,i-win);j<=Math.min(n-1,i+win);j++)hi=Math.max(hi,sm[j]);if(hi-sm[i]>=14&&(!seams.length||i-seams[seams.length-1]>n*.08))seams.push(i)}
+        const walls=[0,...seams,n];const c=cx-bb.x;let L=0,R=n;for(let i=0;i<walls.length-1;i++)if(c>=walls[i]&&c<=walls[i+1]){L=walls[i];R=walls[i+1]}
+        if((R-L)<n*.9&&(R-L)>w*.04){const yT=Math.min(quad[0].y,quad[1].y),yB=Math.max(quad[2].y,quad[3].y);const x0=(bb.x+L+(L?1:0))/w,x1=(bb.x+R-(R<n?1:0))/w;quad=[{x:x0,y:yT},{x:x1,y:yT},{x:x1,y:yB},{x:x0,y:yB}]}}
+      finally{gray.delete()}}
+    return quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))}))}
+  catch(e){console.warn('grab',e);return null}
+  finally{[img,rgb,mask,bgd,fgd,fg,contours,hier].forEach(m=>{try{m.delete()}catch(e){}})}}
+stillFindQuad=function(canvas,mode,guide){
+  CAM.mode=mode;let q=null;
+  if(CV.m){try{q=grabQuad(CV.m,canvas,mode,guide)}catch(e){q=null}}
+  if(!q){const keep=CAM.target;CAM.target=null;CAM.lock=0;try{camDetectLines(canvas)}catch(e){}const t=CAM.target;CAM.target=keep;
+    if(t)q=[{x:t.x,y:t.y},{x:t.x+t.w,y:t.y},{x:t.x+t.w,y:t.y+t.h},{x:t.x,y:t.y+t.h}]}
+  return q};
+// the corner screen passes the guide on to the finder
+{const _fix=quadFix;quadFix=function(crop,mode,guide){QF.lastGuide=guide;return _fix(crop,mode,guide)}}
+
+// ===== copy, settings, menus — plain, short, grown-up =====
+// first run (Korean): concise, no baby talk
+OB_T.ko={pick:'언어',next:'다음',agreeT:'시작하기 전에',intro:'사이는 내 책장과 일기장을 이 기기 안에만 보관합니다. 아래 네 가지를 확인해 주세요.',all:'모두 확인했습니다',go:'동의하고 시작',terms:'이용약관 · 개인정보 처리방침',termsAgree:'이용약관과 개인정보 처리방침에 동의합니다',
+  items:[['모든 기록은 이 기기에만 저장됩니다','책 사진, 독후감, 일기는 서버로 전송되지 않습니다. 백업이 없으므로 앱을 삭제하거나 기기를 바꾸면 사라집니다. 일기장은 보내기로 따로 보관할 수 있습니다.'],
+    ['책 사진은 개인 소장용 사본입니다','내가 가진 책의 표지와 책등을 촬영해 책장에 꽂습니다. 책 사진은 앱 밖으로 내보낼 수 없으며, 타인의 저작물을 촬영해 공유하는 용도로 사용할 수 없습니다.'],
+    ['일기장은 처음 주고받은 두 사람만 엽니다','보낸 일기장은 나와 처음 받은 사람 사이에서만 오갑니다. 받은 사람이 제3자에게 전달해도 열리지 않습니다.'],
+    ['광고와 이용권은 선택입니다','책장 칸을 더 열 때 광고 시청 또는 이용권 구매를 선택할 수 있습니다. 광고는 직접 \'광고 보기\'를 눌렀을 때만 표시됩니다.']]};
+// tutorial
+TUT[0][0]='책 꽂기';TUT[0][1]='＋ 추가 → 책등 찍기. 틀 안에 책등을 맞춰 촬영하면 네 모서리를 확인한 뒤 책장에 꽂힙니다. 앞·뒤표지는 책을 열어 추가합니다.';
+TUT[1][0]='책 옮기기';TUT[1][1]='책을 길게 누르면 들립니다. 든 채로 다른 손가락으로 화면을 쓸어 올리거나 내려 다른 단으로 옮깁니다. 옆으로 빠르게 밀면 바로 들립니다.';
+TUT[2][0]='책장 보기';TUT[2][1]='두 손가락으로 벌리면 확대, 한 손가락으로 이동합니다. 빈 곳을 한 번 탭하면 메뉴가 숨겨지고, 다시 탭하면 돌아옵니다.';
+TUT[3][0]='독후감과 일기장';TUT[3][1]='책을 탭하면 독후감을 씁니다. 날짜별로 여러 장 쓸 수 있습니다. 일기장은 ＋ 추가에서 만들고 표지를 꾸밉니다.';
+TUT_BTN.ko=['건너뛰기','다음','시작'];
+// camera guide
+Object.assign(GUIDE_TEXT,{spine:[['light','밝고 고른 빛','창가나 밝은 실내. 책 위로 그림자가 지지 않게 합니다.'],['glare','반사와 기울기 주의','조명이 비치면 글자가 날아갑니다. 기기를 책과 나란히 둡니다.'],['center','찍을 책을 틀 가운데에','여러 권이 붙어 있어도 됩니다. 찍을 책만 틀 한가운데에 둡니다.'],['corners','촬영 후 네 점 확인','자동으로 잡힌 네 점을 책 모서리에 맞추면 반듯하게 들어갑니다.']],
+  cover:[['light','밝고 고른 빛','창가나 밝은 실내. 표지에 그림자가 지지 않게 합니다.'],['glare','반사 주의','코팅 표지는 조명이 비치기 쉽습니다. 비치면 각도를 바꿉니다.'],['corners','표지와 나란히','기기를 표지와 평행하게 들고 틀 안에 채웁니다.'],['center','촬영 후 네 점 확인','네 점을 표지 모서리에 맞추면 배경은 잘려 나갑니다.']]});
+// camera hints
+camDraw=(d=>function(){d();if($('cam').hidden)return;$('camHint').textContent=CAM.mode==='spine'?'책등을 틀 안에 세로로 맞춰 촬영':'표지를 틀 안에 채워 촬영'})(camDraw);
+{const sm=document.querySelector('#cam .cam-bot small');if(sm)sm.remove()}
+{const h=document.querySelector('#quadFix #qfNote');if(h)h.textContent='점을 끌어 책 모서리에 맞춥니다. 두 손가락으로 확대할 수 있습니다.'}
+// corner-screen notes
+{const notes={found:'자동으로 찾은 위치입니다. 점을 끌어 맞추거나 두 손가락으로 확대해 확인하세요.',none:'모서리를 찾지 못했습니다. 점을 끌어 맞춰 주세요.',guide:'촬영 틀 위치입니다. 점을 끌어 책 모서리에 맞춰 주세요.',drag:'점을 놓으면 그 위치로 자릅니다.'};window.QF_NOTES=notes}
+// add menu: no explanations; the received-diary item moves to settings
+{for(const id of ['addShoot','addDiary']){const b=$(id);if(!b)continue;const span=b.querySelector('span:not(.menu-ico)');if(span)span.remove()}
+ for(const id of ['addCard','addDiaryOpen']){const cd=$(id);if(cd)cd.style.display='none'}}
+// confirm screen: only what is needed
+{const st=document.createElement('style');st.textContent='#soInfo>span:not(.so-ocr){display:none}.add-menu button b{font-size:15px}.add-menu button{padding-top:16px!important;padding-bottom:16px!important}';document.head.append(st)}
+{const t=$('soTitle');if(t)t.placeholder='책 제목'}
+// 기록: a card takes you to the book on the shelf and lights it up
+renderNotes38=(f=>function(){f();document.querySelectorAll('#notesList .nt-card').forEach(card=>{const old=card.onclick;card.onclick=()=>{const i=[...document.querySelectorAll('#notesList .nt-card')].indexOf(card);
+  const items=notesItems();const it=items[i];if(!it)return old&&old();const b=it.b,el=bookButtons[b.id];if(!el)return old&&old();
+  $('navShelf').click();setTimeout(()=>{el.scrollIntoView({block:'center',behavior:reducedMotionOK()?'auto':'smooth'});el.classList.remove('found');void el.offsetWidth;el.classList.add('found');setTimeout(()=>el.classList.remove('found'),2600)},80)}})})(renderNotes38);
+function notesItems(){const q=notesQ.toLowerCase(),wantDiaries=/일기/.test(notesQ);const all=liveBooks().filter(b=>isDiary(b)||(b.diary?.journal&&b.diary.entries.length));
+  return all.filter(b=>{const d=isDiary(b);if(notesF==='book'&&d)return false;if(notesF==='diary'&&!d)return false;if(!q)return true;return b.title.toLowerCase().includes(q)||(wantDiaries&&d)}).map(b=>({b,...v38Excerpt(b)})).sort((x,y)=>(y.last?.at||'').localeCompare(x.last?.at||''))}
 
 
 
