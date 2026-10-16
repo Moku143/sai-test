@@ -3929,7 +3929,19 @@ async function samQuad(crop,mode,guide,q0){const spine=mode==='spine',L=480,k=Ma
   const hug=[Math.min(...xs)<.02,Math.max(...xs)>.98,Math.min(...ys)<.02,Math.max(...ys)>.98].filter(Boolean).length;if(hug>=3||qw*qh>.9)return null;return q}
 // the corner screen: GrabCut first, the model's answer when it comes
 const SAMC={crop:null,q:null,touched:false,run:null};
-stillFindQuad=(f=>function(crop,mode,guide){if(SAMC.crop===crop&&SAMC.q)return SAMC.q;const q=f(crop,mode,guide);if(samOK())samRefine(crop,mode,guide,q);return q})(stillFindQuad);
+// the photo is shown at once with a 'looking…' note; the (one-second) search runs right after the first paint, and
+// the corners jump into place when it is done — no black screen while the phone thinks
+const PEND={crop:null,q:undefined};
+stillFindQuad=(f=>function(crop,mode,guide){if(SAMC.crop===crop&&SAMC.q)return SAMC.q;
+  if(PEND.crop===crop)return PEND.q===undefined?provisional(guide):PEND.q;
+  PEND.crop=crop;PEND.q=undefined;document.documentElement.classList.add('qf-busy');
+  setTimeout(()=>{const n=$('qfNote');if(n&&PEND.crop===crop)n.textContent=mode==='spine'?'책등의 윤곽을 찾는 중입니다…':'표지의 윤곽을 찾는 중입니다…'},0);
+  setTimeout(()=>{if(PEND.crop!==crop)return;let q=null;try{q=f(crop,mode,guide)}catch(e){q=null}PEND.q=q;document.documentElement.classList.remove('qf-busy');
+    if(!$('quadFix').hidden&&!SAMC.touched&&$('qfAuto').onclick)$('qfAuto').onclick();
+    if(samOK())samRefine(crop,mode,guide,q)},40);
+  return provisional(guide)})(stillFindQuad);
+function provisional(g){g=g||{x:.1,y:.06,w:.8,h:.88};return [{x:g.x,y:g.y},{x:g.x+g.w,y:g.y},{x:g.x+g.w,y:g.y+g.h},{x:g.x,y:g.y+g.h}]}
+{const st=document.createElement('style');st.textContent=`.qf-busy #qfSvg{opacity:.35}.qf-busy #qfStage::after{content:'';position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:3px solid #f3e3c440;border-top-color:#f3e3c4;animation:qfSpin .9s linear infinite;pointer-events:none}@keyframes qfSpin{to{transform:rotate(360deg)}}`;document.head.append(st)}
 async function samRefine(crop,mode,guide,q0){if(SAMC.crop===crop&&SAMC.run)return;SAMC.crop=crop;SAMC.q=null;SAMC.touched=false;
   const note=$('qfNote'),alive=()=>SAMC.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
   SAMC.run=(async()=>{try{if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return;
@@ -3995,7 +4007,7 @@ function trimEnds(rgb,fg,w,h,L,R,T,B){const row=y=>{let r=0,g=0,b=0,c=0;for(let 
 // ===== GrabCut seeded from the guide: the middle of the guide is surely the book, the far outside surely not. With
 // only a rectangle to go on, a pale spine against a pale wall was given to the background; the seeds settle that. =====
 const grabQuadRect=grabQuad;
-function grabQuadSeeded(cv,crop,mode,guide){
+function grabQuadCore(cv,crop,mode,guide,seeded){
   const spine=mode==='spine',L=360,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
   const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
   const img=cv.imread(s),rgb=new cv.Mat(),mask=new cv.Mat(h,w,cv.CV_8UC1),bgd=new cv.Mat(),fgd=new cv.Mat(),fg=new cv.Mat(h,w,cv.CV_8UC1),contours=new cv.MatVector(),hier=new cv.Mat();
@@ -4003,8 +4015,9 @@ function grabQuadSeeded(cv,crop,mode,guide){
     const g=guide||{x:.1,y:.06,w:.8,h:.88},px=spine?.18:.06,py=.04;
     const X0=(g.x-g.w*px)*w,X1=(g.x+g.w*(1+px))*w,Y0=(g.y-g.h*py)*h,Y1=(g.y+g.h*(1+py))*h,cx=(g.x+g.w/2)*w,cy=(g.y+g.h/2)*h;
     const fx=spine?g.w*w*.07:g.w*w*.22,fy=g.h*h*(spine?.36:.3); // the sure-book seed: a thin strip down the guide's middle (spine) or its central block (cover)
-    const M=mask.data;for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v;if(x<X0||x>X1||y<Y0||y>Y1)v=cv.GC_BGD;else if(Math.abs(x-cx)<=fx&&Math.abs(y-cy)<=fy)v=cv.GC_FGD;else v=cv.GC_PR_FGD;M[y*w+x]=v}
-    cv.grabCut(rgb,mask,new cv.Rect(0,0,1,1),bgd,fgd,4,cv.GC_INIT_WITH_MASK);
+    if(seeded){const M=mask.data;for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v;if(x<X0||x>X1||y<Y0||y>Y1)v=cv.GC_BGD;else if(Math.abs(x-cx)<=fx&&Math.abs(y-cy)<=fy)v=cv.GC_FGD;else v=cv.GC_PR_FGD;M[y*w+x]=v}
+      cv.grabCut(rgb,mask,new cv.Rect(0,0,1,1),bgd,fgd,4,cv.GC_INIT_WITH_MASK)}
+    else{const rx=Math.max(1,Math.round(X0)),ry=Math.max(1,Math.round(Y0)),rw=Math.min(w-rx-2,Math.round(X1-X0)),rh=Math.min(h-ry-2,Math.round(Y1-Y0));cv.grabCut(rgb,mask,new cv.Rect(rx,ry,rw,rh),bgd,fgd,4,cv.GC_INIT_WITH_RECT)}
     for(let i=0;i<w*h;i++){const v=mask.data[i];fg.data[i]=(v===cv.GC_FGD||v===cv.GC_PR_FGD)?255:0}
     const kn=cv.Mat.ones(5,5,cv.CV_8U);cv.morphologyEx(fg,fg,cv.MORPH_OPEN,kn);cv.morphologyEx(fg,fg,cv.MORPH_CLOSE,kn);kn.delete();
     const wide=new Uint8Array(h);
@@ -4052,7 +4065,7 @@ grabQuad=function(cv,crop,mode,guide){const spine=mode==='spine',g=guide||{x:.1,
   if(!spine)return a;
   const dims=q=>{const xs=q.map(p=>p.x),ys=q.map(p=>p.y);return [Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)]};
   const short=!a||dims(a)[1]<g.h*.6||dims(a)[0]<.02;if(!short)return a;
-  let b=null;try{b=grabQuadSeeded(cv,crop,mode,guide)}catch(e){}if(!b)return a;const [bw,bh]=dims(b);return (bw>.02&&bw<.5&&bh>g.h*.5&&bh/bw>2.5)?b:a};
+  let b=null;try{b=grabQuadCore(cv,crop,mode,guide,true)}catch(e){}if(!b)return a;const [bw,bh]=dims(b);return (bw>.02&&bw<.5&&bh>g.h*.5&&bh/bw>2.5)?b:a};
 
 
 
