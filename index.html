@@ -3828,7 +3828,9 @@ new MutationObserver(ms=>{for(const m of ms){const el=m.target;if(el.classList.c
 const SAM={enc:null,dec:null,load:null,fail:0,busy:null};
 const SAM_URLS={ort:'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js',wasm:'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/',
   enc:'https://cdn.jsdelivr.net/npm/minisam@0.2.0/dist/encoder.onnx',dec:'https://cdn.jsdelivr.net/npm/minisam@0.2.0/dist/sam.onnx'};
-const samOK=()=>(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&SAM.fail<2;
+const samPref=()=>{try{return localStorage.getItem('sai-sam')==='1'}catch(e){return false}};
+// off unless chosen in settings (실험): on a phone the extra model costs memory and seconds, and it is not yet proven there
+const samOK=()=>(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&SAM.fail<2&&(samPref()||!!window.SAM_CFG);
 function samLoad(){if(SAM.load)return SAM.load;
   return SAM.load=(async()=>{const U=Object.assign({},SAM_URLS,window.SAM_CFG||{});
     if(!window.ort)await new Promise((res,rej)=>{const s=document.createElement('script');s.src=U.ort;s.onload=res;s.onerror=()=>rej(new Error('ort script'));document.head.append(s)});
@@ -3922,7 +3924,9 @@ async function samQuad(crop,mode,guide,q0){const spine=mode==='spine',L=480,k=Ma
   const q=maskToQuad(CV.m,M.mask,s,w,h,spine,g,q0);if(!q)return null;
   // a piece of the book is not the book: too small against the guide means the model missed, and the first answer stays
   const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
-  if(qh<g.h*.5||qw<(spine?.03:g.w*.55))return null;return q}
+  if(qh<g.h*.5||qw<(spine?.03:g.w*.55))return null;
+  // the whole frame is not the book either: a result hugging three or more edges means the mask ran everywhere
+  const hug=[Math.min(...xs)<.02,Math.max(...xs)>.98,Math.min(...ys)<.02,Math.max(...ys)>.98].filter(Boolean).length;if(hug>=3||qw*qh>.9)return null;return q}
 // the corner screen: GrabCut first, the model's answer when it comes
 const SAMC={crop:null,q:null,touched:false,run:null};
 stillFindQuad=(f=>function(crop,mode,guide){if(SAMC.crop===crop&&SAMC.q)return SAMC.q;const q=f(crop,mode,guide);if(samOK())samRefine(crop,mode,guide,q);return q})(stillFindQuad);
@@ -3962,6 +3966,11 @@ async function harmonizeCover(b,id){const src=b[id],sp=b.spine;if(!src||!sp||Str
 {const st=document.createElement('style');st.textContent=`.face.front::after,.face.back::after,.face.left::before,.face.left::after{content:'';position:absolute;top:0;bottom:0;width:7%;max-width:14px;pointer-events:none;z-index:2}
 .face.front::after{left:0;background:linear-gradient(90deg,#0000003a,#00000000)}.face.back::after{right:0;background:linear-gradient(270deg,#0000003a,#00000000)}
 .face.left::before{left:0;background:linear-gradient(90deg,#00000030,#00000000)}.face.left::after{right:0;background:linear-gradient(270deg,#00000030,#00000000)}`;document.head.append(st)}
+
+// settings: the experimental switch for the model
+{const sheet=$('settings');if(sheet){const mo=new MutationObserver(()=>{if(sheet.hidden)return;const row=sheet.querySelector('#setBgm')?.closest('.set-row');if(!row||$('setSam'))return;
+    const on=samPref();const r=document.createElement('label');r.className='set-row';r.innerHTML=`<span>정밀 윤곽 인식 <small class="set-sub">실험 기능 · 처음 한 번 약 45MB 내려받음 · 촬영 후 몇 초 더 걸림</small></span><span class="set-sw ${on?'on':''}"><input type="checkbox" id="setSam" ${on?'checked':''}><i></i></span>`;row.after(r);
+    $('setSam').onchange=e=>{e.target.parentElement.classList.toggle('on',e.target.checked);try{localStorage.setItem('sai-sam',e.target.checked?'1':'0')}catch(err){}}});mo.observe(sheet,{attributes:true,attributeFilter:['hidden'],childList:true})}}
 
 
 
