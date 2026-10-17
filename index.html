@@ -746,6 +746,19 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 /* colours on one line: nine swatches and the colour mixer share the row at whatever width */
 .dm-colors{flex-wrap:nowrap;gap:7px;justify-content:space-between}
 .dm-color{flex:1 1 0;min-width:0;max-width:32px;width:auto;height:auto;aspect-ratio:1}
+
+/* ===== v54: the corner screen is one picture — title and buttons float over the photo ===== */
+.quad-fix{padding:0!important;background:#0d0704}
+.quad-fix .qf-stage{position:absolute;inset:0;flex:none;min-height:0}
+.quad-fix .qf-stage img{max-height:100%;max-width:100%}
+.quad-fix .qf-top{position:absolute;left:0;right:0;top:0;z-index:3;padding:calc(14px + env(safe-area-inset-top)) 18px 22px;background:linear-gradient(#0d0704f0,#0d0704b0 55%,#0d070400);pointer-events:none}
+.quad-fix .qf-top h2{font-size:18px;text-shadow:0 1px 3px #000}
+.quad-fix .qf-top p{color:#e9d7b8;text-shadow:0 1px 3px #000}
+.quad-fix .qf-btns{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:26px 14px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(#0d070400,#0d0704c8 45%,#0d0704f0);pointer-events:none}
+.quad-fix .qf-btns button{pointer-events:auto;background:#24160dd9;border-color:#f3e3c433;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 14px #0008}
+.quad-fix .qf-btns .qf-main{background:#f3e3c4}
+.qf-box{fill:rgba(243,227,196,.10);stroke:#f3e3c4;stroke-width:2;stroke-dasharray:7 5}
+.qf-hint{position:absolute;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));text-align:center;font-size:12.5px;color:#e9d7b8;text-shadow:0 1px 3px #000;pointer-events:none;z-index:3}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -3854,7 +3867,7 @@ async function samDecode(E,pts){const n=pts.length,c=new Float32Array(2*(n+1)),l
   const off=best*W*H,mask=new Uint8Array(W*H);for(let i=0;i<W*H;i++)mask[i]=mk.data[off+i]>0?255:0;return {mask,w:W,h:H}}
 
 // the strip of an upright spine in a mask: its width is what the middle rows agree on, its rows are the ones filled across
-function stripFromMask(fgd,w,h,g){const cx=w*(g.x+g.w/2),cy=h*(g.y+g.h/2);
+function stripFromMask(fgd,w,h,g,gray){const cx=w*(g.x+g.w/2),cy=h*(g.y+g.h/2);
   let y0=h,y1=-1;for(let y=0;y<h;y++){for(let x=0;x<w;x++)if(fgd[y*w+x]){if(y<y0)y0=y;y1=y;break}}if(y1<0)return null;
   const ya=y0+Math.round((y1-y0)*.25),yb=y0+Math.round((y1-y0)*.75),ls=[],rs=[];for(let y=ya;y<=yb;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(fgd[y*w+x]){if(a<0)a=x;b=x}if(a>=0){ls.push(a);rs.push(b)}}
   if(ls.length<5)return null;ls.sort((a,b)=>a-b);rs.sort((a,b)=>a-b);const L=ls[ls.length>>1],R=rs[rs.length>>1];
@@ -3862,7 +3875,11 @@ function stripFromMask(fgd,w,h,g){const cx=w*(g.x+g.w/2),cy=h*(g.y+g.h/2);
   const cyi=Math.max(0,Math.min(h-1,Math.round(cy)));let T=cyi,B=cyi;if(rc[cyi]<.35){let d=1;while(d<h*.3&&(rc[cyi-d]??0)<.35&&(rc[cyi+d]??0)<.35)d++;if((rc[cyi-d]??0)>=.35)T=B=cyi-d;else if((rc[cyi+d]??0)>=.35)T=B=cyi+d;else return null}
   const G=Math.max(3,Math.round(h*.06)),F=.35;let gap=0;while(T>0&&(rc[T-1]>=F||gap<G)){gap=rc[T-1]>=F?0:gap+1;T--}while(T<h-1&&rc[T]<F)T++;
   gap=0;while(B<h-1&&(rc[B+1]>=F||gap<G)){gap=rc[B+1]>=F?0:gap+1;B++}while(B>0&&rc[B]<F)B--;
-  const gT=h*(g.y-g.h*.025),gB=h*(g.y+g.h*1.025);if(T<gT)T=Math.round(gT);if(B>gB)B=Math.round(gB);return [L,R,T,B]}
+  const gT=h*(g.y-g.h*.025),gB=h*(g.y+g.h*1.025);if(T<gT)T=Math.round(gT);if(B>gB)B=Math.round(gB);
+  if(gray)[T,B]=darkEnds(gray,w,L,R,T,B);return [L,R,T,B]}
+// a near-black run at either end of the strip (the gap between two dark things the book stands against) is not the book
+function darkEnds(gd,w,L,R,T,B){const rowL=y=>{let s=0,c=0;for(let x=L;x<=R;x++){s+=gd[y*w+x];c++}return s/c};const mids=[];for(let y=Math.round(T+(B-T)*.3);y<=T+(B-T)*.7;y++)mids.push(rowL(y));mids.sort((a,b)=>a-b);
+  const med=mids[mids.length>>1]||0,dark=med*.4,need=Math.max(4,Math.round((B-T)*.06));let k=0;while(T+k<B&&rowL(T+k)<dark)k++;if(k>=need)T+=k;k=0;while(B-k>T&&rowL(B-k)<dark)k++;if(k>=need)B-=k;return [T,B]}
 // mask → the four corners, with the spine clean-ups from v50 (hand rows, neighbouring spines)
 function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
   const img=cv.imread(crop),rgb=new cv.Mat(),fg=new cv.Mat(h,w,cv.CV_8UC1),contours=new cv.MatVector(),hier=new cv.Mat();
@@ -3890,7 +3907,7 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
         if(Math.abs(lean)>6&&Math.abs(lean)<=16){
           // straighten the mask, read the strip there, and turn the corners back
           const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),lean,1),rf=new cv.Mat();cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
-          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Mi.data64F;const st=stripFromMask(rf.data,w,h,g);rf.delete();M.delete();Mi.delete();
+          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Mi.data64F;const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
           if(st&&st[1]-st[0]<=mainBB.width*1.5){const [L,R,T,B]=st,back=(x,y)=>({x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/h});
             let quad=[back(L,T),back(R+1,T),back(R+1,B+1),back(L,B+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
             window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}else window.MTQ={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
@@ -3931,6 +3948,7 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
       // the strip runs on into a shelf or a rug below: the guide's height is what the user lined up
       // the user lined the spine up inside the guide: nothing past the guide's ends (plus a small margin) is the book
       const gT=h*(g.y-g.h*.025),gB=h*(g.y+g.h*1.025);if(T<gT)T=Math.round(gT);if(B>gB)B=Math.round(gB)
+      {const gm=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);[T,B]=darkEnds(gm.data,w,L,R,T,B);gm.delete()}
       window.MTQ={L,R,T,B,bb:[bb.x,bb.y,bb.width,bb.height],w,h,q0:q0&&q0.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};
       return [{x:L/w,y:T/h},{x:(R+1)/w,y:T/h},{x:(R+1)/w,y:(B+1)/h},{x:L/w,y:(B+1)/h}]}
     cv.findContours(fg,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
@@ -3966,7 +3984,7 @@ const SAMC={crop:null,q:null,touched:false,run:null};
 const PEND={crop:null,q:undefined};
 stillFindQuad=(f=>function(crop,mode,guide){if(SAMC.crop===crop&&SAMC.q)return SAMC.q;
   if(PEND.crop===crop)return PEND.q===undefined?provisional(guide):PEND.q;
-  PEND.crop=crop;PEND.q=undefined;SAMC.touched=false;SAMC.q=null;SAMC.crop=null;document.documentElement.classList.add('qf-busy');
+  PEND.crop=crop;PEND.mode=mode;PEND.guide=guide;PEND.q=undefined;SAMC.touched=false;SAMC.q=null;SAMC.crop=null;document.documentElement.classList.add('qf-busy');
   setTimeout(()=>{const n=$('qfNote');if(n&&PEND.crop===crop)n.textContent=mode==='spine'?'책등의 윤곽을 찾는 중입니다…':'표지의 윤곽을 찾는 중입니다…'},0);
   setTimeout(()=>{if(PEND.crop!==crop)return;let q=null;try{q=f(crop,mode,guide)}catch(e){q=null}PEND.q=q;document.documentElement.classList.remove('qf-busy');
     if(!$('quadFix').hidden&&!SAMC.touched&&$('qfAuto').onclick)$('qfAuto').onclick();
@@ -4134,6 +4152,35 @@ async function snetRefine(crop,mode,guide,q0){if(mode!=='spine'||!snetOK())retur
   catch(e){console.warn('spine net',e);return false}}
 // hook into the pending search: GrabCut → (spine) net → (if chosen in settings) SAM
 {const _ref=samRefine;samRefine=async function(crop,mode,guide,q0){if(mode==='spine'){const ok=await snetRefine(crop,mode,guide,q0);if(ok)return}return _ref(crop,mode,guide,q0)}}
+
+// ===== draw a box, look again: when the first answer is off, a rectangle dragged around the book (loosely) is a
+// new, tighter search — the finders run inside that box only and the corners jump to what they find =====
+{const svg=$('qfSvg'),stage=$('qfStage'),img=$('qfImg');if(svg&&stage&&img){
+  let box=null,rectEl=null;const geo=()=>{const r=img.getBoundingClientRect(),s=stage.getBoundingClientRect();return {x:r.left-s.left,y:r.top-s.top,w:r.width,h:r.height,sx:s.left,sy:s.top}};
+  const hint=document.createElement('div');hint.className='qf-hint';hint.textContent='틀리면 책 둘레에 네모를 그려 보세요 — 그 안에서 다시 찾습니다';stage.append(hint);
+  svg.addEventListener('pointerdown',e=>{if(e.target.closest('.qf-hit')||img.style.transform)return;const g=geo();box={id:e.pointerId,x0:e.clientX-g.sx,y0:e.clientY-g.sy,x1:e.clientX-g.sx,y1:e.clientY-g.sy};svg.setPointerCapture(e.pointerId)},true);
+  svg.addEventListener('pointermove',e=>{if(!box||e.pointerId!==box.id)return;const g=geo();box.x1=e.clientX-g.sx;box.y1=e.clientY-g.sy;const x=Math.min(box.x0,box.x1),y=Math.min(box.y0,box.y1),w=Math.abs(box.x1-box.x0),h=Math.abs(box.y1-box.y0);
+    if(w<6&&h<6)return;if(!rectEl||!rectEl.isConnected){rectEl=document.createElementNS('http://www.w3.org/2000/svg','rect');rectEl.setAttribute('class','qf-box');svg.append(rectEl)}
+    rectEl.setAttribute('x',x);rectEl.setAttribute('y',y);rectEl.setAttribute('width',w);rectEl.setAttribute('height',h)});
+  const end=e=>{if(!box||e.pointerId!==box.id)return;const b=box;box=null;if(rectEl){rectEl.remove();rectEl=null}
+    const g=geo(),x=Math.min(b.x0,b.x1),y=Math.min(b.y0,b.y1),w=Math.abs(b.x1-b.x0),h=Math.abs(b.y1-b.y0);if(w<g.w*.08||h<g.h*.1)return;
+    const r={x:Math.max(0,(x-g.x)/g.w),y:Math.max(0,(y-g.y)/g.h)};r.w=Math.min(1-r.x,w/g.w);r.h=Math.min(1-r.y,h/g.h);redetectIn(r)};
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end)}}
+async function redetectIn(r){const crop=PEND.crop,mode=PEND.mode||'spine';if(!crop||$('quadFix').hidden)return;const note=$('qfNote');
+  note.textContent='그 안에서 다시 찾는 중입니다…';document.documentElement.classList.add('qf-busy');
+  try{if(!CV.m){try{await loadCV()}catch(e){}}
+    const mx=r.w*.1,my=r.h*.05,X0=Math.max(0,r.x-mx),Y0=Math.max(0,r.y-my),X1=Math.min(1,r.x+r.w+mx),Y1=Math.min(1,r.y+r.h+my);
+    const sub=document.createElement('canvas');sub.width=Math.max(8,Math.round((X1-X0)*crop.width));sub.height=Math.max(8,Math.round((Y1-Y0)*crop.height));
+    sub.getContext('2d').drawImage(crop,X0*crop.width,Y0*crop.height,(X1-X0)*crop.width,(Y1-Y0)*crop.height,0,0,sub.width,sub.height);
+    const g2={x:(r.x-X0)/(X1-X0),y:(r.y-Y0)/(Y1-Y0),w:r.w/(X1-X0),h:r.h/(Y1-Y0)};
+    let q=null;if(CV.m){try{q=grabQuad(CV.m,sub,mode,g2)}catch(e){q=null}}
+    if(mode==='spine'&&snetOK()){try{if(!SNET.sess)await snetLoad();const q2=await snetQuad(sub,g2,q);if(q2)q=q2}catch(e){}}
+    if(PEND.crop!==crop||$('quadFix').hidden)return;
+    if(!q)q=[{x:g2.x,y:g2.y},{x:g2.x+g2.w,y:g2.y},{x:g2.x+g2.w,y:g2.y+g2.h},{x:g2.x,y:g2.y+g2.h}];
+    const back=q.map(p=>({x:X0+p.x*(X1-X0),y:Y0+p.y*(Y1-Y0)}));
+    SAMC.crop=crop;SAMC.q=back;SAMC.touched=false;if($('qfAuto').onclick)$('qfAuto').onclick();
+    note.textContent='네모 안에서 다시 찾았습니다. 아니면 네모를 더 좁게 그리거나 점을 끌어 맞추세요.'}
+  finally{document.documentElement.classList.remove('qf-busy')}}
 
 
 
