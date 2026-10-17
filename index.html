@@ -3921,7 +3921,7 @@ async function samQuad(crop,mode,guide,q0){const spine=mode==='spine',L=480,k=Ma
   if(spine){pts.push({x:cx,y:(g.y+g.h*.25)*h,l:1},{x:cx,y:(g.y+g.h*.75)*h,l:1});const ex=g.w*.7*w;for(const x of [cx-g.w*w/2-ex,cx+g.w*w/2+ex])if(x>2&&x<w-2)pts.push({x,y:(g.y+g.h/2)*h,l:0})}
   else{for(const [x,y] of [[cx,y0-h*.08],[cx,y1+h*.08],[x0-w*.08,(y0+y1)/2],[x1+w*.08,(y0+y1)/2]])if(x>2&&x<w-2&&y>2&&y<h-2)pts.push({x,y,l:0})}
   const E=await samEmbed(s);const M=await samDecode(E,pts);if(M.w!==w||M.h!==h)return null;SAM.dbg={M,pts,w,h};
-  const q=maskToQuad(CV.m,M.mask,s,w,h,spine,g,q0);if(!q)return null;
+  const q=maskToQuad(CV.m,M.mask,s,w,h,spine,g,q0);if(!q||q.length!==4||!q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return null;
   // a piece of the book is not the book: too small against the guide means the model missed, and the first answer stays
   const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
   if(qh<g.h*.5||qw<(spine?.03:g.w*.55))return null;
@@ -4068,6 +4068,9 @@ grabQuad=function(cv,crop,mode,guide){const spine=mode==='spine',g=guide||{x:.1,
   let b=null;try{b=grabQuadCore(cv,crop,mode,guide,true)}catch(e){}if(!b)return a;const [bw,bh]=dims(b);return (bw>.02&&bw<.5&&bh>g.h*.5&&bh/bw>2.5)?b:a};
 // no magnifier while a corner is dragged: it got in the way more than it helped
 {const st=document.createElement('style');st.textContent='#qfLoupe{display:none!important}';document.head.append(st)}
+// an error inside a photo step must not vanish silently: it shows as a toast so it can be reported
+window.addEventListener('unhandledrejection',e=>{try{const r=e.reason;showToast('오류: '+(r&&r.message||String(r)).slice(0,80),3200)}catch(err){}});
+for(const id of ['upload','uploadBack']){const inp=$(id);if(!inp||!inp.onchange)continue;const o=inp.onchange;inp.onchange=async e=>{try{await o.call(inp,e)}catch(err){showToast('표지를 넣지 못했습니다: '+(err&&err.message||err).toString().slice(0,60),3000)}}}
 
 
 
