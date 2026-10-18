@@ -4289,25 +4289,69 @@ function unifyCanvas(c,mode){
   const w=c.width,h=c.height;if(!w||!h)return c;const g=c.getContext('2d');let id;try{id=g.getImageData(0,0,w,h)}catch(e){return c}const d=id.data,n=w*h;
   // 1. illumination: the bright surface of each cell (its 90th percentile) tracks the lamp, not the print; a very
   //    low-resolution map of it, smoothed, is the lighting; dividing by it (gently, and only its variation) evens the face
-  const SW=mode==='spine'?3:12,SH=Math.max(6,Math.round(SW*h/w)),cells=new Array(SW*SH);for(let k=0;k<cells.length;k++)cells[k]=new Uint32Array(256);
+  const SW=mode==='spine'?3:16,SH=Math.max(6,Math.round(SW*h/w)),N=SW*SH,cells=new Array(N);for(let k=0;k<N;k++)cells[k]=new Uint32Array(256);
   // only paper-like pixels (colourless) vote for a cell's level; a cell that is mostly print (a red band, a black title)
   // has no paper to measure and takes its level from its neighbours instead of dragging the map down
-  const tot=new Uint32Array(SW*SH);
-  for(let y=0;y<h;y++){const sy=Math.min(SH-1,(y*SH/h)|0);for(let x=0;x<w;x++){const sx=Math.min(SW-1,(x*SW/w)|0),o=(y*w+x)*4,k=sy*SW+sx;tot[k]++;const mx=Math.max(d[o],d[o+1],d[o+2]),mn=Math.min(d[o],d[o+1],d[o+2]);if(mx>90&&(mx-mn)/mx<.22)cells[k][(.299*d[o]+.587*d[o+1]+.114*d[o+2])|0]++}}
-  let lit=new Float32Array(SW*SH);const known=new Uint8Array(SW*SH);let nk=0;for(let k=0;k<cells.length;k++){const hh=cells[k];let t=0;for(let i=0;i<256;i++)t+=hh[i];if(t>=tot[k]*.08){lit[k]=Math.max(24,uniPercentile(hh,t,.85));known[k]=1;nk++}}
-  if(nk<cells.length*.15)return c; // a face with almost no paper showing: nothing to even out
-  for(let it=0;it<SW+SH;it++){let more=false;for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){const k=y*SW+x;if(known[k])continue;let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;const kk=yy*SW+xx;if(known[kk]===1){s+=lit[kk];m++}}if(m){lit[k]=s/m;known[k]=2;more=true}}
-    for(let k=0;k<known.length;k++)if(known[k]===2)known[k]=1;if(!more)break}
-  for(let pass=0;pass<2;pass++){const o=new Float32Array(lit.length);for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;s+=lit[yy*SW+xx];m++}o[y*SW+x]=s/m}lit=o}
-  // the reference is the typical cell (median), so a sheen in one corner is pulled down to the rest of the paper;
-  // bright spots are pulled down firmly, dark areas lifted only a little (a dark print must stay dark)
+  const tot=new Uint32Array(N),dark=new Array(N),colr=new Array(N),hueH=new Uint32Array(N*12);for(let k=0;k<N;k++){dark[k]=new Uint32Array(256);colr[k]=new Uint32Array(256)}
+  for(let y=0;y<h;y++){const sy=Math.min(SH-1,(y*SH/h)|0);for(let x=0;x<w;x++){const sx=Math.min(SW-1,(x*SW/w)|0),o=(y*w+x)*4,k=sy*SW+sx;tot[k]++;const R=d[o],G=d[o+1],B=d[o+2],mx=Math.max(R,G,B),mn=Math.min(R,G,B),L=(.299*R+.587*G+.114*B)|0;
+    if(mx>90&&(mx-mn)/mx<.22)cells[k][L]++;if(mx>120&&(mx-mn)/mx>.42){colr[k][mn]++;
+      const df=mx-mn;let hh=mx===R?((G-B)/df+6)%6:mx===G?(B-R)/df+2:(R-G)/df+4;hueH[k*12+((((hh+.25)*2)|0)%12)]++}else if(L<110)dark[k][mn]++}}
+  let lit=new Float32Array(N);const known=new Uint8Array(N);let nk=0;for(let k=0;k<N;k++){const hh=cells[k];let t=0;for(let i=0;i<256;i++)t+=hh[i];if(t>=tot[k]*.08){lit[k]=Math.max(24,uniPercentile(hh,t,.85));known[k]=1;nk++}}
+  if(nk<N*.15)return c; // a face with almost no paper showing: nothing to even out
+  const fill=(map,kn,passes=2)=>{for(let it=0;it<SW+SH;it++){let more=false;for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){const k=y*SW+x;if(kn[k])continue;let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;const kk=yy*SW+xx;if(kn[kk]===1){s+=map[kk];m++}}if(m){map[k]=s/m;kn[k]=2;more=true}}
+      for(let k=0;k<kn.length;k++)if(kn[k]===2)kn[k]=1;if(!more)break}
+    for(let pass=0;pass<passes;pass++){const o=new Float32Array(map.length);for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;s+=map[yy*SW+xx];m++}o[y*SW+x]=s/m}map=o}return map};
+  lit=fill(lit,known);
   const sorted=Array.from(lit).sort((a,b)=>a-b),ref=sorted[Math.floor(sorted.length*.6)];
-  const gain=new Float32Array(lit.length);for(let k=0;k<lit.length;k++){const r=ref/lit[k];gain[k]=r<1?1+(Math.max(.72,r)-1)*.9:1+(Math.min(1.15,r)-1)*.5}
-  UNI.dbg={SW,SH,lit:Array.from(lit).map(v=>v|0),gain:Array.from(gain).map(v=>+v.toFixed(3)),ref};
-  const sample=(fx,fy)=>{const x=Math.max(0,Math.min(SW-1,fx*SW-.5)),y=Math.max(0,Math.min(SH-1,fy*SH-.5)),x0=x|0,y0=y|0,x1=Math.min(SW-1,x0+1),y1=Math.min(SH-1,y0+1),tx=x-x0,ty=y-y0;
-    return (gain[y0*SW+x0]*(1-tx)+gain[y0*SW+x1]*tx)*(1-ty)+(gain[y1*SW+x0]*(1-tx)+gain[y1*SW+x1]*tx)*ty};
-  const row=new Float32Array(w);
-  for(let y=0;y<h;y++){const fy=(y+.5)/h;for(let x=0;x<w;x++)row[x]=sample((x+.5)/w,fy);for(let x=0;x<w;x++){const o=(y*w+x)*4,k=row[x];d[o]=Math.min(255,d[o]*k);d[o+1]=Math.min(255,d[o+1]*k);d[o+2]=Math.min(255,d[o+2]*k)}}
+  // stray light is additive: it raises the floor of whatever is printed. Each cell's floor is the lowest channel of its
+  // dark print, or, failing that, of its strongly coloured print (pure red has no blue in it unless light lies on it).
+  // A floor is only glare when it is higher than the same kind of print elsewhere on the face: dark cells are compared
+  // with the typical dark cell, coloured cells with the typical cell of the same hue; and a dark cell whose paper is
+  // not raised too is just dark print, not haze
+  const floor=new Float32Array(N),cls=new Int8Array(N).fill(-1);
+  for(let k=0;k<N;k++){let hh=dark[k],t=0;for(let i=0;i<256;i++)t+=hh[i];if(t>=tot[k]*.03){floor[k]=uniPercentile(hh,t,.1);cls[k]=12;continue}
+    hh=colr[k];t=0;for(let i=0;i<256;i++)t+=hh[i];if(t>=tot[k]*.06){let best=0;for(let b=1;b<12;b++)if(hueH[k*12+b]>hueH[k*12+best])best=b;floor[k]=uniPercentile(hh,t,.5);cls[k]=best}}
+  // all those floor excesses, from every kind of print and from the paper, are readings of one smooth field of stray
+  // light over the face; a quadratic surface fitted through them (least squares) follows a corner glow or a window's
+  // wash but cannot follow a printed pink block next to a red one, which keeps design tones mostly safe
+  const obs=[];for(let cl=0;cl<=12;cl++){const idx=[];for(let k=0;k<N;k++)if(cls[k]===cl)idx.push(k);if(idx.length<3)continue;const v=idx.map(k=>floor[k]).sort((a,b)=>a-b),cref=v[Math.floor(v.length*.3)];
+    for(const k of idx){let e=floor[k]-cref;if(cl===12&&lit[k]<ref-3&&e>0)e=0;obs.push([k,Math.max(-15,Math.min(50,e)),1])}}
+  for(let k=0;k<N;k++)if(known[k])obs.push([k,Math.max(-15,Math.min(50,lit[k]-ref)),.6]);
+  let lvl=new Float32Array(N);
+  if(obs.length>=12){const A=new Float64Array(36),B=new Float64Array(6),f=new Float64Array(6);
+    for(const [k,e,wt] of obs){const x=((k%SW)+.5)/SW*2-1,y=(((k/SW)|0)+.5)/SH*2-1;f[0]=1;f[1]=x;f[2]=y;f[3]=x*x;f[4]=x*y;f[5]=y*y;for(let r=0;r<6;r++){B[r]+=wt*f[r]*e;for(let c2=0;c2<6;c2++)A[r*6+c2]+=wt*f[r]*f[c2]}}
+    for(let r=0;r<6;r++)A[r*6+r]+=1e-3;
+    // gaussian elimination
+    const M=Array.from({length:6},(_,r)=>[...A.slice(r*6,r*6+6),B[r]]);let ok=true;
+    for(let c2=0;c2<6&&ok;c2++){let piv=c2;for(let r=c2+1;r<6;r++)if(Math.abs(M[r][c2])>Math.abs(M[piv][c2]))piv=r;[M[c2],M[piv]]=[M[piv],M[c2]];if(Math.abs(M[c2][c2])<1e-9){ok=false;break}
+      for(let r=0;r<6;r++){if(r===c2)continue;const q=M[r][c2]/M[c2][c2];for(let cc=c2;cc<7;cc++)M[r][cc]-=q*M[c2][cc]}}
+    if(ok){const co=M.map((row,r)=>row[6]/row[r]);for(let k=0;k<N;k++){const x=((k%SW)+.5)/SW*2-1,y=(((k/SW)|0)+.5)/SH*2-1;const b=co[0]+co[1]*x+co[2]*y+co[3]*x*x+co[4]*x*y+co[5]*y*y;lvl[k]=Math.max(0,Math.min(40,b))*.85}}}
+  const lvlMap=lvl,floorMin=Math.min(...lvl);if(floorMin>0)for(let k=0;k<N;k++)lvl[k]-=floorMin; // only the excess over the face's own least-lit part is stray light
+  // a glow lying on one printed colour (the corner of a red band) is too local for the surface: within one colour,
+  // the floor should be flat, so its rise toward an edge, slope-limited (a printed step of the same hue is cut to a
+  // gentle ramp), is lifted from that colour's pixels only
+  const hueMaps=new Array(12).fill(null);
+  for(let hb=0;hb<12;hb++){const idx=[];for(let k=0;k<N;k++)if(cls[k]===hb)idx.push(k);if(idx.length<2)continue;
+    // the reference is each connected patch's own least-lit cell: a red band is judged against itself, not against a darker red elsewhere
+    const e=new Float32Array(N),mem=new Uint8Array(N),seen=new Uint8Array(N);for(const k of idx)mem[k]=1;let any=false;
+    for(const k0 of idx){if(seen[k0])continue;const comp=[k0];seen[k0]=1;for(let q=0;q<comp.length;q++){const k=comp[q],x=k%SW,y=(k/SW)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||xx>=SW||yy<0||yy>=SH)continue;const kk=yy*SW+xx;if(mem[kk]&&!seen[kk]){seen[kk]=1;comp.push(kk)}}}
+      if(comp.length<2)continue;const v=comp.map(k=>floor[k]).sort((a,b)=>a-b),cref=v[Math.floor((v.length-1)*.2)];for(const k of comp){e[k]=Math.max(0,Math.min(40,floor[k]-cref));if(e[k]>4)any=true}}
+    if(!any)continue;
+    for(let it=0;it<SW+SH;it++){let ch=false;for(const k of idx){const x=k%SW,y=(k/SW)|0;let lim=e[k];for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||xx>=SW||yy<0||yy>=SH)continue;const kk=yy*SW+xx;if(mem[kk])lim=Math.min(lim,e[kk]+16)}if(lim<e[k]){e[k]=lim;ch=true}}if(!ch)break}
+    hueMaps[hb]=fill(e,mem,0)}
+  const anyHue=hueMaps.some(m=>m);UNI.hue=hueMaps.map((m,i)=>m?[i,Array.from(m.slice(0,SW*2)).map(v=>v|0)]:null).filter(Boolean);
+  // per cell the face is  seen = a·print + b : the paper level gives a, the stray-light surface gives b
+  const gain=new Float32Array(N);
+  for(let k=0;k<N;k++){const b=lvl[k];let a=(lit[k]-b)/ref;a=Math.max(.75,Math.min(1.4,a));gain[k]=a>1?1/(1+(a-1)*.9):1/(1+(a-1)*.5)}
+  const bref=0;
+  UNI.dbg={SW,SH,lit:Array.from(lit).map(v=>v|0),blk:lvlMap&&Array.from(floor).map(v=>v|0),gain:Array.from(gain).map(v=>+v.toFixed(3)),off:Array.from(lvl).map(v=>v|0),ref,bref};
+  const sample=(map,fx,fy)=>{const x=Math.max(0,Math.min(SW-1,fx*SW-.5)),y=Math.max(0,Math.min(SH-1,fy*SH-.5)),x0=x|0,y0=y|0,x1=Math.min(SW-1,x0+1),y1=Math.min(SH-1,y0+1),tx=x-x0,ty=y-y0;
+    return (map[y0*SW+x0]*(1-tx)+map[y0*SW+x1]*tx)*(1-ty)+(map[y1*SW+x0]*(1-tx)+map[y1*SW+x1]*tx)*ty};
+  const row=new Float32Array(w),rowB=new Float32Array(w);
+  for(let y=0;y<h;y++){const fy=(y+.5)/h;for(let x=0;x<w;x++){row[x]=sample(gain,(x+.5)/w,fy);rowB[x]=sample(lvl,(x+.5)/w,fy)}
+    for(let x=0;x<w;x++){const o=(y*w+x)*4,k=row[x];let b=rowB[x];
+      if(anyHue){const R0=d[o],G0=d[o+1],B0=d[o+2],mx=Math.max(R0,G0,B0),mn=Math.min(R0,G0,B0);if(mx>120&&(mx-mn)/mx>.42){const df=mx-mn;let hh=mx===R0?((G0-B0)/df+6)%6:mx===G0?(B0-R0)/df+2:(R0-G0)/df+4;const m=hueMaps[(((hh+.25)*2)|0)%12];if(m)b+=sample(m,(x+.5)/w,fy)*.85}}
+      const R=(d[o]-b)*k,G=(d[o+1]-b)*k,B=(d[o+2]-b)*k;d[o]=R<0?0:R>255?255:R;d[o+1]=G<0?0:G>255?255:G;d[o+2]=B<0?0:B>255?255:B}}
   // 2. white point: the brightest quarter of the face is paper or the lamp on the print; its cast is the lamp's
   const hist=new Uint32Array(256);for(let o=0;o<d.length;o+=4)hist[(.299*d[o]+.587*d[o+1]+.114*d[o+2])|0]++;
   const hi=uniPercentile(hist,n,.75);let r=0,gg=0,b=0,m=0;for(let o=0;o<d.length;o+=4){const L=.299*d[o]+.587*d[o+1]+.114*d[o+2];if(L>=hi&&L<250){r+=d[o];gg+=d[o+1];b+=d[o+2];m++}}
