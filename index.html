@@ -4283,18 +4283,27 @@ renderNotes38=function(){const list=$('notesList'),q=notesQ.toLowerCase();const 
 // the levels are set to one standard, and the colour strength is brought to one standard. After that the app's own
 // light (the CSS highlights and shadows every book gets) is the only light in the picture, for photos and drawn
 // books alike. Books stored before this version are pressed once on first load.
-const UNI={v:1};
+const UNI={v:2};
 function uniPercentile(hist,total,p){let acc=0;for(let i=0;i<256;i++){acc+=hist[i];if(acc>=total*p)return i}return 255}
 function unifyCanvas(c,mode){
   const w=c.width,h=c.height;if(!w||!h)return c;const g=c.getContext('2d');let id;try{id=g.getImageData(0,0,w,h)}catch(e){return c}const d=id.data,n=w*h;
   // 1. illumination: the bright surface of each cell (its 90th percentile) tracks the lamp, not the print; a very
   //    low-resolution map of it, smoothed, is the lighting; dividing by it (gently, and only its variation) evens the face
   const SW=mode==='spine'?3:12,SH=Math.max(6,Math.round(SW*h/w)),cells=new Array(SW*SH);for(let k=0;k<cells.length;k++)cells[k]=new Uint32Array(256);
-  for(let y=0;y<h;y++){const sy=Math.min(SH-1,(y*SH/h)|0);for(let x=0;x<w;x++){const sx=Math.min(SW-1,(x*SW/w)|0),o=(y*w+x)*4;cells[sy*SW+sx][(.299*d[o]+.587*d[o+1]+.114*d[o+2])|0]++}}
-  let lit=new Float32Array(SW*SH);for(let k=0;k<cells.length;k++){const hh=cells[k];let t=0;for(let i=0;i<256;i++)t+=hh[i];lit[k]=Math.max(24,uniPercentile(hh,t,.9))}
+  // only paper-like pixels (colourless) vote for a cell's level; a cell that is mostly print (a red band, a black title)
+  // has no paper to measure and takes its level from its neighbours instead of dragging the map down
+  const tot=new Uint32Array(SW*SH);
+  for(let y=0;y<h;y++){const sy=Math.min(SH-1,(y*SH/h)|0);for(let x=0;x<w;x++){const sx=Math.min(SW-1,(x*SW/w)|0),o=(y*w+x)*4,k=sy*SW+sx;tot[k]++;const mx=Math.max(d[o],d[o+1],d[o+2]),mn=Math.min(d[o],d[o+1],d[o+2]);if(mx>90&&(mx-mn)/mx<.22)cells[k][(.299*d[o]+.587*d[o+1]+.114*d[o+2])|0]++}}
+  let lit=new Float32Array(SW*SH);const known=new Uint8Array(SW*SH);let nk=0;for(let k=0;k<cells.length;k++){const hh=cells[k];let t=0;for(let i=0;i<256;i++)t+=hh[i];if(t>=tot[k]*.08){lit[k]=Math.max(24,uniPercentile(hh,t,.85));known[k]=1;nk++}}
+  if(nk<cells.length*.15)return c; // a face with almost no paper showing: nothing to even out
+  for(let it=0;it<SW+SH;it++){let more=false;for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){const k=y*SW+x;if(known[k])continue;let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;const kk=yy*SW+xx;if(known[kk]===1){s+=lit[kk];m++}}if(m){lit[k]=s/m;known[k]=2;more=true}}
+    for(let k=0;k<known.length;k++)if(known[k]===2)known[k]=1;if(!more)break}
   for(let pass=0;pass<2;pass++){const o=new Float32Array(lit.length);for(let y=0;y<SH;y++)for(let x=0;x<SW;x++){let s=0,m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=SH||xx<0||xx>=SW)continue;s+=lit[yy*SW+xx];m++}o[y*SW+x]=s/m}lit=o}
-  let ref=0;for(let k=0;k<lit.length;k++)ref+=lit[k];ref/=lit.length;
-  const gain=new Float32Array(lit.length);for(let k=0;k<lit.length;k++){const r=Math.max(.8,Math.min(1.35,ref/lit[k]));gain[k]=1+(r-1)*.7}
+  // the reference is the typical cell (median), so a sheen in one corner is pulled down to the rest of the paper;
+  // bright spots are pulled down firmly, dark areas lifted only a little (a dark print must stay dark)
+  const sorted=Array.from(lit).sort((a,b)=>a-b),ref=sorted[Math.floor(sorted.length*.6)];
+  const gain=new Float32Array(lit.length);for(let k=0;k<lit.length;k++){const r=ref/lit[k];gain[k]=r<1?1+(Math.max(.72,r)-1)*.9:1+(Math.min(1.15,r)-1)*.5}
+  UNI.dbg={SW,SH,lit:Array.from(lit).map(v=>v|0),gain:Array.from(gain).map(v=>+v.toFixed(3)),ref};
   const sample=(fx,fy)=>{const x=Math.max(0,Math.min(SW-1,fx*SW-.5)),y=Math.max(0,Math.min(SH-1,fy*SH-.5)),x0=x|0,y0=y|0,x1=Math.min(SW-1,x0+1),y1=Math.min(SH-1,y0+1),tx=x-x0,ty=y-y0;
     return (gain[y0*SW+x0]*(1-tx)+gain[y0*SW+x1]*tx)*(1-ty)+(gain[y1*SW+x0]*(1-tx)+gain[y1*SW+x1]*tx)*ty};
   const row=new Float32Array(w);
@@ -4310,7 +4319,10 @@ function unifyCanvas(c,mode){
   // 4. colour strength: the mean chroma of the face is brought toward one standard (never pumped past ×1.15, never flattened past ×.8)
   let chroma=0;for(let o=0;o<d.length;o+=16){const mx=Math.max(d[o],d[o+1],d[o+2]),mn=Math.min(d[o],d[o+1],d[o+2]);chroma+=mx?(mx-mn)/mx:0}chroma/=n/4;
   const target=.42,sat=chroma<.08?1:Math.max(.8,Math.min(1.15,1+(target/chroma-1)*.4));
+  // 5. the paper: contrast eased a touch and a fine grain, so every face reads as print on the same stock (variant 13)
+  const con=.95;let seed=1234567;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff};
   for(let o=0;o<d.length;o+=4){let R=d[o]*k+off,G=d[o+1]*k+off,B=d[o+2]*k+off;const L=.299*R+.587*G+.114*B;R=L+(R-L)*sat;G=L+(G-L)*sat;B=L+(B-L)*sat;
+    const gr=(rnd()-.5)*28;R=(R-128)*con+128+gr;G=(G-128)*con+128+gr;B=(B-128)*con+128+gr;
     d[o]=R<0?0:R>255?255:R;d[o+1]=G<0?0:G>255?255:G;d[o+2]=B<0?0:B>255?255:B}
   g.putImageData(id,0,0);return c}
 // every captured or chosen face is pressed on its way to the record (PEND.mode knows which face the corner screen handled)
