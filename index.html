@@ -4369,6 +4369,7 @@ function unifyCanvas(c,mode){
     const gr=(rnd()-.5)*28;R=(R-128)*con+128+gr;G=(G-128)*con+128+gr;B=(B-128)*con+128+gr;
     d[o]=R<0?0:R>255?255:R;d[o+1]=G<0?0:G>255?255:G;d[o+2]=B<0?0:B>255?255:B}
   g.putImageData(id,0,0);return c}
+const WARP_RAW=warpOrCrop;
 // every captured or chosen face is pressed on its way to the record (PEND.mode knows which face the corner screen handled)
 {const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const out=_w(full,q,maxSide);if(!out||CV.m)return out;try{return unifyCanvas(out,PEND.mode||'front')}catch(e){console.warn('unify',e);return out}}}
 async function unifyDataUrl(src,mode){if(!src||String(src).startsWith('<'))return src;const im=await loadImageEl(src);if(!im)return src;
@@ -4434,6 +4435,41 @@ function deglareCV(c,mode){const cv=CV.m;if(!cv)return c;const W=c.width,H=c.hei
 {const _dg=deglare;deglare=function(c){return CV.m?c:_dg(c)}}
 {const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){let out=_w(full,q,maxSide);if(!out)return out;
   if(CV.m){try{out=deglareCV(out,PEND.mode||'front')}catch(e){}try{out=unifyCanvas(out,PEND.mode||'front')}catch(e){}}return out}}
+
+// ===== the light-reading net: a small U-Net trained on synthetic covers under synthetic lamps, windows and corner
+// washes; it returns the layer of light lying on the print, and that layer is simply lifted off. Runs once per face,
+// after the corner screen, before the statistical press (which then has far less to do). =====
+const GNET={sess:null,load:null,fail:0,W:192,H:256};
+function gnetLoad(){if(GNET.load)return GNET.load;
+  return GNET.load=(async()=>{const U=Object.assign({},SAM_URLS,window.SAM_CFG||{});
+    if(!window.ort)await new Promise((res,rej)=>{const s=document.createElement('script');s.src=U.ort;s.onload=res;s.onerror=()=>rej(new Error('ort script'));document.head.append(s)});
+    ort.env.wasm.wasmPaths=U.wasm;ort.env.wasm.numThreads=1;
+    GNET.sess=await ort.InferenceSession.create(U.glare||'./models/glare.onnx',{executionProviders:['wasm'],graphOptimizationLevel:'all'});return true})()
+    .catch(e=>{GNET.load=null;GNET.fail++;console.warn('glare net load',e);throw e})}
+const gnetOK=()=>(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&GNET.fail<2;
+// the light on one 192×256 view of a canvas region: three planes, 0..255
+async function gnetLight(src,sx,sy,sw,sh){const W=GNET.W,H=GNET.H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(src,sx,sy,sw,sh,0,0,W,H);
+  const d=g.getImageData(0,0,W,H).data,x=new Float32Array(3*W*H);for(let i=0,n=W*H;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await GNET.sess.run({[GNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});const o=out[GNET.sess.outputNames[0]].data;const n=W*H,L=new Float32Array(3*n);
+  for(let i=0;i<3*n;i++)L[i]=Math.max(0,Math.min(255,o[i]*255));return L}
+async function deglareNet(c,mode){if(!gnetOK())return c;if(!GNET.sess)await gnetLoad();const W=c.width,H=c.height,g=c.getContext('2d');
+  // covers in one view; a spine in overlapping windows down its length (the net sees cover-shaped views)
+  const views=[];if(mode!=='spine'||H<W*1.8)views.push([0,0,W,H]);else{const vh=Math.round(W*GNET.H/GNET.W*1.6),step=Math.round(vh*.7);for(let y=0;y<H;y+=step){const y0=Math.min(y,Math.max(0,H-vh));views.push([0,y0,W,Math.min(vh,H-y0)]);if(y0+vh>=H)break}}
+  const acc=new Float32Array(3*W*H),wsum=new Float32Array(W*H);const n=GNET.W*GNET.H;
+  for(const [vx,vy,vw,vh] of views){const L=await gnetLight(c,vx,vy,vw,vh);
+    for(let y=0;y<vh;y++){const fy=(y+.5)/vh*GNET.H-.5,y0=Math.max(0,Math.min(GNET.H-1,fy|0)),y1=Math.min(GNET.H-1,y0+1),ty=Math.max(0,Math.min(1,fy-y0));const wy=Math.min(1,Math.min(y+1,vh-y)/(vh*.15));
+      for(let x=0;x<vw;x++){const fx=(x+.5)/vw*GNET.W-.5,x0=Math.max(0,Math.min(GNET.W-1,fx|0)),x1=Math.min(GNET.W-1,x0+1),tx=Math.max(0,Math.min(1,fx-x0));const p=(vy+y)*W+vx+x,wt=views.length>1?wy:1;
+        for(let ch=0;ch<3;ch++){const b=ch*n;const v=(L[b+y0*GNET.W+x0]*(1-tx)+L[b+y0*GNET.W+x1]*tx)*(1-ty)+(L[b+y1*GNET.W+x0]*(1-tx)+L[b+y1*GNET.W+x1]*tx)*ty;acc[ch*W*H+p]+=v*wt}wsum[p]+=wt}}}
+  const id=g.getImageData(0,0,W,H),d=id.data;let lifted=0;
+  // the light is lifted as one neutral amount (the mean of the three planes): the net's tint is the least certain thing it predicts
+  for(let p=0,o=0;p<W*H;p++,o+=4){const ws=wsum[p]||1;const v=(acc[p]+acc[W*H+p]+acc[2*W*H+p])/(3*ws);if(v>1.5){d[o]=Math.max(0,d[o]-v);d[o+1]=Math.max(0,d[o+1]-v);d[o+2]=Math.max(0,d[o+2]-v);lifted+=3}}
+  g.putImageData(id,0,0);GNET.last=lifted/(W*H*3);return c}
+// the corner screen's answer is the moment to read the light: the warped face is made here, the net lifts its light,
+// and warpOrCrop hands back that same canvas when the shutter asks for it
+{const _fix=quadFix;quadFix=async function(crop,mode,guide){const q=await _fix(crop,mode,guide);if(q==='retake'||!gnetOK()||!CV.m)return q;
+  try{const out=WARP_RAW(crop,q,mode==='spine'?1400:1200);if(out){let t=null;try{if(typeof showToast==='function')t=showToast('빛을 걷어내는 중…',4000)}catch(e){}
+      try{await deglareNet(out,mode)}catch(e){console.warn('glare net',e)}try{deglareCV(out,mode)}catch(e){}try{unifyCanvas(out,mode)}catch(e){}GNET.pre={crop,q,out}}}catch(e){}return q}}
+{const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const pre=GNET.pre;if(pre&&pre.crop===full&&pre.q===q){GNET.pre=null;return pre.out}return _w(full,q,maxSide)}}
 
 
 
