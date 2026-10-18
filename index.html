@@ -4314,7 +4314,7 @@ function unifyCanvas(c,mode){
     d[o]=R<0?0:R>255?255:R;d[o+1]=G<0?0:G>255?255:G;d[o+2]=B<0?0:B>255?255:B}
   g.putImageData(id,0,0);return c}
 // every captured or chosen face is pressed on its way to the record (PEND.mode knows which face the corner screen handled)
-{const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const out=_w(full,q,maxSide);if(!out)return out;try{return unifyCanvas(out,PEND.mode||'front')}catch(e){console.warn('unify',e);return out}}}
+{const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const out=_w(full,q,maxSide);if(!out||CV.m)return out;try{return unifyCanvas(out,PEND.mode||'front')}catch(e){console.warn('unify',e);return out}}}
 async function unifyDataUrl(src,mode){if(!src||String(src).startsWith('<'))return src;const im=await loadImageEl(src);if(!im)return src;
   const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);unifyCanvas(c,mode);return c.toDataURL('image/jpeg',.9)}
 // the record remembers which press a book went through
@@ -4330,6 +4330,54 @@ setTimeout(()=>{unifyExisting()},4000);
 {const _ss=shelveShot;shelveShot=async function(...a){const b=await _ss(...a);if(b&&b.user){b.uni=UNI.v;try{await store.put(userRecord(b))}catch(e){}}return b}}
 // the shelf no longer tones photos down on its own: the press did that for every view at once
 {const st=document.createElement('style');st.textContent=`.shelf-bay .book-slot .spine-photo{filter:none}`;document.head.append(st)}
+
+// ===== glare: a lamp or a window on a glossy cover is a bright, soft-edged, colourless patch that sits on top of
+// the print. It is found as the thick bright blobs that a large opening removes (printed white boxes have no halo,
+// so they are left alone), lifted off as an additive layer, and the fully blown-out core is painted in from its
+// surroundings. All three faces go through it. =====
+function deglareCV(c,mode){const cv=CV.m;if(!cv)return c;const W=c.width,H=c.height;if(W<40||H<40)return c;
+  const k=Math.min(1,360/Math.max(W,H)),w=Math.max(16,Math.round(W*k)),h=Math.max(16,Math.round(H*k));
+  const sm=document.createElement('canvas');sm.width=w;sm.height=h;const sg=sm.getContext('2d');sg.drawImage(c,0,0,w,h);const sid=sg.getImageData(0,0,w,h),sd=sid.data;
+  const mats=[];const M=m=>{mats.push(m);return m};
+  try{
+    // the core of a reflection is blown out: colourless and at the top of the range
+    const L=M(new cv.Mat(h,w,cv.CV_8UC1)),cand=M(new cv.Mat(h,w,cv.CV_8UC1));const Ld=L.data,cd=cand.data;let nc=0;
+    for(let i=0,o=0;i<w*h;i++,o+=4){const mx=Math.max(sd[o],sd[o+1],sd[o+2]),mn=Math.min(sd[o],sd[o+1],sd[o+2]);Ld[i]=(.299*sd[o]+.587*sd[o+1]+.114*sd[o+2])|0;const on=Ld[i]>=247&&(mx?(mx-mn)/mx:0)<.12;cd[i]=on?255:0;if(on)nc++}
+    if(nc<w*h*.001||nc>w*h*.5)return c;
+    const odd=v=>Math.max(3,v|1);const r=Math.max(3,Math.round(Math.min(w,h)*(mode==='spine'?.08:.03))),eR=M(cv.getStructuringElement(cv.MORPH_ELLIPSE,new cv.Size(r*2+1,r*2+1)));
+    const closed=M(new cv.Mat());cv.morphologyEx(cand,closed,cv.MORPH_CLOSE,eR);
+    const labels=M(new cv.Mat()),stats=M(new cv.Mat()),cents=M(new cv.Mat());const n=cv.connectedComponentsWithStats(closed,labels,stats,cents,8,cv.CV_32S);
+    const comps=[];for(let i=1;i<n;i++){const a=stats.data32S[i*5+4];if(a>=w*h*.0006)comps.push([i,a])}comps.sort((a,b)=>b[1]-a[1]);
+    // the level of a ring is its brighter part (the paper or the print's light areas), not its average with the dark print
+    const ringLevel=ring=>{const rd=ring.data,v=[];for(let i=0;i<w*h;i++)if(rd[i])v.push(Ld[i]);if(!v.length)return 0;v.sort((a,b)=>a-b);return v[Math.floor(v.length*.7)]};
+    const lift=M(cv.Mat.zeros(h,w,cv.CV_32FC1)),Lf=M(new cv.Mat());L.convertTo(Lf,cv.CV_32F);const core=M(cv.Mat.zeros(h,w,cv.CV_8UC1));let kept=0;
+    for(const [i] of comps.slice(0,12)){const cm=M(new cv.Mat()),lab=M(new cv.Mat(h,w,cv.CV_32SC1,new cv.Scalar(i)));cv.compare(labels,lab,cm,cv.CMP_EQ);
+      // walk outward ring by ring: a lamp's light falls off gradually (each ring darker than the last) until the print's
+      // own level is reached; a printed white shape drops to the print at once, so its first ring is no brighter than the next
+      let prev=M(cm.clone()),means=[],steps=0;
+      for(let t=0;t<8;t++){const dil=M(new cv.Mat()),ring=M(new cv.Mat());cv.dilate(prev,dil,eR);cv.subtract(dil,prev,ring);if(cv.countNonZero(ring)<8)break;means.push(ringLevel(ring));prev=dil;steps++;if(means.length>1&&means[t-1]-means[t]<2)break}
+      if(means.length<2||means[0]-means[1]<4)continue;const base=Math.min(...means);
+      const soft=M(new cv.Mat()),sf=M(new cv.Mat()),ex=M(new cv.Mat()),add=M(new cv.Mat()),baseM=M(new cv.Mat(h,w,cv.CV_32FC1,new cv.Scalar(base)));
+      const kb=odd(r*steps*2+1);cv.GaussianBlur(prev,soft,new cv.Size(kb,kb),r*steps*.5);soft.convertTo(sf,cv.CV_32F,1/255);
+      cv.subtract(Lf,baseM,ex);cv.threshold(ex,ex,0,0,cv.THRESH_TOZERO);cv.multiply(ex,sf,add);cv.max(lift,add,lift);
+      if(stats.data32S[i*5+4]<w*h*.04)cv.bitwise_or(core,cm,core);kept++}
+    if(!kept)return c;
+    const lb=odd(r*2+1);cv.GaussianBlur(lift,lift,new cv.Size(lb,lb),0);
+    const liftBig=M(new cv.Mat());cv.resize(lift,liftBig,new cv.Size(W,H),0,0,cv.INTER_LINEAR);const lbd=liftBig.data32F;
+    const g=c.getContext('2d'),id=g.getImageData(0,0,W,H),d=id.data;
+    for(let i=0,o=0;i<W*H;i++,o+=4){const s=lbd[i]*.95;if(s>0){d[o]=Math.max(0,d[o]-s);d[o+1]=Math.max(0,d[o+1]-s);d[o+2]=Math.max(0,d[o+2]-s)}}
+    // a small blown core has no print left in it: painted in from its edge and feathered; a wide one stays flat at the print's level
+    if(cv.countNonZero(core)>6){const coreBig=M(new cv.Mat()),coreM=M(new cv.Mat()),alpha=M(new cv.Mat());cv.resize(core,coreBig,new cv.Size(W,H),0,0,cv.INTER_LINEAR);cv.threshold(coreBig,coreM,110,255,cv.THRESH_BINARY);
+      const fe=odd(Math.round(Math.min(W,H)*.03));cv.GaussianBlur(coreBig,alpha,new cv.Size(fe,fe),0);
+      const src=M(cv.matFromImageData(id)),rgb=M(new cv.Mat()),out=M(new cv.Mat());cv.cvtColor(src,rgb,cv.COLOR_RGBA2RGB);cv.inpaint(rgb,coreM,out,Math.max(4,Math.round(Math.min(W,H)*.015)),cv.INPAINT_TELEA);
+      const od=out.data,ad=alpha.data;for(let i=0,o=0,p=0;i<W*H;i++,o+=4,p+=3){const a=ad[i]/255;if(a>0){d[o]+=(od[p]-d[o])*a;d[o+1]+=(od[p+1]-d[o+1])*a;d[o+2]+=(od[p+2]-d[o+2])*a}}}
+    g.putImageData(id,0,0);return c}
+  catch(e){console.warn('deglare',e);return c}
+  finally{for(const m of mats){try{m.delete()}catch(e){}}}}
+// the old soft-knee stays as the fallback when OpenCV is not there; otherwise every face is deglared before the press
+{const _dg=deglare;deglare=function(c){return CV.m?c:_dg(c)}}
+{const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){let out=_w(full,q,maxSide);if(!out)return out;
+  if(CV.m){try{out=deglareCV(out,PEND.mode||'front')}catch(e){}try{out=unifyCanvas(out,PEND.mode||'front')}catch(e){}}return out}}
 
 
 
