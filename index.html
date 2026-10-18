@@ -3509,11 +3509,11 @@ $('camShot').onclick=async()=>{
   const gf={x:(r.x*vw-x0)/(x1-x0),y:(r.y*vh-y0)/(y1-y0),w:r.w*vw/(x1-x0),h:r.h*vh/(y1-y0)};
   for(;;){const q=await quadFix(crop,mode,gf);
     if(q==='retake'){resolve(await openCamera(mode,QF.opts||{}));return}
-    const out=warpOrCrop(crop,q,mode==='spine'?1400:1500);
+    const out=warpOrCrop(crop,q,mode==='spine'?1400:1200);
     if(mode==='spine')resolve({mode,cut:cutFromCanvas(out)});else{CV.lastTight=true;resolve({mode,img:out.toDataURL('image/jpeg',.9)})}return}};
 // the system-camera route (no live camera): the chosen photo goes through the same corner screen
 {const viaFile=async(file,mode)=>{const src=await readFile(file);const im=await loadImageEl(src);if(!im)return null;const c=document.createElement('canvas');const k=Math.min(1,2000/Math.max(im.naturalWidth,im.naturalHeight));c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-   camDetectLines=camDetectV44;await loadCV();const q=await quadFix(c,mode);if(q==='retake')return null;return warpOrCrop(c,q,mode==='spine'?1400:1500)};
+   camDetectLines=camDetectV44;await loadCV();const q=await quadFix(c,mode);if(q==='retake')return null;return warpOrCrop(c,q,mode==='spine'?1400:1200)};
  $('addPhoto').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!f.type.startsWith('image/'))return;
    const out=await viaFile(f,'spine');if(!out)return;const cut=cutFromCanvas(out);const ok=await confirmSpine(cut);if(ok==='retake'){$('addPhoto').click();return}
    const b=await shelveShot(cut,ok);if(b){showToast('책을 꽂았어요',1600);if(ok.covers)await shootCovers(b)}};
@@ -4019,7 +4019,7 @@ async function harmonizeCover(b,id){const src=b[id],sp=b.spine;if(!src||!sp||Str
     // the cover's whole tone meets the spine's whole tone; the spine's inner edge sets the hinge (front: left, back: right)
     const cm=meanRGB(ci),sm=meanRGB(si),gain=[0,1,2].map(k=>Math.max(.75,Math.min(1.25,(sm[k]+8)/(cm[k]+8))));
     if(gain.every(g=>Math.abs(g-1)<.04))return src;
-    const W=Math.min(1400,ci.naturalWidth),H=Math.round(ci.naturalHeight*W/ci.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(ci,0,0,W,H);
+    const W=Math.min(1000,ci.naturalWidth),H=Math.round(ci.naturalHeight*W/ci.naturalWidth),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(ci,0,0,W,H);
     const im=g.getImageData(0,0,W,H),d=im.data;for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*gain[0]);d[i+1]=Math.min(255,d[i+1]*gain[1]);d[i+2]=Math.min(255,d[i+2]*gain[2])}g.putImageData(im,0,0);
     return c.toDataURL('image/jpeg',.9)})();
   HZ.set(key,p);return p}
@@ -4236,6 +4236,46 @@ function snapEdges(crop,q){try{const xs=q.map(p=>p.x),ys=q.map(p=>p.y);const L=M
     writeQ(q)},true);
   const up=e=>{if(!drag||e.pointerId!==drag.id)return;drag=null;e.stopImmediatePropagation()};svg.addEventListener('pointerup',up,true);svg.addEventListener('pointercancel',up,true);
   const st=document.createElement('style');st.textContent='.qf-mid{fill:#f3e3c4;stroke:#1b110a;stroke-width:1.5;pointer-events:none}.qf-mid-hit{fill:rgba(159,224,168,.15);stroke:none}';document.head.append(st)}}
+
+// ===== a photographed spine sits among the drawn ones: a little less saturation and contrast, the same edge
+// shading as its neighbours, so it reads as one more book instead of a photo pasted on the shelf =====
+{const st=document.createElement('style');st.textContent=`.shelf-bay .book-slot .spine-photo{filter:saturate(.82) contrast(.9) brightness(.93)}
+.shelf-bay .book-slot .shelf-spine:has(.spine-photo)::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(90deg,#ffffff2e,#ffffff08 18%,#0000 40%,#0000 65%,#00000040);box-shadow:inset 0 1px 0 #ffffff26,inset 0 -1px 0 #00000055}`;document.head.append(st)}
+
+// ===== a cover must never come up black: a canvas that iOS emptied (its canvas memory runs out) is caught and the
+// untouched picture is used instead; the big canvases are kept smaller to leave that memory alone =====
+function canvasAlive(c){try{const g=c.getContext('2d'),w=c.width,h=c.height;if(!w||!h)return false;const pts=[[w*.5,h*.5],[w*.2,h*.3],[w*.8,h*.7],[w*.5,h*.1]];let dark=0;
+    for(const [x,y] of pts){const d=g.getImageData(x|0,y|0,1,1).data;if(d[0]+d[1]+d[2]<9)dark++}return dark<pts.length}catch(e){return true}}
+{const _d=deglare;deglare=function(c){const out=_d(c);return canvasAlive(out)?out:c}}
+{const _h=harmonizeCover;harmonizeCover=async function(b,id){const out=await _h(b,id);if(!out||out===b[id])return out;
+  // the corrected picture is checked before it is shown
+  const im=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=out});if(!im||!im.naturalWidth)return null;
+  const c=document.createElement('canvas');c.width=64;c.height=64;c.getContext('2d').drawImage(im,0,0,64,64);const ok=canvasAlive(c);c.width=0;return ok?out:null}}
+
+// ===== 기록 lists every photographed book, with or without a 독후감, so a new book can be found right away; a card
+// takes you to the book on the shelf (a 독후감 card opens the 독후감 as before) =====
+function notesPool(){return liveBooks().map(b=>{if(b.user&&!isDiary(b)&&!(b.diary?.journal&&b.diary.entries.length)){const p=Object.create(b);p.diary={journal:true,entries:[]};p._blank=true;return p}return b})}
+notesItems=function(){const q=notesQ.toLowerCase(),wantDiaries=/일기/.test(notesQ);const all=notesPool().filter(b=>isDiary(b)||(b.diary?.journal&&b.diary.entries.length)||b._blank);
+  return all.filter(b=>{const d=isDiary(b);if(notesF==='book'&&d)return false;if(notesF==='diary'&&!d)return false;if(!q)return true;return b.title.toLowerCase().includes(q)||(wantDiaries&&d)}).map(b=>({b,...v38Excerpt(b)})).sort((x,y)=>noteTime(y)-noteTime(x))};
+const noteTime=i=>{if(i.last?.at)return Date.parse(i.last.at)||0;const a=i.b.added;return typeof a==='number'?a:(Date.parse(a)||0)};
+renderNotes38=function(){const list=$('notesList'),q=notesQ.toLowerCase();const items=notesItems();const all=notesPool().filter(b=>isDiary(b)||(b.diary?.journal&&b.diary.entries.length)||b._blank);
+  $('ntCount').textContent=`책 ${all.filter(b=>!isDiary(b)).length} · 일기장 ${all.filter(isDiary).length}`;
+  document.querySelectorAll('.nt-chips button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.f===notesF)));
+  list.replaceChildren();
+  if(!items.length){const e=document.createElement('p');e.className='nt-empty';e.textContent=q?'찾는 기록이 없습니다':'아직 기록이 없습니다. 책을 꽂거나 독후감을 쓰면 여기에 모입니다.';list.append(e);return}
+  for(const {b,last,n} of items){const d=isDiary(b),card=document.createElement('button');card.className='nt-card'+(d?' diary':'');
+    const sp=document.createElement('span');sp.className='nt-spine';if(b.spine&&!String(b.spine).startsWith('<'))sp.style.backgroundImage=`url("${b.spine}")`;sp.style.backgroundColor=b.color||'#6d3b2a';
+    const body=document.createElement('span');body.className='nt-body';body.innerHTML=`<b class="nt-title"></b><span class="nt-text"></span><span class="nt-meta"></span>`;
+    body.querySelector('.nt-title').textContent=b.title;
+    body.querySelector('.nt-text').textContent=b._blank?'아직 독후감이 없습니다 · 탭하면 책장에서 찾아 줍니다':(last?.text||'(그림만 있어요)');
+    body.querySelector('.nt-meta').textContent=b._blank?('꽂은 날 '+(b.added?new Date(b.added).toLocaleDateString(DY_LANG,{month:'numeric',day:'numeric'}):'')):((d?'일기장 · ':'')+(last?new Date(last.at).toLocaleDateString(DY_LANG,{month:'numeric',day:'numeric'}):'')+` · ${n}편`);
+    card.append(sp,body);card.setAttribute('aria-label',`${b.title} 책장에서 찾기`);
+    const target=Object.getPrototypeOf(b)===Object.prototype||!b._blank?b:Object.getPrototypeOf(b);
+    card.onclick=()=>{const el=bookButtons[target.id];if(!el){if(d)openDiary(target,null);else openJournal(target);return}$('navShelf').click();setTimeout(()=>spotlightBook(el,'find'),120)};list.append(card)}};
+
+// ===== a book that has just been photographed is shown on the shelf the way a new diary is: zoomed in and lit =====
+{const _s=shelveShot;shelveShot=async function(cut,ok){const b=await _s(cut,ok);if(b&&b.id!=null){let n=0;const t=setInterval(()=>{n++;const el=bookButtons[b.id];const clear=$('cam').hidden&&$('quadFix').hidden&&$('shotOk').hidden&&!document.querySelector('main').hidden&&$('modal')&&!$('modal').classList.contains('open');
+      if(clear&&el&&el.isConnected){clearInterval(t);try{spotlightBook(el,'new')}catch(e){}}else if(n>120)clearInterval(t)},250)}return b}}
 
 
 
