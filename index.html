@@ -4500,11 +4500,11 @@ function netGrab(cv,crop,mask){const L=360,k=Math.min(1,L/Math.max(crop.width,cr
   finally{for(const m of mats){try{m.delete()}catch(e){}}}}
 {const _snet=snetQuad;snetQuad=async function(crop,guide,q0){const {mask,canvas,on}=await snetMask(crop);if(on<SNET.W*SNET.H*.004)return null;
   const g=guide||{x:.1,y:.06,w:.8,h:.88};let r=null;try{r=netGrab(CV.m,crop,mask)}catch(e){console.warn('netGrab',e)}
-  const q=r?maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,true,g,null,true):maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true);
-  window.NG={used:!!r,on:r&&r.on};
-  if(!q||q.length!==4||!q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return null;
-  const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
-  if(qh<g.h*.35||qw<.03||qw>.6)return null;return snapEdges(crop,q)}}
+  const okQ=q=>{if(!q||q.length!==4||!q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return false;const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);return !(qh<g.h*.35||qw<.03||qw>.6)};
+  let q=r?maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,true,g,null,true):null;let used=!!r&&okQ(q);
+  if(!used)q=maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true); // the trimmed mask fell apart (a hand across it): the net's own mask then
+  window.NG={used,on:r&&r.on};
+  if(!okQ(q))return null;return snapEdges(crop,q)}}
 
 // ===== the three faces meet: a sliver of neighbour, page edge or background left on the spine's sides is trimmed, and
 // the hinge shadows are softened so the covers run into the spine instead of stopping at a dark line =====
