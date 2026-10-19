@@ -3918,11 +3918,16 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
           [gm,ed,dl,band,lines,kd,ke].forEach(m=>m.delete())}catch(e){}
         if(Math.abs(lean)>1.5&&Math.abs(lean)<=40){
           // straighten the mask, read the strip there, and turn the corners back
-          const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),lean,1),rf=new cv.Mat();cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
-          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Array.from(Mi.data64F);const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
+          const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),-lean,1),rf=new cv.Mat(); /* lean>0: bottom to the right; rotating by -lean stands it up */ cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
+          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Array.from(Mi.data64F);const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);const rfd=st?new Uint8Array(rf.data):null;rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
           if(st&&st[1]-st[0]<=mainBB.width*1.5){const [L,R,T,B]=st,back=(x,y)=>({x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/h});
-            let quad=[back(L,T),back(R+1,T),back(R+1,B+1),back(L,B+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
-            window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}else window.MTQ={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
+            // a book seen from an angle is a trapezoid, not a parallelogram: each side edge is its own line, fitted
+            // robustly (Theil–Sen) to the straightened mask's rows between the strip's ends
+            let xL=y=>L,xR=y=>R+1;try{const rd=rfd;const le=[],re=[];for(let y=T;y<=B;y+=2){let a=-1,b=-1;for(let x=Math.max(0,L-Math.round((R-L)*.6));x<Math.min(w,R+1+Math.round((R-L)*.6));x++)if(rd[y*w+x]){if(a<0)a=x;b=x}if(a>=0&&b-a>=(R-L)*.5){le.push([y,a]);re.push([y,b+1])}}
+              const fit=pts=>{if(pts.length<10)return null;const sl=[],step=Math.max(1,Math.floor(pts.length/50));for(let i=0;i<pts.length;i+=step)for(let j=i+step;j<pts.length;j+=step){const dy=pts[j][0]-pts[i][0];if(dy<(B-T)*.15)continue;sl.push((pts[j][1]-pts[i][1])/dy)}if(sl.length<6)return null;sl.sort((p,q)=>p-q);const k=sl[sl.length>>1];const ic=pts.map(p=>p[1]-k*p[0]).sort((p,q)=>p-q);return [k,ic[ic.length>>1]]};
+              const fL=fit(le),fR=fit(re);if(fL&&fR&&Math.abs(fL[0])<.35&&Math.abs(fR[0])<.35){xL=y=>fL[1]+fL[0]*y;xR=y=>fR[1]+fR[0]*y;window.MTQ_TRAP={fL:fL.map(v=>+v.toFixed(3)),fR:fR.map(v=>+v.toFixed(3))}}}catch(e){}
+            let quad=[back(xL(T),T),back(xR(T),T),back(xR(B+1),B+1),back(xL(B+1),B+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
+            window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}else window.MTQ_FAIL={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
       // a spine is an upright strip: its width is what the middle rows agree on (a hand at the top or a rug at the
       // bottom does not change it); its rows are the ones filled across that strip
       const bb=cv.boundingRect(contours.get(best));const ya=bb.y+Math.round(bb.height*.25),yb=bb.y+Math.round(bb.height*.75);
@@ -4508,8 +4513,10 @@ function netGrab(cv,crop,mask,MW=SNET.W,MH=SNET.H,R={core:.3,near:.2,far:.55}){c
 {const _snet=snetQuad;snetQuad=async function(crop,guide,q0){const {mask,canvas,on}=await snetMask(crop);if(on<SNET.W*SNET.H*.004)return null;
   const g=guide||{x:.1,y:.06,w:.8,h:.88};let r=null;try{r=netGrab(CV.m,crop,mask)}catch(e){console.warn('netGrab',e)}
   const okQ=q=>{if(!q||q.length!==4||!q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return false;const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);return !(qh<g.h*.35||qw<.03||qw>.6)};
-  let q=r?maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,true,g,null,true):null;let used=!!r&&okQ(q);
-  if(!used)q=maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true); // the trimmed mask fell apart (a hand across it): the net's own mask then
+  window.MTQ_FAIL=null;let q=r?maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,true,g,null,true):null;let used=!!r&&okQ(q);
+  // the trimmed mask fell apart (a hand across it), or it leans but could not be read leaning: the net's own mask then
+  if(used&&window.MTQ&&!window.MTQ.rot&&window.MTQ_RECT&&Math.abs(window.MTQ_RECT.hough?window.MTQ_RECT.hough.lean:window.MTQ_RECT.rowLean)>2.5){const q2=maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true);if(okQ(q2)&&window.MTQ&&window.MTQ.rot){q=q2;used=false}}
+  if(!used)q=maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true);
   window.NG={used,on:r&&r.on};
   if(!okQ(q))return null;return snapEdges(crop,q)}}
 
@@ -4601,50 +4608,54 @@ gnetLight=async function(src,sx,sy,sw,sh){const W=GNET.W,H=GNET.H;const sub=docu
 // edges are long straight lines in the picture, so each side is the strongest long line just outside the core on
 // that side, and the four lines' crossings are the corners. A hand, a shadow or a printed box beside the cover has
 // no long straight line that close to the core (or lies on the far side of the real edge). =====
-function linesQuad(cv,crop,mask,MW,MH,guide){const L=480,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+function linesQuad(cv,crop,guide){const L=560,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
   const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
   const mats=[];const M=m=>{mats.push(m);return m};
   try{const img=M(cv.imread(s)),gm=M(new cv.Mat()),ed=M(new cv.Mat()),edw=M(new cv.Mat());cv.cvtColor(img,gm,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gm,gm,new cv.Size(3,3),0);cv.Canny(gm,ed,40,120);
     const kd=M(cv.Mat.ones(5,5,cv.CV_8U));cv.dilate(ed,edw,kd);
-    // the net's mask at this size, and its core: the part of it around the guide's centre (the user framed the cover
-    // there; a shadow or a box the mask bled into lies away from the centre)
-    const mc=document.createElement('canvas');mc.width=MW;mc.height=MH;const mg=mc.getContext('2d'),id=mg.createImageData(MW,MH);for(let i=0;i<MW*MH;i++){const v=mask[i]?255:0;id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}mg.putImageData(id,0,0);
-    const ms=document.createElement('canvas');ms.width=w;ms.height=h;const sg=ms.getContext('2d');sg.imageSmoothingEnabled=false;sg.drawImage(mc,0,0,w,h);const md=sg.getImageData(0,0,w,h).data;
-    const net=new Uint8Array(w*h);let bx0=w,bx1=0,by0=h,by1=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(md[(y*w+x)*4]>127){net[y*w+x]=1;if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y}if(bx1<=bx0||by1<=by0)return null;
-    const g=guide||{x:.07,y:.1,w:.86,h:.76},gcx=(g.x+g.w/2)*w,gcy=(g.y+g.h/2)*h,rx=Math.max(12,(bx1-bx0)*.2),ry=Math.max(12,(by1-by0)*.2);
-    let cx0=w,cx1=0,cy0=h,cy1=0,cn=0;for(let y=Math.max(0,Math.round(gcy-ry));y<Math.min(h,gcy+ry);y++)for(let x=Math.max(0,Math.round(gcx-rx));x<Math.min(w,gcx+rx);x++)if(net[y*w+x]){cn++;if(x<cx0)cx0=x;if(x>cx1)cx1=x;if(y<cy0)cy0=y;if(y>cy1)cy1=y}
-    if(cn<rx*ry*.5)return null;const cr={x:cx0,y:cy0,width:cx1-cx0,height:cy1-cy0};
-    // long straight lines
-    const lines=M(new cv.Mat());cv.HoughLinesP(ed,lines,1,Math.PI/360,Math.max(20,Math.round(Math.min(w,h)*.05)),Math.max(20,Math.round(Math.min(bx1-bx0,by1-by0)*.3)),Math.round(Math.min(w,h)*.02));
+    // the core: the middle of the guide — the user framed the cover there, so the cover holds it whatever else is in view
+    const g=guide||{x:.07,y:.1,w:.86,h:.76};const cr={x:(g.x+g.w*.3)*w,y:(g.y+g.h*.32)*h,width:g.w*.4*w,height:g.h*.36*h};const cx=cr.x+cr.width/2,cy=cr.y+cr.height/2;
+    const gx0=(g.x-g.w*.15)*w,gx1=(g.x+g.w*1.15)*w,gy0=(g.y-g.h*.15)*h,gy1=(g.y+g.h*1.15)*h;
+    const minLen=Math.round(Math.min(g.w*w,g.h*h)*.2);const lines=M(new cv.Mat());cv.HoughLinesP(ed,lines,1,Math.PI/360,Math.max(20,Math.round(minLen*.6)),minLen,Math.round(minLen*.15));
     const segs=[];for(let i=0;i<lines.rows;i++){const x1=lines.data32S[i*4],y1=lines.data32S[i*4+1],x2=lines.data32S[i*4+2],y2=lines.data32S[i*4+3];const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1)continue;const ang=Math.abs(Math.atan2(dy,dx))*180/Math.PI;segs.push({x1,y1,x2,y2,len,vert:ang>65&&ang<115,horiz:ang<25||ang>155})}
     const atY=(s,y)=>s.y2===s.y1?s.x1:s.x1+(s.x2-s.x1)*(y-s.y1)/(s.y2-s.y1),atX=(s,x)=>s.x2===s.x1?s.y1:s.y1+(s.y2-s.y1)*(x-s.x1)/(s.x2-s.x1);
-    const mx0=bx0-(bx1-bx0)*.12,mx1=bx1+(bx1-bx0)*.12,my0=by0-(by1-by0)*.12,my1=by1+(by1-by0)*.12;
-    const cand=side=>{const out=[];for(const s of segs){if(!(side==='L'||side==='R'?s.vert:s.horiz))continue;
-        const p=side==='L'||side==='R'?atY(s,gcy):atX(s,gcx);
-        const ok=side==='L'?p<=cr.x+2&&p>=mx0:side==='R'?p>=cr.x+cr.width-2&&p<=mx1:side==='T'?p<=cr.y+2&&p>=my0:p>=cr.y+cr.height-2&&p<=my1;if(!ok)continue;out.push(s)}
-      out.sort((a,b)=>b.len-a.len);return out.slice(0,7)};
-    const Lc=cand('L'),Rc=cand('R'),Tc=cand('T'),Bc=cand('B');window.LQ={n:segs.length,c:[Lc.length,Rc.length,Tc.length,Bc.length],core:[cr.x,cr.y,cr.width,cr.height]};if(!Lc.length||!Rc.length||!Tc.length||!Bc.length)return null;
+    const cand=side=>{const out=[];for(const s of segs){if(!(side==='L'||side==='R'?s.vert:s.horiz))continue;const p=side==='L'||side==='R'?atY(s,cy):atX(s,cx);
+        const ok=side==='L'?p<=cr.x&&p>=gx0:side==='R'?p>=cr.x+cr.width&&p<=gx1:side==='T'?p<=cr.y&&p>=gy0:p>=cr.y+cr.height&&p<=gy1;if(!ok)continue;
+        // the segment must run alongside the core (a box's edge above the cover does not)
+        const ov=(side==='L'||side==='R')?Math.max(0,Math.min(Math.max(s.y1,s.y2),cr.y+cr.height)-Math.max(Math.min(s.y1,s.y2),cr.y))/cr.height:Math.max(0,Math.min(Math.max(s.x1,s.x2),cr.x+cr.width)-Math.max(Math.min(s.x1,s.x2),cr.x))/cr.width;if(ov<.25)continue;out.push(s)}
+      out.sort((a,b)=>b.len-a.len);return out.slice(0,8)};
+    const Lc=cand('L'),Rc=cand('R'),Tc=cand('T'),Bc=cand('B');window.LQ={n:segs.length,c:[Lc.length,Rc.length,Tc.length,Bc.length]};if(!Lc.length||!Rc.length||!Tc.length||!Bc.length)return null;
     const cross=(a,b)=>{const x1=a.x1,y1=a.y1,x2=a.x2,y2=a.y2,x3=b.x1,y3=b.y1,x4=b.x2,y4=b.y2;const den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);if(Math.abs(den)<1e-6)return null;return {x:((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den,y:((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den}};
-    // edge support along a side: the share of sample points that sit on an edge
-    const E=edw.data;const support=(a,b)=>{let hit=0,n=0;for(let t=.03;t<=.97;t+=.02){const x=Math.round(a.x+(b.x-a.x)*t),y=Math.round(a.y+(b.y-a.y)*t);n++;if(x>=0&&y>=0&&x<w&&y<h&&E[y*w+x])hit++}return hit/n};
-    // every combination: the tightest four-sided figure that is well supported by edges, box-like, and holds the core
-    let best=null,bestKey=null;
+    const E=edw.data;const support=(a,b)=>{let hit=0,n=0;for(let t=.04;t<=.96;t+=.02){const x=Math.round(a.x+(b.x-a.x)*t),y=Math.round(a.y+(b.y-a.y)*t);n++;if(x>=0&&y>=0&&x<w&&y<h&&E[y*w+x])hit++}return hit/n};
+    // every combination: the tightest four-sided figure that is well supported by edges on all four sides, box-like,
+    // and holds the core. The cover's own outline is such a figure; the cover plus the box above it is a bigger one
+    let best=null;
     for(const Ls of Lc)for(const Rs of Rc)for(const Ts of Tc)for(const Bs of Bc){const q=[cross(Ls,Ts),cross(Rs,Ts),cross(Rs,Bs),cross(Ls,Bs)];if(q.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)))continue;
-        const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw<cr.width||qh<cr.height||qw>w||qh>h)continue;
-        if(Math.min(...xs)>cr.x+2||Math.max(...xs)<cr.x+cr.width-2||Math.min(...ys)>cr.y+2||Math.max(...ys)<cr.y+cr.height-2)continue;
-        const asp=qw/qh;if(asp<.4||asp>1.1)continue;
-        const sup=(support(q[0],q[1])+support(q[1],q[2])+support(q[2],q[3])+support(q[3],q[0]))/4;const area=qw*qh;
-        const key=[sup>=.55?1:0,sup>=.55?-area:sup];if(!bestKey||key[0]>bestKey[0]||(key[0]===bestKey[0]&&key[1]>bestKey[1])){bestKey=key;best={q,sup,area}}}
-    if(!best)return null;window.LQ.sup=+best.sup.toFixed(2);window.LQ.area=Math.round(best.area/(w*h)*100);
-    return best.q.map(p=>({x:Math.max(0,Math.min(1,p.x/w)),y:Math.max(0,Math.min(1,p.y/h))}))}
+        const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw<cr.width||qh<cr.height||qw>w*1.05||qh>h*1.05)continue;
+        if(Math.min(...xs)>cr.x||Math.max(...xs)<cr.x+cr.width||Math.min(...ys)>cr.y||Math.max(...ys)<cr.y+cr.height)continue;
+        const asp=qw/qh;if(asp<.45||asp>1.05)continue;
+        const sides=[support(q[0],q[1]),support(q[1],q[2]),support(q[2],q[3]),support(q[3],q[0])];const minS=Math.min(...sides),sup=sides.reduce((a,b)=>a+b)/4;if(minS<.35||sup<.55)continue;
+        const area=qw*qh;if(!best||area<best.area*.97||(area<best.area*1.03&&sup>best.sup)){best={q,sup,area,minS}}}
+    if(!best)return null;window.LQ.sup=+best.sup.toFixed(2);window.LQ.minS=+best.minS.toFixed(2);window.LQ.area=Math.round(best.area/(w*h)*100);
+    return orderQuad(best.q.map(p=>({x:Math.max(0,Math.min(1,p.x/w)),y:Math.max(0,Math.min(1,p.y/h))})))}
   finally{for(const m of mats){try{m.delete()}catch(e){}}}}
+// covers: the line figure, when found, replaces the first answer (GrabCut) right after it
+async function linesRefine(crop,mode,guide,q0){if(mode==='spine')return false;const alive=()=>PEND.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
+  try{if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m||!alive())return false;const q=linesQuad(CV.m,crop,guide);if(!q||!alive())return false;
+    SAMC.crop=crop;SAMC.q=q;$('qfAuto').onclick&&$('qfAuto').onclick();$('qfNote').textContent='표지 모서리를 찾았습니다. 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.';return true}
+  catch(e){console.warn('lines',e);return false}}
+// (linesRefine is not hooked in: printed artwork has strong straight edges of its own, so the tightest supported figure is not reliably the cover)
 {const _cq=cnetQuad;cnetQuad=async function(crop,guide,q0){const {mask,canvas,on}=await cnetMask(crop);if(on<CNET.W*CNET.H*.03)return null;
   // GrabCut seeded from the mask with cover-sized bands (a cover is wide: the sure-outside must start close to the outline)
   let r=null;try{r=netGrab(CV.m,crop,mask,CNET.W,CNET.H,{core:.18,near:.05,far:.14})}catch(e){}
   if(r){const g=guide||{x:.07,y:.1,w:.86,h:.76};const q2=maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,false,g,q0);if(q2&&q2.length===4&&q2.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))){const xs=q2.map(p=>p.x),ys=q2.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw>=.2&&qh>=.2&&qw*qh<=.92){window.CQ='grab';return q2}}}
-  let q=null;try{q=linesQuad(CV.m,crop,mask,CNET.W,CNET.H,guide)}catch(e){console.warn('linesQuad',e)}
+  let q=null;
   if(q){const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw>=.2&&qh>=.2&&qw*qh<=.92){window.CQ='lines';return orderQuad(q)}}
   window.CQ='mask';return _cq(crop,guide,q0)}}
+
+// the spinner stays until the nets have had their say (GrabCut's first answer is shown underneath meanwhile), so
+// "이대로" is not pressed on the rough answer by mistake
+{const _ref=samRefine;samRefine=async function(crop,mode,guide,q0){const el=document.documentElement;el.classList.add('qf-busy');try{return await _ref(crop,mode,guide,q0)}finally{if(PEND.crop===crop)el.classList.remove('qf-busy')}}}
 
 
 
