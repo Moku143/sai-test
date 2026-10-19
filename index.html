@@ -3900,15 +3900,22 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
         for(let i=0;i<contours.size();i++){if(i===best)continue;const r=cv.boundingRect(contours.get(i));if(r.width*r.height<w*h*.001)continue;
           const rcx=r.x+r.width/2,mcx=mainBB.x+mainBB.width/2,gapY=Math.max(r.y,mainBB.y)-Math.min(r.y+r.height,mainBB.y+mainBB.height);
           if(gapY>0&&gapY<h*.2&&Math.abs(rcx-mcx)<mainBB.width*1.6&&r.width<mainBB.width*1.6&&r.width>mainBB.width*.4)cv.drawContours(fg,contours,i,new cv.Scalar(255),-1)}
-        // how much the book leans: the line through the row centres of the main piece (medians of its upper and lower thirds)
-        const mids=[];for(let y=0;y<h;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0)mids.push([y,(a+b)/2])}
-        let lean=0;if(mids.length>20){const n3=Math.floor(mids.length/3),med=arr=>{const v=arr.map(p=>p[1]).sort((p,q)=>p-q);return v[v.length>>1]};const top=mids.slice(0,n3),bot=mids.slice(-n3);
-          const dy=bot[bot.length>>1][0]-top[top.length>>1][0],dx=med(bot)-med(top);lean=Math.atan2(dx,dy)*180/Math.PI}
-        // the tightest rotated box around the piece gives the lean directly when the piece is clearly a strip; the row-centre
-        // line is the fallback (it is fooled when a hand or a neighbour widens one end)
-        try{const c2=new cv.MatVector(),h2=new cv.Mat();cv.findContours(fg,c2,h2,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);let bi=-1,ba=0;for(let i=0;i<c2.size();i++){const a=cv.contourArea(c2.get(i));if(a>ba){ba=a;bi=i}}
-          if(bi>=0){const rr=cv.minAreaRect(c2.get(bi)),pts=cv.RotatedRect.points(rr);const lw=Math.max(rr.size.width,rr.size.height),sw=Math.min(rr.size.width,rr.size.height);let ex=pts[1].x-pts[0].x,ey=pts[1].y-pts[0].y;const fx=pts[2].x-pts[1].x,fy=pts[2].y-pts[1].y;if(fx*fx+fy*fy>ex*ex+ey*ey){ex=fx;ey=fy}if(ey<0){ex=-ex;ey=-ey}let ang=Math.atan2(ex,ey)*180/Math.PI;
-            if(lw/Math.max(1,sw)>2.5&&Math.abs(ang)<=40&&(Math.abs(ang-lean)<8||Math.abs(lean)>40||mids.length<=20))lean=ang;window.MTQ_RECT={ang:+ang.toFixed(1),lw:+lw.toFixed(0),sw:+sw.toFixed(0),rowLean:+lean.toFixed(1)}}c2.delete();h2.delete()}catch(e){}
+        // how much the book leans: the slope of its left and right edges, each the median of the slopes between pairs
+        // of rows (Theil–Sen), so a bleed at one end (a table, a magazine the book stands on) cannot tip the estimate
+        const le=[],re=[];for(let y=0;y<h;y+=2){let a=-1,b=-1;for(let x=0;x<w;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0){le.push([y,a]);re.push([y,b])}}
+        const theil=pts=>{if(pts.length<8)return null;const sl=[];const step=Math.max(1,Math.floor(pts.length/60));for(let i=0;i<pts.length;i+=step)for(let j=i+step;j<pts.length;j+=step){const dy=pts[j][0]-pts[i][0];if(dy<h*.1)continue;sl.push((pts[j][1]-pts[i][1])/dy)}if(sl.length<6)return null;sl.sort((a,b)=>a-b);return [sl[sl.length>>1],sl[Math.floor(sl.length*.75)]-sl[Math.floor(sl.length*.25)]]};
+        const tL=theil(le),tR=theil(re);let lean=0;const mids=le;const sL=tL&&tL[0],sR=tR&&tR[0];
+        // the two edges should agree; when one is spread out (a bleed hangs off it) the tidier edge is the book's
+        if(tL&&tR){const s=Math.abs(sL-sR)<.05?(sL+sR)/2:(tL[1]<=tR[1]?sL:sR);lean=Math.atan(s)*180/Math.PI}else if(tL||tR)lean=Math.atan(tL?sL:sR)*180/Math.PI;
+        window.MTQ_RECT={rowLean:+lean.toFixed(1),sL:tL&&tL.map(v=>+v.toFixed(3)),sR:tR&&tR.map(v=>+v.toFixed(3))};
+        // better still: the long straight lines in the picture along the mask's edges are the spine's own edges (a hand
+        // or a bleed has no long straight line); their length-weighted median angle is the lean
+        try{const gm=new cv.Mat(),ed=new cv.Mat(),dl=new cv.Mat(),band=new cv.Mat(),lines=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.Canny(gm,ed,50,150);
+          const kd=cv.Mat.ones(9,9,cv.CV_8U),ke=cv.Mat.ones(5,5,cv.CV_8U);cv.dilate(fg,dl,kd);cv.erode(fg,band,ke);cv.subtract(dl,band,band);cv.bitwise_and(ed,band,ed); // edges near the mask's outline only
+          cv.HoughLinesP(ed,lines,1,Math.PI/180,Math.max(15,Math.round(h*.06)),Math.max(12,Math.round(h*.12)),Math.round(h*.03));
+          const segs=[];for(let i=0;i<lines.rows;i++){const x1=lines.data32S[i*4],y1=lines.data32S[i*4+1],x2=lines.data32S[i*4+2],y2=lines.data32S[i*4+3];const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);const a=Math.atan2(dy<0?-dx:dx,Math.abs(dy))*180/Math.PI;if(Math.abs(a)<=40)segs.push([a,len])}
+          segs.sort((p,q)=>p[0]-q[0]);const tot=segs.reduce((t,s)=>t+s[1],0);if(tot>=h*.5){let acc=0,med=0;for(const [a,len] of segs){acc+=len;if(acc>=tot/2){med=a;break}}lean=med;window.MTQ_RECT.hough={lean:+med.toFixed(1),n:segs.length,tot:Math.round(tot)}}
+          [gm,ed,dl,band,lines,kd,ke].forEach(m=>m.delete())}catch(e){}
         if(Math.abs(lean)>1.5&&Math.abs(lean)<=40){
           // straighten the mask, read the strip there, and turn the corners back
           const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),lean,1),rf=new cv.Mat();cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
@@ -4480,9 +4487,9 @@ async function deglareNet(c,mode){if(!gnetOK())return c;if(!GNET.sess)await gnet
 // The net says roughly where the spine is but bleeds into a dark cabinet or a pale wall beside it. Its mask becomes the
 // seed: the inside (eroded) is surely book, a narrow band outside may be book, further out is surely not; GrabCut then
 // settles the edge on colour. The result, not the raw mask, goes to the corner finder — which now also follows a lean.
-function netGrab(cv,crop,mask){const L=360,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+function netGrab(cv,crop,mask,MW=SNET.W,MH=SNET.H,R={core:.3,near:.2,far:.55}){const L=360,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
   const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
-  const mc=document.createElement('canvas');mc.width=SNET.W;mc.height=SNET.H;const mg=mc.getContext('2d'),id=mg.createImageData(SNET.W,SNET.H);for(let i=0;i<SNET.W*SNET.H;i++){const v=mask[i]?255:0;id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}mg.putImageData(id,0,0);
+  const mc=document.createElement('canvas');mc.width=MW;mc.height=MH;const mg=mc.getContext('2d'),id=mg.createImageData(MW,MH);for(let i=0;i<MW*MH;i++){const v=mask[i]?255:0;id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}mg.putImageData(id,0,0);
   const ms=document.createElement('canvas');ms.width=w;ms.height=h;const sg=ms.getContext('2d');sg.imageSmoothingEnabled=false;sg.drawImage(mc,0,0,w,h);const md=sg.getImageData(0,0,w,h).data;
   const mats=[];const M=m=>{mats.push(m);return m};
   try{const img=M(cv.imread(s)),rgb=M(new cv.Mat());cv.cvtColor(img,rgb,cv.COLOR_RGBA2RGB);
@@ -4490,7 +4497,7 @@ function netGrab(cv,crop,mask){const L=360,k=Math.min(1,L/Math.max(crop.width,cr
     // the strip's width sets the scales: erode by a third of it for the sure core, allow a fifth outside, forbid beyond a half
     let wsum=0,wn=0;for(let y=0;y<h;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(net.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0){wsum+=b-a+1;wn++}}if(!wn)return null;const sw=wsum/wn;
     const ker=r=>M(cv.getStructuringElement(cv.MORPH_ELLIPSE,new cv.Size(r*2+1,r*2+1)));
-    const core=M(new cv.Mat()),near=M(new cv.Mat()),far=M(new cv.Mat());cv.erode(net,core,ker(Math.max(2,Math.round(sw*.3))));cv.dilate(net,near,ker(Math.max(2,Math.round(sw*.2))));cv.dilate(net,far,ker(Math.max(4,Math.round(sw*.55))));
+    const core=M(new cv.Mat()),near=M(new cv.Mat()),far=M(new cv.Mat());cv.erode(net,core,ker(Math.max(2,Math.round(sw*R.core))));cv.dilate(net,near,ker(Math.max(2,Math.round(sw*R.near))));cv.dilate(net,far,ker(Math.max(4,Math.round(sw*R.far))));
     if(cv.countNonZero(core)<w*h*.002)return null;
     const gm=M(new cv.Mat(h,w,cv.CV_8UC1));const G=gm.data;for(let i=0;i<w*h;i++)G[i]=core.data[i]?cv.GC_FGD:net.data[i]?cv.GC_PR_FGD:near.data[i]?cv.GC_PR_FGD:far.data[i]?cv.GC_PR_BGD:cv.GC_BGD;
     const bgd=M(new cv.Mat()),fgd=M(new cv.Mat());cv.grabCut(rgb,gm,new cv.Rect(0,0,1,1),bgd,fgd,3,cv.GC_INIT_WITH_MASK);
@@ -4528,6 +4535,116 @@ unifyExisting=async function(){for(const b of liveBooks()){if(!b.user||isDiary(b
       b.uni=UNI.v;await store.put(userRecord(b));
       const el=bookButtons[b.id],img=el&&el.querySelector('.spine-photo');if(img&&b.spine)img.src=b.spine;if(current===b)updatePhoto();
       await new Promise(r=>setTimeout(r,120))}catch(e){console.warn('unify existing',e)}}};
+
+// ===== the cover net: the same small U-Net, trained on synthetic covers lying in clutter (boxes with print, stacks
+// of cases, cabinets, hands). Its mask → the cover branch of maskToQuad (a convex four-corner fit) → the corners =====
+const CNET={sess:null,load:null,fail:0,W:192,H:256};
+function cnetLoad(){if(CNET.load)return CNET.load;
+  return CNET.load=(async()=>{const U=Object.assign({},SAM_URLS,window.SAM_CFG||{});
+    if(!window.ort)await new Promise((res,rej)=>{const s=document.createElement('script');s.src=U.ort;s.onload=res;s.onerror=()=>rej(new Error('ort script'));document.head.append(s)});
+    ort.env.wasm.wasmPaths=U.wasm;ort.env.wasm.numThreads=1;
+    CNET.sess=await ort.InferenceSession.create(U.cover||'./models/cover.onnx',{executionProviders:['wasm'],graphOptimizationLevel:'all'});return true})()
+    .catch(e=>{CNET.load=null;CNET.fail++;console.warn('cover net load',e);throw e})}
+const cnetOK=()=>!!window.CNET_ON&&(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&CNET.fail<2; // off until the cover net is reliable in clutter
+async function cnetMask(crop){const W=CNET.W,H=CNET.H,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(crop,0,0,W,H);
+  const d=g.getImageData(0,0,W,H).data,x=new Float32Array(3*W*H);for(let i=0,n=W*H;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await CNET.sess.run({[CNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});const lg=out[CNET.sess.outputNames[0]].data;
+  const mask=new Uint8Array(W*H);let on=0;for(let i=0;i<W*H;i++){if(lg[i]>.4){mask[i]=255;on++}}return {mask,canvas:c,on}}
+async function cnetQuad(crop,guide,q0){const {mask,canvas,on}=await cnetMask(crop);if(on<CNET.W*CNET.H*.03)return null;
+  const g=guide||{x:.07,y:.1,w:.86,h:.76};
+  // the net's outline is rough; GrabCut seeded from it settles the edge on colour (a cover is one colour world, the
+  // box beside it another); if that falls apart, the net's own mask is used
+  // thin bleeds into neighbouring things are opened away before the four-corner fit
+  try{const cv=CV.m,m=new cv.Mat(CNET.H,CNET.W,cv.CV_8UC1);m.data.set(mask);const k=cv.getStructuringElement(cv.MORPH_ELLIPSE,new cv.Size(13,13));cv.morphologyEx(m,m,cv.MORPH_OPEN,k);cv.morphologyEx(m,m,cv.MORPH_CLOSE,k);mask.set(m.data);m.delete();k.delete()}catch(e){}
+  const okQ=q=>q&&q.length===4&&q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+  const q=maskToQuad(CV.m,mask,canvas,CNET.W,CNET.H,false,g,q0);
+  if(!okQ(q))return null;
+  const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
+  if(qw<.2||qh<.2||qw*qh>.92)return null;
+  const hug=[Math.min(...xs)<.01,Math.max(...xs)>.99,Math.min(...ys)<.01,Math.max(...ys)>.99].filter(Boolean).length;if(hug>=3)return null;
+  return q}
+async function cnetRefine(crop,mode,guide,q0){if(mode==='spine'||!cnetOK())return false;const note=$('qfNote'),alive=()=>PEND.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
+  try{if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return false;
+    if(!CNET.sess){if(alive())note.textContent='표지 인식 모델을 준비하는 중입니다…';await cnetLoad()}
+    if(!alive())return false;const q=await cnetQuad(crop,guide,q0);if(!alive())return false;
+    if(q){SAMC.crop=crop;SAMC.q=q;$('qfAuto').onclick&&$('qfAuto').onclick();note.textContent='표지를 찾았습니다. 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.';return true}
+    return false}
+  catch(e){console.warn('cover net',e);return false}}
+{const _ref=samRefine;samRefine=async function(crop,mode,guide,q0){if(mode!=='spine'){const ok=await cnetRefine(crop,mode,guide,q0);if(ok)return}return _ref(crop,mode,guide,q0)}}
+
+// ===== the nets see what they were trained on: a browser's one-step downscale of a 12-megapixel photo is aliased
+// (it samples a few pixels), PIL's resize averages them. Halving step by step until the last step is under 2× gives
+// the averaged look, for every net in the app =====
+function drawScaled(src,W,H){const sw=src.width||src.naturalWidth,sh=src.height||src.naturalHeight;
+  // exact area averaging (PIL's BOX): every source pixel inside an output cell counts once, the cells tile the source
+  let full=src;if(!(src instanceof HTMLCanvasElement)){full=document.createElement('canvas');full.width=sw;full.height=sh;full.getContext('2d').drawImage(src,0,0)}
+  const sd=full.getContext('2d').getImageData(0,0,sw,sh).data,out=document.createElement('canvas');out.width=W;out.height=H;const g=out.getContext('2d'),id=g.createImageData(W,H),od=id.data;
+  const xs=new Int32Array(W+1),ys=new Int32Array(H+1);for(let x=0;x<=W;x++)xs[x]=Math.round(x*sw/W);for(let y=0;y<=H;y++)ys[y]=Math.round(y*sh/H);
+  for(let y=0;y<H;y++){const y0=ys[y],y1=Math.max(y0+1,ys[y+1]);for(let x=0;x<W;x++){const x0=xs[x],x1=Math.max(x0+1,xs[x+1]);let r=0,gg=0,b=0,n=0;
+      for(let yy=y0;yy<y1;yy++){let o=(yy*sw+x0)*4;for(let xx=x0;xx<x1;xx++,o+=4){r+=sd[o];gg+=sd[o+1];b+=sd[o+2];n++}}
+      const q=(y*W+x)*4;od[q]=r/n;od[q+1]=gg/n;od[q+2]=b/n;od[q+3]=255}}
+  g.putImageData(id,0,0);return out}
+cnetMask=async function(crop){const W=CNET.W,H=CNET.H,c=drawScaled(crop,W,H),g=c.getContext('2d');
+  const d=g.getImageData(0,0,W,H).data,x=new Float32Array(3*W*H);for(let i=0,n=W*H;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await CNET.sess.run({[CNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});const lg=out[CNET.sess.outputNames[0]].data;
+  const mask=new Uint8Array(W*H);let on=0;for(let i=0;i<W*H;i++){if(lg[i]>.4){mask[i]=255;on++}}return {mask,canvas:c,on}};
+snetMask=async function(crop){const W=SNET.W,H=SNET.H,c=drawScaled(crop,W,H),g=c.getContext('2d');
+  const d=g.getImageData(0,0,W,H).data,x=new Float32Array(3*W*H);for(let i=0,n=W*H;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await SNET.sess.run({[SNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});const lg=out[SNET.sess.outputNames[0]].data;
+  const thr=SNET.thr||0,mask=new Uint8Array(W*H);let on=0;for(let i=0;i<W*H;i++){if(lg[i]>thr){mask[i]=255;on++}}return {mask,canvas:c,on}};
+gnetLight=async function(src,sx,sy,sw,sh){const W=GNET.W,H=GNET.H;const sub=document.createElement('canvas');sub.width=sw;sub.height=sh;sub.getContext('2d').drawImage(src,sx,sy,sw,sh,0,0,sw,sh);const c=drawScaled(sub,W,H),g=c.getContext('2d');
+  const d=g.getImageData(0,0,W,H).data,x=new Float32Array(3*W*H);for(let i=0,n=W*H;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await GNET.sess.run({[GNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});const o=out[GNET.sess.outputNames[0]].data;const n=W*H,L=new Float32Array(3*n);
+  for(let i=0;i<3*n;i++)L[i]=Math.max(0,Math.min(255,o[i]*255));return L};
+
+// ===== covers: the net says roughly where the cover is; its eroded core is surely inside the cover. The cover's own
+// edges are long straight lines in the picture, so each side is the strongest long line just outside the core on
+// that side, and the four lines' crossings are the corners. A hand, a shadow or a printed box beside the cover has
+// no long straight line that close to the core (or lies on the far side of the real edge). =====
+function linesQuad(cv,crop,mask,MW,MH,guide){const L=480,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+  const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
+  const mats=[];const M=m=>{mats.push(m);return m};
+  try{const img=M(cv.imread(s)),gm=M(new cv.Mat()),ed=M(new cv.Mat()),edw=M(new cv.Mat());cv.cvtColor(img,gm,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gm,gm,new cv.Size(3,3),0);cv.Canny(gm,ed,40,120);
+    const kd=M(cv.Mat.ones(5,5,cv.CV_8U));cv.dilate(ed,edw,kd);
+    // the net's mask at this size, and its core: the part of it around the guide's centre (the user framed the cover
+    // there; a shadow or a box the mask bled into lies away from the centre)
+    const mc=document.createElement('canvas');mc.width=MW;mc.height=MH;const mg=mc.getContext('2d'),id=mg.createImageData(MW,MH);for(let i=0;i<MW*MH;i++){const v=mask[i]?255:0;id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}mg.putImageData(id,0,0);
+    const ms=document.createElement('canvas');ms.width=w;ms.height=h;const sg=ms.getContext('2d');sg.imageSmoothingEnabled=false;sg.drawImage(mc,0,0,w,h);const md=sg.getImageData(0,0,w,h).data;
+    const net=new Uint8Array(w*h);let bx0=w,bx1=0,by0=h,by1=0;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(md[(y*w+x)*4]>127){net[y*w+x]=1;if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y}if(bx1<=bx0||by1<=by0)return null;
+    const g=guide||{x:.07,y:.1,w:.86,h:.76},gcx=(g.x+g.w/2)*w,gcy=(g.y+g.h/2)*h,rx=Math.max(12,(bx1-bx0)*.2),ry=Math.max(12,(by1-by0)*.2);
+    let cx0=w,cx1=0,cy0=h,cy1=0,cn=0;for(let y=Math.max(0,Math.round(gcy-ry));y<Math.min(h,gcy+ry);y++)for(let x=Math.max(0,Math.round(gcx-rx));x<Math.min(w,gcx+rx);x++)if(net[y*w+x]){cn++;if(x<cx0)cx0=x;if(x>cx1)cx1=x;if(y<cy0)cy0=y;if(y>cy1)cy1=y}
+    if(cn<rx*ry*.5)return null;const cr={x:cx0,y:cy0,width:cx1-cx0,height:cy1-cy0};
+    // long straight lines
+    const lines=M(new cv.Mat());cv.HoughLinesP(ed,lines,1,Math.PI/360,Math.max(20,Math.round(Math.min(w,h)*.05)),Math.max(20,Math.round(Math.min(bx1-bx0,by1-by0)*.3)),Math.round(Math.min(w,h)*.02));
+    const segs=[];for(let i=0;i<lines.rows;i++){const x1=lines.data32S[i*4],y1=lines.data32S[i*4+1],x2=lines.data32S[i*4+2],y2=lines.data32S[i*4+3];const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1)continue;const ang=Math.abs(Math.atan2(dy,dx))*180/Math.PI;segs.push({x1,y1,x2,y2,len,vert:ang>65&&ang<115,horiz:ang<25||ang>155})}
+    const atY=(s,y)=>s.y2===s.y1?s.x1:s.x1+(s.x2-s.x1)*(y-s.y1)/(s.y2-s.y1),atX=(s,x)=>s.x2===s.x1?s.y1:s.y1+(s.y2-s.y1)*(x-s.x1)/(s.x2-s.x1);
+    const mx0=bx0-(bx1-bx0)*.12,mx1=bx1+(bx1-bx0)*.12,my0=by0-(by1-by0)*.12,my1=by1+(by1-by0)*.12;
+    const cand=side=>{const out=[];for(const s of segs){if(!(side==='L'||side==='R'?s.vert:s.horiz))continue;
+        const p=side==='L'||side==='R'?atY(s,gcy):atX(s,gcx);
+        const ok=side==='L'?p<=cr.x+2&&p>=mx0:side==='R'?p>=cr.x+cr.width-2&&p<=mx1:side==='T'?p<=cr.y+2&&p>=my0:p>=cr.y+cr.height-2&&p<=my1;if(!ok)continue;out.push(s)}
+      out.sort((a,b)=>b.len-a.len);return out.slice(0,7)};
+    const Lc=cand('L'),Rc=cand('R'),Tc=cand('T'),Bc=cand('B');window.LQ={n:segs.length,c:[Lc.length,Rc.length,Tc.length,Bc.length],core:[cr.x,cr.y,cr.width,cr.height]};if(!Lc.length||!Rc.length||!Tc.length||!Bc.length)return null;
+    const cross=(a,b)=>{const x1=a.x1,y1=a.y1,x2=a.x2,y2=a.y2,x3=b.x1,y3=b.y1,x4=b.x2,y4=b.y2;const den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);if(Math.abs(den)<1e-6)return null;return {x:((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den,y:((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den}};
+    // edge support along a side: the share of sample points that sit on an edge
+    const E=edw.data;const support=(a,b)=>{let hit=0,n=0;for(let t=.03;t<=.97;t+=.02){const x=Math.round(a.x+(b.x-a.x)*t),y=Math.round(a.y+(b.y-a.y)*t);n++;if(x>=0&&y>=0&&x<w&&y<h&&E[y*w+x])hit++}return hit/n};
+    // every combination: the tightest four-sided figure that is well supported by edges, box-like, and holds the core
+    let best=null,bestKey=null;
+    for(const Ls of Lc)for(const Rs of Rc)for(const Ts of Tc)for(const Bs of Bc){const q=[cross(Ls,Ts),cross(Rs,Ts),cross(Rs,Bs),cross(Ls,Bs)];if(q.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)))continue;
+        const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw<cr.width||qh<cr.height||qw>w||qh>h)continue;
+        if(Math.min(...xs)>cr.x+2||Math.max(...xs)<cr.x+cr.width-2||Math.min(...ys)>cr.y+2||Math.max(...ys)<cr.y+cr.height-2)continue;
+        const asp=qw/qh;if(asp<.4||asp>1.1)continue;
+        const sup=(support(q[0],q[1])+support(q[1],q[2])+support(q[2],q[3])+support(q[3],q[0]))/4;const area=qw*qh;
+        const key=[sup>=.55?1:0,sup>=.55?-area:sup];if(!bestKey||key[0]>bestKey[0]||(key[0]===bestKey[0]&&key[1]>bestKey[1])){bestKey=key;best={q,sup,area}}}
+    if(!best)return null;window.LQ.sup=+best.sup.toFixed(2);window.LQ.area=Math.round(best.area/(w*h)*100);
+    return best.q.map(p=>({x:Math.max(0,Math.min(1,p.x/w)),y:Math.max(0,Math.min(1,p.y/h))}))}
+  finally{for(const m of mats){try{m.delete()}catch(e){}}}}
+{const _cq=cnetQuad;cnetQuad=async function(crop,guide,q0){const {mask,canvas,on}=await cnetMask(crop);if(on<CNET.W*CNET.H*.03)return null;
+  // GrabCut seeded from the mask with cover-sized bands (a cover is wide: the sure-outside must start close to the outline)
+  let r=null;try{r=netGrab(CV.m,crop,mask,CNET.W,CNET.H,{core:.18,near:.05,far:.14})}catch(e){}
+  if(r){const g=guide||{x:.07,y:.1,w:.86,h:.76};const q2=maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,false,g,q0);if(q2&&q2.length===4&&q2.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))){const xs=q2.map(p=>p.x),ys=q2.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw>=.2&&qh>=.2&&qw*qh<=.92){window.CQ='grab';return q2}}}
+  let q=null;try{q=linesQuad(CV.m,crop,mask,CNET.W,CNET.H,guide)}catch(e){console.warn('linesQuad',e)}
+  if(q){const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);if(qw>=.2&&qh>=.2&&qw*qh<=.92){window.CQ='lines';return orderQuad(q)}}
+  window.CQ='mask';return _cq(crop,guide,q0)}}
 
 
 
