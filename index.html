@@ -3913,21 +3913,50 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
         try{const gm=new cv.Mat(),ed=new cv.Mat(),dl=new cv.Mat(),band=new cv.Mat(),lines=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.Canny(gm,ed,50,150);
           const kd=cv.Mat.ones(9,9,cv.CV_8U),ke=cv.Mat.ones(5,5,cv.CV_8U);cv.dilate(fg,dl,kd);cv.erode(fg,band,ke);cv.subtract(dl,band,band);cv.bitwise_and(ed,band,ed); // edges near the mask's outline only
           cv.HoughLinesP(ed,lines,1,Math.PI/180,Math.max(15,Math.round(h*.06)),Math.max(12,Math.round(h*.12)),Math.round(h*.03));
-          const segs=[];for(let i=0;i<lines.rows;i++){const x1=lines.data32S[i*4],y1=lines.data32S[i*4+1],x2=lines.data32S[i*4+2],y2=lines.data32S[i*4+3];const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);const a=Math.atan2(dy<0?-dx:dx,Math.abs(dy))*180/Math.PI;if(Math.abs(a)<=40)segs.push([a,len])}
+          let my0=h,my1=0;for(let i=0;i<mids.length;i++){const y=mids[i][0];if(y<my0)my0=y;if(y>my1)my1=y}const ya=my0+(my1-my0)*.2,yb=my0+(my1-my0)*.8; // the ends are where a hand or the floor spoils the outline
+          const segs=[];for(let i=0;i<lines.rows;i++){const x1=lines.data32S[i*4],y1=lines.data32S[i*4+1],x2=lines.data32S[i*4+2],y2=lines.data32S[i*4+3];const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ym=(y1+y2)/2;if(ym<ya||ym>yb)continue;const a=Math.atan2(dy<0?-dx:dx,Math.abs(dy))*180/Math.PI;if(Math.abs(a)<=40)segs.push([a,len])}
           segs.sort((p,q)=>p[0]-q[0]);const tot=segs.reduce((t,s)=>t+s[1],0);if(tot>=h*.5){let acc=0,med=0;for(const [a,len] of segs){acc+=len;if(acc>=tot/2){med=a;break}}lean=med;window.MTQ_RECT.hough={lean:+med.toFixed(1),n:segs.length,tot:Math.round(tot)}}
           [gm,ed,dl,band,lines,kd,ke].forEach(m=>m.delete())}catch(e){}
+        // the strip's typical width from the middle rows of the piece (before any rotation): a leaning answer wider than
+        // that by much has taken a neighbour or the side face in, and the upright reading is used instead
+        let medW=0;{let y0=h,y1=0;for(const p of mids){if(p[0]<y0)y0=p[0];if(p[0]>y1)y1=p[0]}const ws=[];const ya=y0+(y1-y0)*.25,yb=y0+(y1-y0)*.75;for(let y=Math.round(ya);y<=yb;y+=2){let a=-1,b=-1;for(let x=0;x<w;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0)ws.push(b-a+1)}ws.sort((p,q)=>p-q);medW=ws[ws.length>>1]||0}
         if(Math.abs(lean)>1.5&&Math.abs(lean)<=40){
           // straighten the mask, read the strip there, and turn the corners back
           const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),-lean,1),rf=new cv.Mat(); /* lean>0: bottom to the right; rotating by -lean stands it up */ cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
-          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Array.from(Mi.data64F);const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);const rfd=st?new Uint8Array(rf.data):null;rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
+          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Array.from(Mi.data64F);const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);const rfd=st?new Uint8Array(rf.data):null,grd=st?new Uint8Array(gr.data):null;rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
           if(st&&st[1]-st[0]<=mainBB.width*1.5){const [L,R,T,B]=st,back=(x,y)=>({x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/h});
             // a book seen from an angle is a trapezoid, not a parallelogram: each side edge is its own line, fitted
             // robustly (Theil–Sen) to the straightened mask's rows between the strip's ends
-            let xL=y=>L,xR=y=>R+1;try{const rd=rfd;const le=[],re=[];for(let y=T;y<=B;y+=2){let a=-1,b=-1;for(let x=Math.max(0,L-Math.round((R-L)*.6));x<Math.min(w,R+1+Math.round((R-L)*.6));x++)if(rd[y*w+x]){if(a<0)a=x;b=x}if(a>=0&&b-a>=(R-L)*.5){le.push([y,a]);re.push([y,b+1])}}
+            // the strip's sides snapped to the strongest vertical edge in the straightened picture near each: the mask's
+            // edge is soft (a few pixels of the neighbour or of the side face), the book's edge is a sharp line
+            let Ls=L,Rs=R;try{const sw=R-L+1,win=Math.max(3,Math.round(sw*.22)),prof=new Float32Array(w);for(let x=1;x<w-1;x++){let a=0,n=0;for(let y=T;y<=B;y+=2){a+=Math.abs(grd[y*w+x+1]-grd[y*w+x-1]);n++}prof[x]=n?a/n:0}
+              const srt=Array.from(prof.slice(Math.max(1,L-win),Math.min(w-1,R+win))).sort((p,q)=>p-q),med=srt[srt.length>>1]||1;
+              const peak=(x0,x1,xc)=>{let bx=-1,bv=0,raw=0;for(let x=Math.max(1,x0);x<=Math.min(w-2,x1);x++){const v=prof[x]/(1+Math.abs(x-xc)/win);if(v>bv){bv=v;bx=x;raw=prof[x]}}return raw>med*2.5?bx:-1};
+              const pl=peak(L-win,L+win,L),pr=peak(R-win,R+win,R);if(pl>=0)Ls=pl+1;if(pr>=0)Rs=pr-1;if(Rs-Ls<sw*.6){Ls=L;Rs=R}window.MTQ_SNAP={L,R,Ls,Rs,pl,pr,med:+med.toFixed(1),medW}}catch(e){}
+            if(medW&&(Rs-Ls+1)>medW*1.2*Math.cos(lean*Math.PI/180)+2){window.MTQ_FAIL={rot:'wide',w:Rs-Ls+1,medW}}else{
+            // the strip's ends likewise: the strongest horizontal edge near each end (the book's top, the band's end at the
+            // floor), so a mask that ran on into the floor or the hand stops at the book
+            let Ts=T,Bs=B;try{const hwin=Math.max(4,Math.round((B-T)*.12)),rp=new Float32Array(h);for(let y=1;y<h-1;y++){let a=0,n=0;for(let x=Ls;x<=Rs;x+=2){a+=Math.abs(grd[(y+1)*w+x]-grd[(y-1)*w+x]);n++}rp[y]=n?a/n:0}
+              const srt=Array.from(rp.slice(Math.max(1,T-hwin),Math.min(h-1,B+hwin))).sort((p,q)=>p-q),med=srt[srt.length>>1]||1;
+              const peak=(y0,y1,yc)=>{let by=-1,bv=0,raw=0;for(let y=Math.max(1,y0);y<=Math.min(h-2,y1);y++){const v=rp[y]/(1+Math.abs(y-yc)/hwin);if(v>bv){bv=v;by=y;raw=rp[y]}}return raw>med*2.5?by:-1};
+              const pt=peak(T-hwin,T+hwin,T),pb=peak(B-hwin,B+hwin,B);if(pt>=0)Ts=pt+1;if(pb>=0)Bs=pb-1;if(Bs-Ts<(B-T)*.7){Ts=T;Bs=B}window.MTQ_SNAPY={T,B,Ts,Bs,pt,pb}}catch(e){}
+            let xL=y=>Ls,xR=y=>Rs+1;let edgeFit=false;
+            // the edges as lines through the picture's own gradient: in ten bands down the strip, the strongest vertical
+            // edge near each side; a robust line through those points is the side (precise to a fraction of a degree)
+            try{const sw=Rs-Ls+1,win=Math.max(3,Math.round(sw*.5)),nb=10,bh=Math.max(4,Math.floor((Bs-Ts)/nb));const side=(xc)=>{const pts=[];const inw=xc<(Ls+Rs)/2?1:-1;for(let bI=0;bI<nb;bI++){const y0=Ts+bI*bh,y1=Math.min(Bs,y0+bh-1);if(y1-y0<3)break;const prof=new Float32Array(2*win+1);let tot=0;for(let dx=-win;dx<=win;dx++){const x=xc+dx;if(x<1||x>=w-1||dx*inw<-sw*.25)continue;let a=0,n=0;for(let y=y0;y<=y1;y++){a+=Math.abs(grd[y*w+x+1]-grd[y*w+x-1]);n++}prof[dx+win]=n?a/n:0;tot+=prof[dx+win]}
+                  const mean=tot/(2*win+1);let mx=0;for(let dx=-win;dx<=win;dx++)mx=Math.max(mx,prof[dx+win]);
+                  // of the clear edges in the window, the innermost (towards the strip's middle): the crease between the printed
+                  // face and the side face is nearer the middle than the side face's own outline
+                  const inward=xc<(Ls+Rs)/2?1:-1;let bx=-win-1;for(let i=0;i<=2*win;i++){const dx=inward>0?win-i:-win+i;if(prof[dx+win]>=mean*2.2&&prof[dx+win]>=mx*.3){bx=dx;break}}
+                  if(bx>-win-1)pts.push([(y0+y1)/2,xc+bx])}
+                if(pts.length<7)return null;const sl=[];for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++)sl.push((pts[j][1]-pts[i][1])/(pts[j][0]-pts[i][0]));sl.sort((p,q)=>p-q);const k=sl[sl.length>>1];const ic=pts.map(p=>p[1]-k*p[0]).sort((p,q)=>p-q);const b=ic[ic.length>>1];
+                let res=0;for(const p of pts)res+=Math.abs(p[1]-(b+k*p[0]));res/=pts.length;return res<=Math.max(1.5,sw*.06)&&Math.abs(k)<.25?[k,b,pts.length,+res.toFixed(1)]:null};
+              const eL=side(Ls),eR=side(Rs+1);window.MTQ_EDGE={eL,eR};if(eL){xL=y=>eL[1]+eL[0]*y}if(eR){xR=y=>eR[1]+eR[0]*y}if(eL||eR)edgeFit=true}catch(e){}
+            try{if(edgeFit)throw 0;const rd=rfd;const le=[],re=[];for(let y=T;y<=B;y+=2){let a=-1,b=-1;for(let x=Math.max(0,L-Math.round((R-L)*.6));x<Math.min(w,R+1+Math.round((R-L)*.6));x++)if(rd[y*w+x]){if(a<0)a=x;b=x}if(a>=0&&b-a>=(R-L)*.5){le.push([y,a]);re.push([y,b+1])}}
               const fit=pts=>{if(pts.length<10)return null;const sl=[],step=Math.max(1,Math.floor(pts.length/50));for(let i=0;i<pts.length;i+=step)for(let j=i+step;j<pts.length;j+=step){const dy=pts[j][0]-pts[i][0];if(dy<(B-T)*.15)continue;sl.push((pts[j][1]-pts[i][1])/dy)}if(sl.length<6)return null;sl.sort((p,q)=>p-q);const k=sl[sl.length>>1];const ic=pts.map(p=>p[1]-k*p[0]).sort((p,q)=>p-q);return [k,ic[ic.length>>1]]};
-              const fL=fit(le),fR=fit(re);if(fL&&fR&&Math.abs(fL[0])<.35&&Math.abs(fR[0])<.35){xL=y=>fL[1]+fL[0]*y;xR=y=>fR[1]+fR[0]*y;window.MTQ_TRAP={fL:fL.map(v=>+v.toFixed(3)),fR:fR.map(v=>+v.toFixed(3))}}}catch(e){}
-            let quad=[back(xL(T),T),back(xR(T),T),back(xR(B+1),B+1),back(xL(B+1),B+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
-            window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}else window.MTQ_FAIL={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
+              const fL=fit(le),fR=fit(re);const ym=(T+B)/2,tol=(R-L+1)*.15;if(fL&&fR&&Math.abs(fL[0])<.35&&Math.abs(fR[0])<.35&&Math.abs(fL[1]+fL[0]*ym-Ls)<=tol&&Math.abs(fR[1]+fR[0]*ym-(Rs+1))<=tol){const dL=Ls-(fL[1]+fL[0]*ym),dR=(Rs+1)-(fR[1]+fR[0]*ym);xL=y=>fL[1]+fL[0]*y+dL;xR=y=>fR[1]+fR[0]*y+dR;window.MTQ_TRAP={fL:fL.map(v=>+v.toFixed(3)),fR:fR.map(v=>+v.toFixed(3))}}}catch(e){}
+            let quad=[back(xL(Ts),Ts),back(xR(Ts),Ts),back(xR(Bs+1),Bs+1),back(xL(Bs+1),Bs+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
+            window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}}else window.MTQ_FAIL={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
       // a spine is an upright strip: its width is what the middle rows agree on (a hand at the top or a rug at the
       // bottom does not change it); its rows are the ones filled across that strip
       const bb=cv.boundingRect(contours.get(best));const ya=bb.y+Math.round(bb.height*.25),yb=bb.y+Math.round(bb.height*.75);
@@ -3965,7 +3994,13 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
       // the strip runs on into a shelf or a rug below: the guide's height is what the user lined up
       // the user lined the spine up inside the guide: nothing past the guide's ends (plus a small margin) is the book
       const gT=h*(g.y-g.h*.025),gB=h*(g.y+g.h*1.025);if(T<gT)T=Math.round(gT);if(B>gB)B=Math.round(gB)
-      {const gm=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);[T,B]=darkEnds(gm.data,w,L,R,T,B);gm.delete()}
+      {const gm=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);[T,B]=darkEnds(gm.data,w,L,R,T,B);
+        // upright: the ends snap to the strongest horizontal edge near each (the mask may run on into the floor or a hand)
+        try{const grd=gm.data,hwin=Math.max(4,Math.round((B-T)*.12)),rp=new Float32Array(h);for(let y=1;y<h-1;y++){let a=0,n=0;for(let x=L;x<=R;x+=2){a+=Math.abs(grd[(y+1)*w+x]-grd[(y-1)*w+x]);n++}rp[y]=n?a/n:0}
+          const srt=Array.from(rp.slice(Math.max(1,T-hwin),Math.min(h-1,B+hwin))).sort((p,q)=>p-q),med=srt[srt.length>>1]||1;
+          const peak=(y0,y1,yc)=>{let by=-1,bv=0,raw=0;for(let y=Math.max(1,y0);y<=Math.min(h-2,y1);y++){const v=rp[y]/(1+Math.abs(y-yc)/hwin);if(v>bv){bv=v;by=y;raw=rp[y]}}return raw>med*2.5?by:-1};
+          const pt=peak(T-hwin,T+hwin,T),pb=peak(B-hwin,B+hwin,B);let Ts=T,Bs=B;if(pt>=0)Ts=pt+1;if(pb>=0)Bs=pb-1;if(Bs-Ts>=(B-T)*.7){T=Ts;B=Bs}window.MTQ_SNAPY={T,B,pt,pb}}catch(e){}
+        gm.delete()}
       window.MTQ={L,R,T,B,bb:[bb.x,bb.y,bb.width,bb.height],w,h,q0:q0&&q0.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};
       return [{x:L/w,y:T/h},{x:(R+1)/w,y:T/h},{x:(R+1)/w,y:(B+1)/h},{x:L/w,y:(B+1)/h}]}
     cv.findContours(fg,contours,hier,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
