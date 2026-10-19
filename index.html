@@ -3894,7 +3894,7 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
       for(let i=0;i<contours.size();i++){const ct=contours.get(i);if(cv.contourArea(ct)<w*h*.003)continue;const d=-cv.pointPolygonTest(ct,new cv.Point(g_cx,g_cy),true);if(d<bestD){bestD=d;best=i}}
       if(best<0||bestD>w*.15){if(SAM.dbg)SAM.dbg.why=['contour',best,bestD];return null}
       const mainBB=cv.boundingRect(contours.get(best));fg.setTo(new cv.Scalar(0));cv.drawContours(fg,contours,best,new cv.Scalar(255),-1);
-      if(rot){
+      if(rot||spine){
         // a leaning spine (held in a hand) is cut by the net into pieces that sit at different x: pieces that overlap the
         // main piece's columns (widened) and stand within a short gap above or below it belong to the same book
         for(let i=0;i<contours.size();i++){if(i===best)continue;const r=cv.boundingRect(contours.get(i));if(r.width*r.height<w*h*.001)continue;
@@ -3904,10 +3904,15 @@ function maskToQuad(cv,maskBytes,crop,w,h,spine,g,q0,rot){
         const mids=[];for(let y=0;y<h;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(fg.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0)mids.push([y,(a+b)/2])}
         let lean=0;if(mids.length>20){const n3=Math.floor(mids.length/3),med=arr=>{const v=arr.map(p=>p[1]).sort((p,q)=>p-q);return v[v.length>>1]};const top=mids.slice(0,n3),bot=mids.slice(-n3);
           const dy=bot[bot.length>>1][0]-top[top.length>>1][0],dx=med(bot)-med(top);lean=Math.atan2(dx,dy)*180/Math.PI}
-        if(Math.abs(lean)>6&&Math.abs(lean)<=16){
+        // the tightest rotated box around the piece gives the lean directly when the piece is clearly a strip; the row-centre
+        // line is the fallback (it is fooled when a hand or a neighbour widens one end)
+        try{const c2=new cv.MatVector(),h2=new cv.Mat();cv.findContours(fg,c2,h2,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);let bi=-1,ba=0;for(let i=0;i<c2.size();i++){const a=cv.contourArea(c2.get(i));if(a>ba){ba=a;bi=i}}
+          if(bi>=0){const rr=cv.minAreaRect(c2.get(bi)),pts=cv.RotatedRect.points(rr);const lw=Math.max(rr.size.width,rr.size.height),sw=Math.min(rr.size.width,rr.size.height);let ex=pts[1].x-pts[0].x,ey=pts[1].y-pts[0].y;const fx=pts[2].x-pts[1].x,fy=pts[2].y-pts[1].y;if(fx*fx+fy*fy>ex*ex+ey*ey){ex=fx;ey=fy}if(ey<0){ex=-ex;ey=-ey}let ang=Math.atan2(ex,ey)*180/Math.PI;
+            if(lw/Math.max(1,sw)>2.5&&Math.abs(ang)<=40&&(Math.abs(ang-lean)<8||Math.abs(lean)>40||mids.length<=20))lean=ang;window.MTQ_RECT={ang:+ang.toFixed(1),lw:+lw.toFixed(0),sw:+sw.toFixed(0),rowLean:+lean.toFixed(1)}}c2.delete();h2.delete()}catch(e){}
+        if(Math.abs(lean)>1.5&&Math.abs(lean)<=40){
           // straighten the mask, read the strip there, and turn the corners back
           const M=cv.getRotationMatrix2D(new cv.Point(w/2,h/2),lean,1),rf=new cv.Mat();cv.warpAffine(fg,rf,M,new cv.Size(w,h),cv.INTER_NEAREST,cv.BORDER_CONSTANT,new cv.Scalar(0));
-          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Mi.data64F;const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
+          const Mi=new cv.Mat();cv.invertAffineTransform(M,Mi);const m=Array.from(Mi.data64F);const gm=new cv.Mat(),gr=new cv.Mat();cv.cvtColor(rgb,gm,cv.COLOR_RGB2GRAY);cv.warpAffine(gm,gr,M,new cv.Size(w,h),cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar(0));const st=stripFromMask(rf.data,w,h,g,gr.data);rf.delete();M.delete();Mi.delete();gm.delete();gr.delete();
           if(st&&st[1]-st[0]<=mainBB.width*1.5){const [L,R,T,B]=st,back=(x,y)=>({x:(m[0]*x+m[1]*y+m[2])/w,y:(m[3]*x+m[4]*y+m[5])/h});
             let quad=[back(L,T),back(R+1,T),back(R+1,B+1),back(L,B+1)];const gT=g.y-g.h*.025,gB=g.y+g.h*1.025;quad=quad.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(gT,Math.min(gB,p.y))}));
             window.MTQ={rot:true,lean:+lean.toFixed(1),st,quad:quad.map(p=>[+p.x.toFixed(2),+p.y.toFixed(2)])};return quad}else window.MTQ={rot:"fail",lean:+lean.toFixed(1),st,mw:mainBB.width}}}
@@ -4470,6 +4475,59 @@ async function deglareNet(c,mode){if(!gnetOK())return c;if(!GNET.sess)await gnet
   try{const out=WARP_RAW(crop,q,mode==='spine'?1400:1200);if(out){let t=null;try{if(typeof showToast==='function')t=showToast('빛을 걷어내는 중…',4000)}catch(e){}
       try{await deglareNet(out,mode)}catch(e){console.warn('glare net',e)}try{deglareCV(out,mode)}catch(e){}try{unifyCanvas(out,mode)}catch(e){}GNET.pre={crop,q,out}}}catch(e){}return q}}
 {const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const pre=GNET.pre;if(pre&&pre.crop===full&&pre.q===q){GNET.pre=null;return pre.out}return _w(full,q,maxSide)}}
+
+// ===== v56: the spine net's mask is a rough cut; GrabCut, seeded from it, trims it to the book's own colours =====
+// The net says roughly where the spine is but bleeds into a dark cabinet or a pale wall beside it. Its mask becomes the
+// seed: the inside (eroded) is surely book, a narrow band outside may be book, further out is surely not; GrabCut then
+// settles the edge on colour. The result, not the raw mask, goes to the corner finder — which now also follows a lean.
+function netGrab(cv,crop,mask){const L=360,k=Math.min(1,L/Math.max(crop.width,crop.height)),w=Math.round(crop.width*k),h=Math.round(crop.height*k);
+  const s=document.createElement('canvas');s.width=w;s.height=h;s.getContext('2d').drawImage(crop,0,0,w,h);
+  const mc=document.createElement('canvas');mc.width=SNET.W;mc.height=SNET.H;const mg=mc.getContext('2d'),id=mg.createImageData(SNET.W,SNET.H);for(let i=0;i<SNET.W*SNET.H;i++){const v=mask[i]?255:0;id.data[i*4]=v;id.data[i*4+1]=v;id.data[i*4+2]=v;id.data[i*4+3]=255}mg.putImageData(id,0,0);
+  const ms=document.createElement('canvas');ms.width=w;ms.height=h;const sg=ms.getContext('2d');sg.imageSmoothingEnabled=false;sg.drawImage(mc,0,0,w,h);const md=sg.getImageData(0,0,w,h).data;
+  const mats=[];const M=m=>{mats.push(m);return m};
+  try{const img=M(cv.imread(s)),rgb=M(new cv.Mat());cv.cvtColor(img,rgb,cv.COLOR_RGBA2RGB);
+    const net=M(new cv.Mat(h,w,cv.CV_8UC1));for(let i=0;i<w*h;i++)net.data[i]=md[i*4]>127?255:0;
+    // the strip's width sets the scales: erode by a third of it for the sure core, allow a fifth outside, forbid beyond a half
+    let wsum=0,wn=0;for(let y=0;y<h;y++){let a=-1,b=-1;for(let x=0;x<w;x++)if(net.data[y*w+x]){if(a<0)a=x;b=x}if(a>=0){wsum+=b-a+1;wn++}}if(!wn)return null;const sw=wsum/wn;
+    const ker=r=>M(cv.getStructuringElement(cv.MORPH_ELLIPSE,new cv.Size(r*2+1,r*2+1)));
+    const core=M(new cv.Mat()),near=M(new cv.Mat()),far=M(new cv.Mat());cv.erode(net,core,ker(Math.max(2,Math.round(sw*.3))));cv.dilate(net,near,ker(Math.max(2,Math.round(sw*.2))));cv.dilate(net,far,ker(Math.max(4,Math.round(sw*.55))));
+    if(cv.countNonZero(core)<w*h*.002)return null;
+    const gm=M(new cv.Mat(h,w,cv.CV_8UC1));const G=gm.data;for(let i=0;i<w*h;i++)G[i]=core.data[i]?cv.GC_FGD:net.data[i]?cv.GC_PR_FGD:near.data[i]?cv.GC_PR_FGD:far.data[i]?cv.GC_PR_BGD:cv.GC_BGD;
+    const bgd=M(new cv.Mat()),fgd=M(new cv.Mat());cv.grabCut(rgb,gm,new cv.Rect(0,0,1,1),bgd,fgd,3,cv.GC_INIT_WITH_MASK);
+    const out=new Uint8Array(w*h);let on=0;for(let i=0;i<w*h;i++){const v=G[i];if(v===cv.GC_FGD||v===cv.GC_PR_FGD){out[i]=255;on++}}
+    // GrabCut that threw most of the seed away (a hand, a shadow of the same tone) or grew well past it is not trusted
+    const netOn=cv.countNonZero(net);if(on<netOn*.55||on>netOn*1.5)return null;return {mask:out,canvas:s,w,h,on}}
+  finally{for(const m of mats){try{m.delete()}catch(e){}}}}
+{const _snet=snetQuad;snetQuad=async function(crop,guide,q0){const {mask,canvas,on}=await snetMask(crop);if(on<SNET.W*SNET.H*.004)return null;
+  const g=guide||{x:.1,y:.06,w:.8,h:.88};let r=null;try{r=netGrab(CV.m,crop,mask)}catch(e){console.warn('netGrab',e)}
+  const q=r?maskToQuad(CV.m,r.mask,r.canvas,r.w,r.h,true,g,null,true):maskToQuad(CV.m,mask,canvas,SNET.W,SNET.H,true,g,null,true);
+  window.NG={used:!!r,on:r&&r.on};
+  if(!q||q.length!==4||!q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)))return null;
+  const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
+  if(qh<g.h*.35||qw<.03||qw>.6)return null;return snapEdges(crop,q)}}
+
+// ===== the three faces meet: a sliver of neighbour, page edge or background left on the spine's sides is trimmed, and
+// the hinge shadows are softened so the covers run into the spine instead of stopping at a dark line =====
+function trimSides(c,maxFrac){try{const w=c.width,h=c.height,g=c.getContext('2d'),d=g.getImageData(0,0,w,h).data;const y0=Math.round(h*.1),y1=Math.round(h*.9);
+    const col=x=>{let s=0,n=0;for(let y=y0;y<y1;y+=2){const o=(y*w+x)*4;s+=.299*d[o]+.587*d[o+1]+.114*d[o+2];n++}return s/n};
+    const lum=new Float32Array(w);for(let x=0;x<w;x++)lum[x]=col(x);const mid=Array.from(lum.slice(Math.round(w*.25),Math.round(w*.75))).sort((a,b)=>a-b),med=mid[mid.length>>1];
+    const lim=Math.max(1,Math.round(w*maxFrac));let L=0;while(L<lim&&Math.abs(lum[L]-med)>38)L++;let R=0;while(R<lim&&Math.abs(lum[w-1-R]-med)>38)R++;
+    // only a run that ends (the next columns look like the spine) is a sliver; a run that fills the allowance may be the design
+    if(L>=lim)L=0;if(R>=lim)R=0;if(!L&&!R)return c;
+    const nw=w-L-R;if(nw<w*.6)return c;const o=document.createElement('canvas');o.width=nw;o.height=h;o.getContext('2d').drawImage(c,L,0,nw,h,0,0,nw,h);return o}catch(e){return c}}
+{const _fix=quadFix;quadFix=async function(crop,mode,guide){const q=await _fix(crop,mode,guide);if(q==='retake')return q;
+  const pre=GNET.pre;if(pre&&pre.crop===crop&&pre.q===q&&pre.out){const t=trimSides(pre.out,mode==='spine'?.12:.03);if(t!==pre.out)pre.out=t}return q}}
+{const st=document.createElement('style');st.textContent=`.face.front::after{background:linear-gradient(90deg,#00000022,#00000000)!important;width:5%!important}.face.back::after{background:linear-gradient(270deg,#00000022,#00000000)!important;width:5%!important}
+.face.left::before{background:linear-gradient(90deg,#0000001c,#00000000)!important}.face.left::after{background:linear-gradient(270deg,#0000001c,#00000000)!important}`;document.head.append(st)}
+// books already on the shelf: pressed ones only get their spine sides trimmed; unpressed ones get the full press
+UNI.v=3;
+unifyExisting=async function(){for(const b of liveBooks()){if(!b.user||isDiary(b)||b.uni>=UNI.v)continue;if(!b.spine&&!b.front&&!b.back)continue;
+    try{const was=b.uni||0;
+      if(b.spine&&!String(b.spine).startsWith('<')){const im=await loadImageEl(b.spine);if(im){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);let out=trimSides(c,.12);if(was<2)unifyCanvas(out,'spine');if(out!==c||was<2)b.spine=out.toDataURL('image/jpeg',.9)}}
+      if(was<2)for(const k of ['front','back'])if(b[k]&&!String(b[k]).startsWith('<'))b[k]=await unifyDataUrl(b[k],k);
+      b.uni=UNI.v;await store.put(userRecord(b));
+      const el=bookButtons[b.id],img=el&&el.querySelector('.spine-photo');if(img&&b.spine)img.src=b.spine;if(current===b)updatePhoto();
+      await new Promise(r=>setTimeout(r,120))}catch(e){console.warn('unify existing',e)}}};
 
 
 
