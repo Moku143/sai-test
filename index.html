@@ -4716,6 +4716,145 @@ function fixCornerQuad(cv,crop,q){try{if(!q||q.length!==4)return q;const w=crop.
 // neighbour, the page block or a sliver of background shows, and a face cut just inside it reads as cleaner print
 function insetQuad(q,f=.012){if(!q||q.length!==4)return q;const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;return q.map(p=>({x:cx+(p.x-cx)*(1-f),y:cy+(p.y-cy)*(1-f)}))}
 
+// ===== v57: one instance-segmentation net for both faces (YOLO11n-seg, fine-tuned on the user's own marked photos
+// plus composites and synthetic scenes). It returns every book face it sees as a mask; the face under the guide's
+// centre is the one being photographed. From that mask the four corners come by one deterministic fit (minAreaRect,
+// then each side as a robust line through the contour points nearest it) — the same code the evaluation runs. =====
+const YNET={sess:null,load:null,fail:0,ver:'1',size:{spine:[640,320],front:[512,384],back:[512,384]},nc:2,conf:.1,iou:.5,fitBox:false};
+// model bytes come through the Cache API when it exists (GitHub Pages serves a short max-age; a 10 MB model must not be re-fetched every visit)
+async function fetchModelBytes(url,ver){const key=url+(url.includes('?')?'&':'?')+'v='+ver;
+  try{if(window.caches){const c=await caches.open('sai-models');let r=await c.match(key);if(!r){const f=await fetch(url,{cache:'no-store'});if(!f.ok)throw new Error('http '+f.status);await c.put(key,f.clone());r=f}return new Uint8Array(await r.arrayBuffer())}}catch(e){console.warn('model cache',e)}
+  const f=await fetch(url);if(!f.ok)throw new Error('http '+f.status);return new Uint8Array(await f.arrayBuffer())}
+function ynetLoad(){if(YNET.load)return YNET.load;
+  return YNET.load=(async()=>{const U=Object.assign({},SAM_URLS,window.SAM_CFG||{});
+    if(!window.ort)await new Promise((res,rej)=>{const s=document.createElement('script');s.src=U.ort;s.onload=res;s.onerror=()=>rej(new Error('ort script'));document.head.append(s)});
+    ort.env.wasm.wasmPaths=U.wasm;ort.env.wasm.numThreads=1;
+    const bytes=await fetchModelBytes(U.yolo||'./models/book.onnx',YNET.ver);
+    YNET.sess=await ort.InferenceSession.create(bytes,{executionProviders:['wasm'],graphOptimizationLevel:'all'});YNET.dyn=true;return true})()
+    .catch(e=>{YNET.load=null;YNET.fail++;console.warn('book net load',e);throw e})}
+const ynetOK=()=>(location.protocol!=='file:'||window.SAM_CFG)&&!window.claude?.use&&YNET.fail<2&&!window.YNET_OFF;
+// letterbox the source (canvas/video) into H×W, grey borders, area-averaged like the training pipeline's resize
+function ynetLetterbox(src,H,W){const sw=src.videoWidth||src.width||src.naturalWidth,sh=src.videoHeight||src.height||src.naturalHeight;const k=Math.min(W/sw,H/sh),nw=Math.max(1,Math.round(sw*k)),nh=Math.max(1,Math.round(sh*k)),px=Math.floor((W-nw)/2),py=Math.floor((H-nh)/2);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.fillStyle='#727272';g.fillRect(0,0,W,H);
+  // stepwise halving keeps the downscale area-averaged on every browser (a single drawImage step aliases a 12 MP frame)
+  let cur=src,cw=sw,ch=sh;while(cw/2>=nw*1.05&&ch/2>=nh*1.05){const t=document.createElement('canvas');t.width=Math.round(cw/2);t.height=Math.round(ch/2);const tg=t.getContext('2d');tg.imageSmoothingEnabled=true;tg.imageSmoothingQuality='high';tg.drawImage(cur,0,0,t.width,t.height);cur=t;cw=t.width;ch=t.height}
+  g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(cur,0,0,cw,ch,px,py,nw,nh);
+  return {canvas:c,k,px,py,sw,sh,nw,nh}}
+// run the net on a source; returns the instances (letterbox coordinates) with their mask coefficients, plus the protos
+async function ynetRun(src,mode){let [H,W]=YNET.size[mode]||YNET.size.front;if(YNET.live){H=Math.round(H*.8/32)*32;W=Math.round(W*.8/32)*32} /* the viewfinder runs smaller */const lb=ynetLetterbox(src,H,W);const d=lb.canvas.getContext('2d').getImageData(0,0,W,H).data,n=W*H,x=new Float32Array(3*n);
+  for(let i=0;i<n;i++){x[i]=d[i*4]/255;x[n+i]=d[i*4+1]/255;x[2*n+i]=d[i*4+2]/255}
+  const out=await YNET.sess.run({[YNET.sess.inputNames[0]]:new ort.Tensor('float32',x,[1,3,H,W])});
+  const o0=out[YNET.sess.outputNames[0]],o1=out[YNET.sess.outputNames[1]];const [,C,N]=o0.dims,nc=C-4-32,P=o0.data;const [,,ph,pw]=o1.dims;
+  const want=YNET.want?YNET.want[mode]:(mode==='spine'?0:1);const cand=[];
+  for(let i=0;i<N;i++){let best=0,bc=-1;for(let c=0;c<nc;c++){const s=P[(4+c)*N+i];if(s>best){best=s;bc=c}}if(best<YNET.conf)continue;if(nc>=2&&bc!==want)continue;
+    const cx=P[i],cy=P[N+i],w=P[2*N+i],h=P[3*N+i];const co=new Float32Array(32);for(let k=0;k<32;k++)co[k]=P[(4+nc+k)*N+i];cand.push({x0:cx-w/2,y0:cy-h/2,x1:cx+w/2,y1:cy+h/2,conf:best,cls:bc,co})}
+  cand.sort((a,b)=>b.conf-a.conf);const keep=[];
+  // NMS, plus containment: a box mostly inside a stronger box is a duplicate of a part of it (ypost.py)
+  for(const c of cand){let ok=true;for(const k of keep){const ix=Math.max(0,Math.min(c.x1,k.x1)-Math.max(c.x0,k.x0)),iy=Math.max(0,Math.min(c.y1,k.y1)-Math.max(c.y0,k.y0)),inter=ix*iy,ca=Math.max(1e-6,(c.x1-c.x0)*(c.y1-c.y0)),u=ca+(k.x1-k.x0)*(k.y1-k.y0)-inter;if(inter/u>YNET.iou||inter/ca>.85){ok=false;break}}if(ok)keep.push(c);if(keep.length>=8)break}
+  return {lb,keep,protos:o1.data,ph,pw,H,W}}
+// the mask of one instance at letterbox resolution (Uint8, 0/255), cropped to its box
+function ynetMask(r,inst){const {protos,ph,pw,H,W}=r;const m=new Float32Array(ph*pw);for(let k=0;k<32;k++){const c=inst.co[k];if(!c)continue;const b=k*ph*pw;for(let i=0;i<ph*pw;i++)m[i]+=c*protos[b+i]}
+  const sx=pw/W,sy=ph/H,out=new Uint8Array(W*H);const bx0=Math.max(0,inst.x0),by0=Math.max(0,inst.y0),bx1=Math.min(W,inst.x1),by1=Math.min(H,inst.y1);
+  for(let y=Math.floor(by0);y<by1;y++){const fy=Math.min(ph-1,Math.max(0,(y+.5)*sy-.5)),y0=fy|0,y1=Math.min(ph-1,y0+1),ty=fy-y0;
+    for(let x=Math.floor(bx0);x<bx1;x++){const fx=Math.min(pw-1,Math.max(0,(x+.5)*sx-.5)),x0=fx|0,x1=Math.min(pw-1,x0+1),tx=fx-x0;
+      const v=(m[y0*pw+x0]*(1-tx)+m[y0*pw+x1]*tx)*(1-ty)+(m[y1*pw+x0]*(1-tx)+m[y1*pw+x1]*tx)*ty;if(v>0)out[y*W+x]=255}}
+  return out}
+// the deterministic corner fit (quadfit.py, ported)
+function ynetQuadFromMask(cv,mask,W,H,cx,cy){const mats=[];const M=m=>{mats.push(m);return m};
+  try{const src=M(new cv.Mat(H,W,cv.CV_8UC1));src.data.set(mask);const lab=M(new cv.Mat()),st=M(new cv.Mat()),ce=M(new cv.Mat());const n=cv.connectedComponentsWithStats(src,lab,st,ce,8,cv.CV_32S);if(n<=1)return null;
+    const xi=Math.min(W-1,Math.max(0,cx|0)),yi=Math.min(H-1,Math.max(0,cy|0));let k=lab.data32S[yi*W+xi];
+    if(!k){let bd=1e18;for(let i=1;i<n;i++){if(st.data32S[i*5+4]<W*H*.002)continue;const d=(ce.data64F[i*2]-cx)**2+(ce.data64F[i*2+1]-cy)**2;if(d<bd){bd=d;k=i}}}if(!k)return null;
+    const comp=M(new cv.Mat(H,W,cv.CV_8UC1));const ld=lab.data32S,cd=comp.data;for(let i=0;i<W*H;i++)cd[i]=ld[i]===k?255:0;
+    const cs=M(new cv.MatVector()),hi=M(new cv.Mat());cv.findContours(comp,cs,hi,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_NONE);let ci=-1,ca=0;for(let i=0;i<cs.size();i++){const a=cv.contourArea(cs.get(i));if(a>ca){ca=a;ci=i}}if(ci<0)return null;
+    const ct=cs.get(ci);const pts=[];for(let i=0;i<ct.rows;i++)pts.push([ct.data32S[i*2],ct.data32S[i*2+1]]);if(pts.length<12)return null;
+    const rr=cv.minAreaRect(ct),box=cv.RotatedRect.points(rr).map(p=>[p.x,p.y]);
+    const sides=[];for(let i=0;i<4;i++){const a=box[i],b=box[(i+1)%4];const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)+1e-6;sides.push({a,u:[dx/L,dy/L],L})}
+    const assign=[[],[],[],[]];for(const p of pts){let best=0,bd=1e18;for(let i=0;i<4;i++){const {a,u,L}=sides[i];let t=(p[0]-a[0])*u[0]+(p[1]-a[1])*u[1];t=Math.min(Math.max(t,0),L);const px=a[0]+u[0]*t,py=a[1]+u[1]*t,dd=(p[0]-px)**2+(p[1]-py)**2;if(dd<bd){bd=dd;best=i}}assign[best].push(p)}
+    const lines=[];for(let i=0;i<4;i++){const {a,u,L}=sides[i];let q=assign[i];if(q.length<6){lines.push({p:a,u});continue}const band=Math.max(2,.08*L);q=q.filter(p=>Math.abs((p[0]-a[0])*(-u[1])+(p[1]-a[1])*u[0])<=band);if(q.length<6){lines.push({p:a,u});continue}
+      const m=M(cv.matFromArray(q.length,1,cv.CV_32FC2,q.flat())),ln=M(new cv.Mat());cv.fitLine(m,ln,cv.DIST_HUBER,0,.01,.01);const f=ln.data32F;lines.push({p:[f[2],f[3]],u:[f[0],f[1]]})}
+    const cross=(l1,l2)=>{const den=l1.u[0]*l2.u[1]-l1.u[1]*l2.u[0];if(Math.abs(den)<1e-6)return null;const t=((l2.p[0]-l1.p[0])*l2.u[1]-(l2.p[1]-l1.p[1])*l2.u[0])/den;return [l1.p[0]+l1.u[0]*t,l1.p[1]+l1.u[1]*t]};
+    let quad=[0,1,2,3].map(i=>cross(lines[(i+3)%4],lines[i]));if(quad.some(p=>!p))quad=box;
+    return quad}
+  finally{for(const m of mats){try{m.delete()}catch(e){}}}}
+// quadfit.py order_quad / fit_to_box, ported: tl,tr,br,bl order; a spine quad whose edges stop short of the detection
+// box (the mask head stops at a printed colour change, the box regression spans the whole spine) is pushed out to it
+function ynetOrder(q){const cx=q.reduce((s,p)=>s+p[0],0)/4,cy=q.reduce((s,p)=>s+p[1],0)/4;q=q.slice().sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));let s=0;for(let i=1;i<4;i++)if(q[i][0]+q[i][1]<q[s][0]+q[s][1])s=i;return q.slice(s).concat(q.slice(0,s))}
+function ynetFitToBox(quad,box,tol=[.15,.04],cap=.5){const [x0,y0,x1,y1]=box,bw=Math.max(1,x1-x0),bh=Math.max(1,y1-y0);let P=quad.map(p=>[p[0],p[1]]);
+  const unit=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],n=Math.hypot(dx,dy);return n>1e-9?[dx/n,dy/n]:[0,1]};
+  const cross=(p,u,q,v)=>{const den=u[0]*v[1]-u[1]*v[0];if(Math.abs(den)<1e-9)return null;const t=((q[0]-p[0])*v[1]-(q[1]-p[1])*v[0])/den;return [p[0]+u[0]*t,p[1]+u[1]*t]};
+  for(let pass=0;pass<2;pass++){const [tl,tr,br,bl]=P;const L=[[tl,unit(tl,bl)],[tr,unit(tr,br)]],E=[[tl,unit(tl,tr)],[bl,unit(bl,br)]];
+    for(const [si,lim,sign] of [[0,x0,-1],[1,x1,1]]){const xs=si===0?[tl[0],bl[0]]:[tr[0],br[0]];const cur=si===0?Math.min(...xs):Math.max(...xs),gap=(cur-lim)*-sign;
+      if(gap>tol[0]*bw&&gap<cap*bw){const [p,u]=L[si],ou=L[1-si][1];L[si]=[[p[0]+sign*gap,p[1]],Math.abs(ou[1])>.5?ou:u]}}
+    let sd=[L[0][1][0]+L[1][1][0],L[0][1][1]+L[1][1][1]];const sn=Math.hypot(sd[0],sd[1])+1e-9;sd=[sd[0]/sn,sd[1]/sn];const perp=[-sd[1],sd[0]];
+    for(const [ei,lim,sign] of [[0,y0,-1],[1,y1,1]]){const ys=ei===0?[tl[1],tr[1]]:[bl[1],br[1]];const cur=ei===0?Math.min(...ys):Math.max(...ys),gap=(cur-lim)*-sign;
+      if(gap>tol[1]*bh&&gap<cap*bh){const p=E[ei][0];E[ei]=[[p[0],p[1]+sign*gap],perp]}}
+    const c=[cross(...E[0],...L[0]),cross(...E[0],...L[1]),cross(...E[1],...L[1]),cross(...E[1],...L[0])];if(c.some(v=>!v))return P;P=c}
+  return P}
+// crop → corners in the crop's normalized coordinates (or null), with the instance's confidence
+async function ynetQuad(crop,mode,guide){if(!YNET.sess)await ynetLoad();if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return null;
+  const r=await ynetRun(crop,mode);const g=guide||(mode==='spine'?{x:.36,y:.07,w:.28,h:.84}:{x:.07,y:.1,w:.86,h:.76});
+  const {lb,keep,W,H}=r;const gcx=lb.px+(g.x+g.w/2)*lb.nw,gcy=lb.py+(g.y+g.h/2)*lb.nh;
+  if(!keep.length){window.YQ={n:0};return null}
+  // the instance under the guide's centre; else the nearest; confidence breaks ties
+  const scored=keep.map(inst=>{const inside=gcx>=inst.x0&&gcx<=inst.x1&&gcy>=inst.y0&&gcy<=inst.y1;const d=Math.hypot((inst.x0+inst.x1)/2-gcx,(inst.y0+inst.y1)/2-gcy);return {inst,inside,d}});
+  scored.sort((a,b)=>(b.inside-a.inside)||(a.inside?(b.inst.conf-a.inst.conf):(a.d-b.d)));const {inst,inside}=scored[0];
+  const mask=ynetMask(r,inst);let box=[inst.x0,inst.y0,inst.x1,inst.y1],merged=0;
+  if(mode==='spine'){ // a spine split into collinear pieces (same x-range, touching or overlapping in y) is one spine (ypost.py)
+    for(const t of keep){if(t===inst)continue;const ix=Math.min(t.x1,inst.x1)-Math.max(t.x0,inst.x0),ux=Math.max(t.x1,inst.x1)-Math.min(t.x0,inst.x0);if(ux<=0||ix/ux<.6)continue;
+      const uy=Math.max(t.y1,inst.y1)-Math.min(t.y0,inst.y0),g=Math.max(t.y0,inst.y0)-Math.min(t.y1,inst.y1);if(g>.02*uy)continue;
+      const m2=ynetMask(r,t);for(let i=0;i<mask.length;i++)if(m2[i])mask[i]=255;box=[Math.min(box[0],t.x0),Math.min(box[1],t.y0),Math.max(box[2],t.x1),Math.max(box[3],t.y1)];merged++}}
+  let q=ynetQuadFromMask(CV.m,mask,W,H,gcx,gcy);window.YQ={n:keep.length,conf:+inst.conf.toFixed(2),inside,cls:inst.cls,merged};if(!q)return null;
+  if(mode==='spine'&&YNET.fitBox)q=ynetFitToBox(ynetOrder(q),box); /* off: the box overshoots as often as the mask falls short */
+  // back to the crop: undo the letterbox, normalize
+  q=q.map(([x,y])=>({x:Math.max(0,Math.min(1,(x-lb.px)/lb.k/lb.sw)),y:Math.max(0,Math.min(1,(y-lb.py)/lb.k/lb.sh))}));
+  q=orderQuad(q);window.YQ.q=q.map(p=>[+p.x.toFixed(3),+p.y.toFixed(3)]);
+  // sanity: a real face, not a sliver and not the whole frame
+  const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
+  if(mode==='spine'){if(qh<g.h*.3||qw<.02||qw>.7)return null}else{if(qw<.2||qh<.2||qw*qh>.95)return null}
+  return {q,conf:inst.conf,inside}}
+// ----- the corner screen: the book net answers first; the older nets and GrabCut stay as the fallback -----
+async function ynetRefine(crop,mode,guide,q0){if(!ynetOK())return false;const note=$('qfNote'),alive=()=>PEND.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
+  try{if(!YNET.sess){if(alive())note.textContent='책 인식 모델을 준비하는 중입니다…';await ynetLoad()}if(!alive())return false;
+    const r=await ynetQuad(crop,mode,guide);if(!alive())return false;
+    if(r&&(mode==='spine'||r.conf>=.3)){SAMC.crop=crop;SAMC.q=r.q;$('qfAuto').onclick&&$('qfAuto').onclick();note.textContent=(mode==='spine'?'책등을 찾았습니다.':'표지를 찾았습니다.')+' 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.';return true}
+    return false}
+  catch(e){console.warn('book net',e);return false}}
+{const _ref=samRefine;samRefine=async function(crop,mode,guide,q0){const ok=await ynetRefine(crop,mode,guide,q0);if(ok)return;return _ref(crop,mode,guide,q0)}}
+// the box-draw re-detect uses it too
+{const _rd=redetectIn;redetectIn=async function(r){const crop=PEND.crop,mode=PEND.mode||'spine';if(!crop||$('quadFix').hidden||!ynetOK())return _rd(r);const note=$('qfNote');
+  note.textContent='그 안에서 다시 찾는 중입니다…';document.documentElement.classList.add('qf-busy');
+  try{const mx=r.w*.1,my=r.h*.05,X0=Math.max(0,r.x-mx),Y0=Math.max(0,r.y-my),X1=Math.min(1,r.x+r.w+mx),Y1=Math.min(1,r.y+r.h+my);
+    const sub=document.createElement('canvas');sub.width=Math.max(8,Math.round((X1-X0)*crop.width));sub.height=Math.max(8,Math.round((Y1-Y0)*crop.height));sub.getContext('2d').drawImage(crop,X0*crop.width,Y0*crop.height,(X1-X0)*crop.width,(Y1-Y0)*crop.height,0,0,sub.width,sub.height);
+    const g2={x:(r.x-X0)/(X1-X0),y:(r.y-Y0)/(Y1-Y0),w:r.w/(X1-X0),h:r.h/(Y1-Y0)};let res=null;try{if(!YNET.sess)await ynetLoad();res=await ynetQuad(sub,mode,g2)}catch(e){}
+    if(PEND.crop!==crop||$('quadFix').hidden)return;
+    if(!res){document.documentElement.classList.remove('qf-busy');return _rd(r)}
+    const back=res.q.map(p=>({x:X0+p.x*(X1-X0),y:Y0+p.y*(Y1-Y0)}));SAMC.crop=crop;SAMC.q=back;SAMC.touched=false;if($('qfAuto').onclick)$('qfAuto').onclick();
+    note.textContent='네모 안에서 다시 찾았습니다. 아니면 네모를 더 좁게 그리거나 점을 끌어 맞추세요.'}
+  finally{document.documentElement.classList.remove('qf-busy')}}}
+
+// ===== the viewfinder: the same net runs on the live picture (in a worker when the runtime allows, so the preview
+// stays smooth) and draws the book's outline before the shutter; two agreeing readings in a row turn it green =====
+const LIVE={busy:false,q:null,at:0,stable:0,timer:0,every:700,cost:0};
+function liveCrop(){const v=$('camV');if(!v.videoWidth)return null;const r=QF.guide[CAM.mode]||QF.guide.front,vw=v.videoWidth,vh=v.videoHeight;
+  const mx=r.w*vw*(CAM.mode==='spine'?.6:.1),my=r.h*vh*.06,x0=Math.max(0,r.x*vw-mx),x1=Math.min(vw,(r.x+r.w)*vw+mx),y0=Math.max(0,r.y*vh-my),y1=Math.min(vh,(r.y+r.h)*vh+my);
+  const k=Math.min(1,900/Math.max(x1-x0,y1-y0));const c=document.createElement('canvas');c.width=Math.round((x1-x0)*k);c.height=Math.round((y1-y0)*k);c.getContext('2d').drawImage(v,x0,y0,x1-x0,y1-y0,0,0,c.width,c.height);
+  const gf={x:(r.x*vw-x0)/(x1-x0),y:(r.y*vh-y0)/(y1-y0),w:r.w*vw/(x1-x0),h:r.h*vh/(y1-y0)};return {c,gf,x0,y0,x1,y1}}
+async function liveTick(){if(!CAM.stream||$('cam').hidden||LIVE.busy||!ynetOK())return;LIVE.busy=true;
+  try{if(!YNET.sess)await ynetLoad();const lc=liveCrop();if(!lc||!CAM.stream)return;const t0=performance.now();YNET.live=true;let res=null;try{res=await ynetQuad(lc.c,CAM.mode,lc.gf)}finally{YNET.live=false}
+    // the preview must stay usable: the next reading waits at least twice as long as this one took
+    LIVE.cost=performance.now()-t0;LIVE.every=Math.max(700,Math.min(3000,LIVE.cost*2.2));
+    if(!CAM.stream)return;if(res){const q=res.q.map(p=>({x:(lc.x0+p.x*(lc.x1-lc.x0)),y:(lc.y0+p.y*(lc.y1-lc.y0))}));// video pixels
+      const prev=LIVE.q;let agree=false;if(prev){let d=0;for(let i=0;i<4;i++)d+=Math.hypot(q[i].x-prev[i].x,q[i].y-prev[i].y);agree=d/4<Math.max(lc.x1-lc.x0,lc.y1-lc.y0)*.03}
+      LIVE.stable=agree?Math.min(5,LIVE.stable+1):0;LIVE.q=q;LIVE.at=performance.now()}else{LIVE.stable=0;LIVE.q=null}}
+  catch(e){console.warn('live',e)}
+  finally{LIVE.busy=false}}
+{const _draw=camDraw;camDraw=function(){_draw();try{if(!CAM.stream)return;if(!LIVE.timer||performance.now()-LIVE.timer>LIVE.every){LIVE.timer=performance.now();liveTick()}
+    const q=LIVE.q;if(!q||performance.now()-LIVE.at>2500)return;const c=$('camO'),dpr=Math.min(2,devicePixelRatio||1),g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);const f=camFit();
+    g.beginPath();q.forEach((p,i)=>{const sx=f.ox+p.x*f.s,sy=f.oy+p.y*f.s;i?g.lineTo(sx,sy):g.moveTo(sx,sy)});g.closePath();
+    g.lineWidth=3;g.strokeStyle=LIVE.stable>=1?'rgba(120,230,150,.95)':'rgba(255,220,120,.85)';g.setLineDash(LIVE.stable>=1?[]:[8,6]);g.stroke();g.setLineDash([]);
+    if(LIVE.stable>=1){$('camHint').textContent=CAM.mode==='spine'?'책등을 찾았어요 · 이대로 찍으세요':'표지를 찾았어요 · 이대로 찍으세요';$('camHint').classList.add('ok')}}catch(e){}}}
+{const _close=camClose;camClose=function(v){LIVE.q=null;LIVE.stable=0;LIVE.timer=0;return _close(v)}}
+
 
 
 
