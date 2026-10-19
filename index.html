@@ -759,6 +759,29 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .quad-fix .qf-btns .qf-main{background:#f3e3c4;color:#24160d;text-shadow:none;border:0}
 .qf-box{fill:rgba(243,227,196,.10);stroke:#f3e3c4;stroke-width:2;stroke-dasharray:7 5}
 .qf-hint{position:absolute;left:16px;right:16px;bottom:calc(86px + env(safe-area-inset-bottom));font-size:12px;text-align:center;font-size:12.5px;color:#fbf3e4;background:#0d0704a8;border-radius:10px;padding:6px 10px;pointer-events:none;z-index:3}
+
+/* v58 — the 3D book takes its own proportions: --W (cover width) and --D (thickness) on #object; the height stays 330 */
+#object{width:var(--W,220px)}
+#object .front{transform:translateZ(calc(var(--D,40px)/2 + 2px))}
+#object.opened .front{transform:translateZ(calc(var(--D,40px)/2 + 2px)) rotateY(-155deg)}
+#object .back{transform:rotateY(180deg) translateZ(calc(var(--D,40px)/2))}
+#object .left,#object .right{width:var(--D,40px);left:calc((var(--W,220px) - var(--D,40px))/2)}
+#object .left{transform:rotateY(-90deg) translateZ(calc(var(--W,220px)/2))}
+#object .right{transform:rotateY(90deg) translateZ(calc(var(--W,220px)/2));width:calc(var(--D,40px) - 4px);left:calc((var(--W,220px) - var(--D,40px))/2 + 2px)}
+#object .top,#object .bottom{width:var(--W,220px);height:var(--D,40px);top:calc((330px - var(--D,40px))/2)}
+#object .inside-page{transform:translateZ(calc(var(--D,40px)/2))}
+/* bound on the right (Japanese manga): the spine on the right, the pages on the left, the cover opens from the right */
+#object[data-bind=R] .left{transform:rotateY(90deg) translateZ(calc(var(--W,220px)/2))}
+#object[data-bind=R] .right{transform:rotateY(-90deg) translateZ(calc(var(--W,220px)/2))}
+#object[data-bind=R] .front{transform-origin:right center}
+#object[data-bind=R].opened .front{transform:translateZ(calc(var(--D,40px)/2 + 2px)) rotateY(155deg)}
+#object[data-bind=R].opened{translate:-48px 0}
+#object[data-bind=R] .face.front::after{left:auto;right:0;background:linear-gradient(270deg,#00000022,#00000000)!important}
+#object[data-bind=R] .face.back::after{right:auto;left:0;background:linear-gradient(90deg,#00000022,#00000000)!important}
+#object[data-bind=R] .inside-page{inset:4px 4px 4px 2px;background:linear-gradient(270deg,#b6ae9b,#ede7d7 7%,#faf5e8 30%,#f0eadc);box-shadow:inset 3px 0 5px #a3998130}
+#object[data-bind=R] .cover-lining{background:linear-gradient(270deg,#d8d0bd,#ede6d7 12%,#f2ecdd)}
+.bk-bind{height:40px;border-radius:20px;border:1px dashed #f3e3c444;background:none;color:#f3e3c4cc;font:inherit;font-size:13px;width:100%}
+.bk-bind[hidden]{display:none}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -4720,7 +4743,7 @@ function insetQuad(q,f=.012){if(!q||q.length!==4)return q;const cx=q.reduce((s,p
 // plus composites and synthetic scenes). It returns every book face it sees as a mask; the face under the guide's
 // centre is the one being photographed. From that mask the four corners come by one deterministic fit (minAreaRect,
 // then each side as a robust line through the contour points nearest it) — the same code the evaluation runs. =====
-const YNET={sess:null,load:null,fail:0,ver:'1',size:{spine:[640,320],front:[512,384],back:[512,384]},nc:2,conf:.1,iou:.5,fitBox:false};
+const YNET={sess:null,load:null,fail:0,ver:'1',size:{spine:[640,320],front:[512,384],back:[512,384]},nc:2,conf:.1,iou:.5};
 // model bytes come through the Cache API when it exists (GitHub Pages serves a short max-age; a 10 MB model must not be re-fetched every visit)
 async function fetchModelBytes(url,ver){const key=url+(url.includes('?')?'&':'?')+'v='+ver;
   try{if(window.caches){const c=await caches.open('sai-models');let r=await c.match(key);if(!r){const f=await fetch(url,{cache:'no-store'});if(!f.ok)throw new Error('http '+f.status);await c.put(key,f.clone());r=f}return new Uint8Array(await r.arrayBuffer())}}catch(e){console.warn('model cache',e)}
@@ -4776,46 +4799,29 @@ function ynetQuadFromMask(cv,mask,W,H,cx,cy){const mats=[];const M=m=>{mats.push
     let quad=[0,1,2,3].map(i=>cross(lines[(i+3)%4],lines[i]));if(quad.some(p=>!p))quad=box;
     return quad}
   finally{for(const m of mats){try{m.delete()}catch(e){}}}}
-// quadfit.py order_quad / fit_to_box, ported: tl,tr,br,bl order; a spine quad whose edges stop short of the detection
-// box (the mask head stops at a printed colour change, the box regression spans the whole spine) is pushed out to it
-function ynetOrder(q){const cx=q.reduce((s,p)=>s+p[0],0)/4,cy=q.reduce((s,p)=>s+p[1],0)/4;q=q.slice().sort((a,b)=>Math.atan2(a[1]-cy,a[0]-cx)-Math.atan2(b[1]-cy,b[0]-cx));let s=0;for(let i=1;i<4;i++)if(q[i][0]+q[i][1]<q[s][0]+q[s][1])s=i;return q.slice(s).concat(q.slice(0,s))}
-function ynetFitToBox(quad,box,tol=[.15,.04],cap=.5){const [x0,y0,x1,y1]=box,bw=Math.max(1,x1-x0),bh=Math.max(1,y1-y0);let P=quad.map(p=>[p[0],p[1]]);
-  const unit=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],n=Math.hypot(dx,dy);return n>1e-9?[dx/n,dy/n]:[0,1]};
-  const cross=(p,u,q,v)=>{const den=u[0]*v[1]-u[1]*v[0];if(Math.abs(den)<1e-9)return null;const t=((q[0]-p[0])*v[1]-(q[1]-p[1])*v[0])/den;return [p[0]+u[0]*t,p[1]+u[1]*t]};
-  for(let pass=0;pass<2;pass++){const [tl,tr,br,bl]=P;const L=[[tl,unit(tl,bl)],[tr,unit(tr,br)]],E=[[tl,unit(tl,tr)],[bl,unit(bl,br)]];
-    for(const [si,lim,sign] of [[0,x0,-1],[1,x1,1]]){const xs=si===0?[tl[0],bl[0]]:[tr[0],br[0]];const cur=si===0?Math.min(...xs):Math.max(...xs),gap=(cur-lim)*-sign;
-      if(gap>tol[0]*bw&&gap<cap*bw){const [p,u]=L[si],ou=L[1-si][1];L[si]=[[p[0]+sign*gap,p[1]],Math.abs(ou[1])>.5?ou:u]}}
-    let sd=[L[0][1][0]+L[1][1][0],L[0][1][1]+L[1][1][1]];const sn=Math.hypot(sd[0],sd[1])+1e-9;sd=[sd[0]/sn,sd[1]/sn];const perp=[-sd[1],sd[0]];
-    for(const [ei,lim,sign] of [[0,y0,-1],[1,y1,1]]){const ys=ei===0?[tl[1],tr[1]]:[bl[1],br[1]];const cur=ei===0?Math.min(...ys):Math.max(...ys),gap=(cur-lim)*-sign;
-      if(gap>tol[1]*bh&&gap<cap*bh){const p=E[ei][0];E[ei]=[[p[0],p[1]+sign*gap],perp]}}
-    const c=[cross(...E[0],...L[0]),cross(...E[0],...L[1]),cross(...E[1],...L[1]),cross(...E[1],...L[0])];if(c.some(v=>!v))return P;P=c}
-  return P}
 // crop → corners in the crop's normalized coordinates (or null), with the instance's confidence
-async function ynetQuad(crop,mode,guide){if(!YNET.sess)await ynetLoad();if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return null;
-  const r=await ynetRun(crop,mode);const g=guide||(mode==='spine'?{x:.36,y:.07,w:.28,h:.84}:{x:.07,y:.1,w:.86,h:.76});
-  const {lb,keep,W,H}=r;const gcx=lb.px+(g.x+g.w/2)*lb.nw,gcy=lb.py+(g.y+g.h/2)*lb.nh;
+async function ynetQuad(crop,mode,guide,pick){if(!YNET.sess)await ynetLoad();if(!CV.m){try{await loadCV()}catch(e){}}if(!CV.m)return null;
+  const r=await ynetRun(crop,mode);const g=guide||(mode==='spine'?{x:.36,y:.07,w:.28,h:.84}:{x:.07,y:.1,w:.86,h:.76});YNET.last={crop,mode,r,g};
+  const {lb}=r;const px=pick?pick.x:g.x+g.w/2,py=pick?pick.y:g.y+g.h/2;
+  return ynetSelect(r,mode,g,lb.px+px*lb.nw,lb.py+py*lb.nh)}
+// the instance under a point (highest confidence), else the nearest one; its mask → corners in the crop's normalized coordinates
+function ynetSelect(r,mode,g,gcx,gcy){const {lb,keep,W,H}=r;
+  const all=keep.map(inst=>({x0:(inst.x0-lb.px)/lb.k/lb.sw,y0:(inst.y0-lb.py)/lb.k/lb.sh,x1:(inst.x1-lb.px)/lb.k/lb.sw,y1:(inst.y1-lb.py)/lb.k/lb.sh,conf:inst.conf}));
   if(!keep.length){window.YQ={n:0};return null}
-  // the instance under the guide's centre; else the nearest; confidence breaks ties
   const scored=keep.map(inst=>{const inside=gcx>=inst.x0&&gcx<=inst.x1&&gcy>=inst.y0&&gcy<=inst.y1;const d=Math.hypot((inst.x0+inst.x1)/2-gcx,(inst.y0+inst.y1)/2-gcy);return {inst,inside,d}});
   scored.sort((a,b)=>(b.inside-a.inside)||(a.inside?(b.inst.conf-a.inst.conf):(a.d-b.d)));const {inst,inside}=scored[0];
-  const mask=ynetMask(r,inst);let box=[inst.x0,inst.y0,inst.x1,inst.y1],merged=0;
-  if(mode==='spine'){ // a spine split into collinear pieces (same x-range, touching or overlapping in y) is one spine (ypost.py)
-    for(const t of keep){if(t===inst)continue;const ix=Math.min(t.x1,inst.x1)-Math.max(t.x0,inst.x0),ux=Math.max(t.x1,inst.x1)-Math.min(t.x0,inst.x0);if(ux<=0||ix/ux<.6)continue;
-      const uy=Math.max(t.y1,inst.y1)-Math.min(t.y0,inst.y0),g=Math.max(t.y0,inst.y0)-Math.min(t.y1,inst.y1);if(g>.02*uy)continue;
-      const m2=ynetMask(r,t);for(let i=0;i<mask.length;i++)if(m2[i])mask[i]=255;box=[Math.min(box[0],t.x0),Math.min(box[1],t.y0),Math.max(box[2],t.x1),Math.max(box[3],t.y1)];merged++}}
-  let q=ynetQuadFromMask(CV.m,mask,W,H,gcx,gcy);window.YQ={n:keep.length,conf:+inst.conf.toFixed(2),inside,cls:inst.cls,merged};if(!q)return null;
-  if(mode==='spine'&&YNET.fitBox)q=ynetFitToBox(ynetOrder(q),box); /* off: the box overshoots as often as the mask falls short */
+  const mask=ynetMask(r,inst);let q=ynetQuadFromMask(CV.m,mask,W,H,gcx,gcy);window.YQ={n:keep.length,conf:+inst.conf.toFixed(2),inside,cls:inst.cls};if(!q)return null;
   // back to the crop: undo the letterbox, normalize
   q=q.map(([x,y])=>({x:Math.max(0,Math.min(1,(x-lb.px)/lb.k/lb.sw)),y:Math.max(0,Math.min(1,(y-lb.py)/lb.k/lb.sh))}));
   q=orderQuad(q);window.YQ.q=q.map(p=>[+p.x.toFixed(3),+p.y.toFixed(3)]);
   // sanity: a real face, not a sliver and not the whole frame
   const xs=q.map(p=>p.x),ys=q.map(p=>p.y),qw=Math.max(...xs)-Math.min(...xs),qh=Math.max(...ys)-Math.min(...ys);
   if(mode==='spine'){if(qh<g.h*.3||qw<.02||qw>.7)return null}else{if(qw<.2||qh<.2||qw*qh>.95)return null}
-  return {q,conf:inst.conf,inside}}
+  return {q,conf:inst.conf,inside,all,pick:keep.indexOf(inst)}}
 // ----- the corner screen: the book net answers first; the older nets and GrabCut stay as the fallback -----
 async function ynetRefine(crop,mode,guide,q0){if(!ynetOK())return false;const note=$('qfNote'),alive=()=>PEND.crop===crop&&!$('quadFix').hidden&&!SAMC.touched;
   try{if(!YNET.sess){if(alive())note.textContent='책 인식 모델을 준비하는 중입니다…';await ynetLoad()}if(!alive())return false;
-    const r=await ynetQuad(crop,mode,guide);if(!alive())return false;
+    const r=await ynetQuad(crop,mode,guide,(window.PICK&&PICK.crop===crop)?PICK:null);if(!alive())return false;
     if(r&&(mode==='spine'||r.conf>=.3)){SAMC.crop=crop;SAMC.q=r.q;$('qfAuto').onclick&&$('qfAuto').onclick();note.textContent=(mode==='spine'?'책등을 찾았습니다.':'표지를 찾았습니다.')+' 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.';return true}
     return false}
   catch(e){console.warn('book net',e);return false}}
@@ -4854,6 +4860,88 @@ async function liveTick(){if(!CAM.stream||$('cam').hidden||LIVE.busy||!ynetOK())
     g.lineWidth=3;g.strokeStyle=LIVE.stable>=1?'rgba(120,230,150,.95)':'rgba(255,220,120,.85)';g.setLineDash(LIVE.stable>=1?[]:[8,6]);g.stroke();g.setLineDash([]);
     if(LIVE.stable>=1){$('camHint').textContent=CAM.mode==='spine'?'책등을 찾았어요 · 이대로 찍으세요':'표지를 찾았어요 · 이대로 찍으세요';$('camHint').classList.add('ok')}}catch(e){}}}
 {const _close=camClose;camClose=function(v){LIVE.q=null;LIVE.stable=0;LIVE.timer=0;return _close(v)}}
+
+// v58 — which book: every book the net finds is outlined faintly in the viewfinder and a tap chooses one (the choice
+// carries through the shutter); on the corner screen a tap on another book re-chooses without a redraw; the model's
+// status is said out loud when it cannot load; the 3D book takes the proportions of its own photos, and a book can be
+// bound on the right (Japanese manga), which puts the spine on the other side.
+
+// ---------- 1. viewfinder: faint outlines for all, the chosen one bright, tap to choose ----------
+LIVE.all=null;LIVE.pick=null;LIVE.pickAtClose=null;
+liveTick=async function(){if(!CAM.stream||$('cam').hidden||LIVE.busy||!ynetOK())return;LIVE.busy=true;
+  try{if(!YNET.sess){try{await ynetLoad()}catch(e){ynetSay(e);return}}const lc=liveCrop();if(!lc||!CAM.stream)return;const t0=performance.now();YNET.live=true;let res=null;
+    const pk=LIVE.pick?{x:(LIVE.pick.x-lc.x0)/(lc.x1-lc.x0),y:(LIVE.pick.y-lc.y0)/(lc.y1-lc.y0)}:null;
+    try{res=await ynetQuad(lc.c,CAM.mode,lc.gf,pk)}finally{YNET.live=false}
+    LIVE.cost=performance.now()-t0;LIVE.every=Math.max(700,Math.min(3000,LIVE.cost*2.2));
+    if(!CAM.stream)return;const toV=p=>({x:lc.x0+p.x*(lc.x1-lc.x0),y:lc.y0+p.y*(lc.y1-lc.y0)});
+    if(res){const q=res.q.map(toV);const prev=LIVE.q;let agree=false;if(prev){let d=0;for(let i=0;i<4;i++)d+=Math.hypot(q[i].x-prev[i].x,q[i].y-prev[i].y);agree=d/4<Math.max(lc.x1-lc.x0,lc.y1-lc.y0)*.03}
+      LIVE.stable=agree?Math.min(5,LIVE.stable+1):0;LIVE.q=q;LIVE.at=performance.now();
+      LIVE.all=(res.all||[]).map((b,i)=>({a:toV({x:b.x0,y:b.y0}),b:toV({x:b.x1,y:b.y1}),conf:b.conf,chosen:i===res.pick}))}
+    else{LIVE.stable=0;LIVE.q=null;LIVE.all=null}}
+  catch(e){console.warn('live',e)}
+  finally{LIVE.busy=false}};
+{const _draw=camDraw;camDraw=function(){_draw();try{if(!CAM.stream)return;const c=$('camO'),dpr=Math.min(2,devicePixelRatio||1),g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);const f=camFit();
+    const fresh=performance.now()-LIVE.at<2500;
+    if(LIVE.all&&fresh){for(const b of LIVE.all){if(b.chosen||b.conf<.3)continue;g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=1.5;g.setLineDash([5,5]);g.strokeRect(f.ox+b.a.x*f.s,f.oy+b.a.y*f.s,(b.b.x-b.a.x)*f.s,(b.b.y-b.a.y)*f.s);g.setLineDash([])}
+      if(LIVE.all.filter(b=>b.conf>=.3).length>1&&LIVE.stable>=1)$('camHint').textContent=(CAM.mode==='spine'?'책등을 찾았어요':'표지를 찾았어요')+' · 다른 책을 원하면 그 책을 톡 치세요'}
+    if(LIVE.pick&&performance.now()-LIVE.pick.at<1200){const x=f.ox+LIVE.pick.x*f.s,y=f.oy+LIVE.pick.y*f.s,r=14+10*(performance.now()-LIVE.pick.at)/1200;g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.stroke()}
+    if(YNET.fail>=2&&!ynetOK()){$('camHint').textContent='책 인식 모델을 불러오지 못해 기본 방식으로 찍어요';$('camHint').classList.remove('ok')}}catch(e){}}}
+{const cam=$('cam');let t=null;
+  cam.addEventListener('pointerdown',e=>{if(e.target.closest('button,.cam-bot,.cam-top,.cam-modes'))return;t={id:e.pointerId,x:e.clientX,y:e.clientY,at:performance.now()}},true);
+  const up=e=>{if(!t||e.pointerId!==t.id)return;const d=Math.hypot(e.clientX-t.x,e.clientY-t.y),dt=performance.now()-t.at;t=null;if(d>12||dt>600||!CAM.stream)return;
+    const f=camFit(),x=(e.clientX-f.ox)/f.s,y=(e.clientY-f.oy)/f.s;if(x<0||y<0||x>f.vw||y>f.vh)return;
+    LIVE.pick={x,y,at:performance.now()};LIVE.stable=0;LIVE.timer=0;LIVE.at=0};
+  cam.addEventListener('pointerup',up,true);cam.addEventListener('pointercancel',()=>{t=null},true)}
+// the choice survives the shutter: the camera closes before the corner screen opens, so it is stashed at close
+{const _close=camClose;camClose=function(v){const vid=$('camV');LIVE.pickAtClose=(LIVE.pick&&vid.videoWidth)?{x:LIVE.pick.x,y:LIVE.pick.y,vw:vid.videoWidth,vh:vid.videoHeight,mode:CAM.mode}:null;LIVE.pick=null;LIVE.all=null;return _close(v)}}
+{const _fix=quadFix;quadFix=function(crop,mode,gf){const pk=LIVE.pickAtClose;LIVE.pickAtClose=null;window.PICK=null;
+  if(pk&&pk.mode===mode&&gf){const r=QF.guide[mode]||QF.guide.front,cw=r.w*pk.vw/gf.w,ch=r.h*pk.vh/gf.h,x0=r.x*pk.vw-gf.x*cw,y0=r.y*pk.vh-gf.y*ch;
+    const x=(pk.x-x0)/cw,y=(pk.y-y0)/ch;if(x>0&&y>0&&x<1&&y<1)window.PICK={crop,x,y}}
+  return _fix(crop,mode,gf)}}
+
+// ---------- 2. corner screen: a tap on another book chooses it (the box-draw stays for anything else) ----------
+async function ynetRepick(p){const crop=PEND.crop,mode=PEND.mode||'spine',L=YNET.last;if(!crop||$('quadFix').hidden||!L||L.crop!==crop||!CV.m)return false;
+  const {lb}=L.r;const res=ynetSelect(L.r,mode,L.g,lb.px+p.x*lb.nw,lb.py+p.y*lb.nh);if(!res||!res.inside)return false;
+  SAMC.crop=crop;SAMC.q=res.q;SAMC.touched=false;if($('qfAuto').onclick)$('qfAuto').onclick();
+  $('qfNote').textContent=(mode==='spine'?'그 책등으로 바꿨습니다.':'그 표지로 바꿨습니다.')+' 점을 끌어 다듬거나 두 손가락으로 확대해 확인하세요.';return true}
+{const svg=$('qfSvg'),stage=$('qfStage'),img=$('qfImg');if(svg&&stage&&img){let t=null;
+  svg.addEventListener('pointerdown',e=>{if(e.target.closest('.qf-hit,.qf-mid-hit')||img.style.transform){t=null;return}t={id:e.pointerId,x:e.clientX,y:e.clientY,at:performance.now()}},true);
+  svg.addEventListener('pointerup',e=>{if(!t||e.pointerId!==t.id)return;const d=Math.hypot(e.clientX-t.x,e.clientY-t.y),dt=performance.now()-t.at;t=null;if(d>10||dt>500)return;
+    const r=img.getBoundingClientRect();const p={x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};if(p.x<0||p.y<0||p.x>1||p.y>1)return;
+    const q=SAMC.q;if(q&&q.length===4){let inside=false;for(let i=0,j=3;i<4;j=i++){const a=q[i],b=q[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside}if(inside)return}
+    ynetRepick(p)},true)}}
+
+// ---------- 3. the model's status, said once when it fails ----------
+function ynetSay(e){YNET.err=String(e&&e.message||e);if(YNET.said)return;YNET.said=true;showToast('책 인식 모델을 불러오지 못했어요 · '+YNET.err.slice(0,60),3200)}
+{const _load=ynetLoad;ynetLoad=function(){const p=_load();p.catch(e=>ynetSay(e));return p}}
+
+// ---------- 4. the 3D book: proportions from its own photos; binding on the left (default) or the right ----------
+const DIM_CACHE=new Map();
+function imgSize(src){return new Promise(res=>{if(!src)return res(null);const im=new Image();im.onload=()=>res({w:im.naturalWidth,h:im.naturalHeight});im.onerror=()=>res(null);im.src=src})}
+async function bookDims(b){const key=(b.key||b.id)+':'+String(b.spine||'').length+':'+String(b.front||'').length+':'+String(b.back||'').length;if(DIM_CACHE.has(key))return DIM_CACHE.get(key);
+  const H=330;let D=H*(b.width||40)/(b.height||228),W=220;
+  const sp=await imgSize(b.spine);if(sp&&sp.h>0)D=H*sp.w/sp.h;
+  const cv=await imgSize(b.front)||await imgSize(b.back);if(cv&&cv.h>0)W=H*cv.w/cv.h;
+  D=Math.max(6,Math.min(120,D));W=Math.max(120,Math.min(300,W));const d={W:Math.round(W),D:Math.round(D)};DIM_CACHE.set(key,d);return d}
+function applyDims(b){const o=$('object');if(!o)return;o.style.setProperty('--W','220px');o.style.setProperty('--D',Math.round(330*(b.width||40)/(b.height||228))+'px');o.dataset.bind=b.bind==='R'?'R':'L';
+  try{if(b.bind==='R'&&ry===-28){ry=28;transform(true)}else if(b.bind!=='R'&&ry===28){ry=-28;transform(true)}}catch(e){} // the spine side faces the viewer
+  bookDims(b).then(d=>{if(current!==b)return;o.style.setProperty('--W',d.W+'px');o.style.setProperty('--D',d.D+'px')})}
+{const _open=openBook;openBook=function(b,btn){const r=_open(b,btn);try{if(b&&!isDiary(b)){applyDims(b);bindButton(b)}}catch(e){}return r}}
+{const _up=updatePhoto;updatePhoto=function(){const r=_up();try{if(current&&!isDiary(current))applyDims(current)}catch(e){}return r}}
+// the binding toggle under the cover buttons
+function bindButton(b){let el=$('bkBind');if(!el){const row=document.querySelector('.bk-acts .bk-row');if(!row)return;el=document.createElement('button');el.id='bkBind';el.className='bk-bind';row.after(el);
+    el.onclick=async()=>{const bk=current;if(!bk)return;bk.bind=bk.bind==='R'?'L':'R';bindButton(bk);applyDims(bk);if(bk.user)await store.put(userRecord(bk));else await saveBook(bk);showToast(bk.bind==='R'?'오른쪽으로 펼치는 책(일본 만화)으로 바꿨어요':'왼쪽으로 펼치는 책으로 바꿨어요',1600)}}
+  el.hidden=!b||!b.user;el.textContent=b&&b.bind==='R'?'펼치는 방향 ▶ 오른쪽 (일본 만화)':'펼치는 방향 ◀ 왼쪽 (한국·서양 책)'}
+// stored with the book
+{const _rec=userRecord;userRecord=function(b){const r=_rec(b);r.bind=b.bind==='R'?'R':'L';return r}}
+{const _add=addUserBook;addUserBook=function(rec){const b=_add(rec);b.bind=rec.bind==='R'?'R':'L';return b}}
+// a thin book is thin: the shelf width floor goes from 22 to 10 units
+bookSizeFrom=function(aspect){const height=Math.round(Math.max(200,Math.min(255,228+(aspect-7)*3))),width=Math.round(Math.max(10,Math.min(64,height/aspect)));return {height,width}};
+// books shelved before this version got the old floor; their true width comes from their spine photo
+async function fixStoredWidths(){try{for(const b of books){if(!b.user||!b.spine||b.gone)continue;const sp=await imgSize(b.spine);if(!sp||!sp.h)continue;const w=Math.round(Math.max(10,Math.min(64,(b.height||228)*sp.w/sp.h)));
+    if(Math.abs(w-(b.width||0))>2){b.width=w;const el=bookButtons[b.id];if(el){el.style.setProperty('--sw',w+'px');el.style.width=(w*lib.s)+'px'}await store.put(userRecord(b))}}
+    if(typeof placeDom==='function')placeDom()}catch(e){console.warn('widths',e)}}
+window.addEventListener('load',()=>setTimeout(fixStoredWidths,2500));
 
 
 
