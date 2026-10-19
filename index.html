@@ -782,6 +782,21 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 #object[data-bind=R] .cover-lining{background:linear-gradient(270deg,#d8d0bd,#ede6d7 12%,#f2ecdd)}
 .bk-bind{height:40px;border-radius:20px;border:1px dashed #f3e3c444;background:none;color:#f3e3c4cc;font:inherit;font-size:13px;width:100%}
 .bk-bind[hidden]{display:none}
+
+/* v59 — the corner screen keeps the camera picture: frame behind, crop over its place, bars half-clear */
+.quad-fix .qf-stage{position:absolute;inset:0;width:100%;height:100%;display:block;background:#0d0704}
+.quad-fix .qf-stage img{max-width:none;max-height:none}
+.qf-bg{position:absolute;left:0;top:0;object-fit:fill;filter:brightness(.42) saturate(.85);pointer-events:none}
+.qf-bg[hidden]{display:none}
+.quad-fix .qf-top{background:linear-gradient(#0d0704e0,#0d0704a6 65%,#0d070400);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0;padding:calc(8px + env(safe-area-inset-top)) 16px 24px}
+.quad-fix .qf-top h2{font-size:16px;text-shadow:0 1px 2px #000c}
+.quad-fix .qf-top p{font-size:12.5px;margin-top:3px;text-shadow:0 1px 2px #000c}
+.quad-fix .qf-btns{background:linear-gradient(#0d070400,#0d0704a6 35%,#0d0704e0);backdrop-filter:none;-webkit-backdrop-filter:none;border-top:0;padding:28px 12px calc(12px + env(safe-area-inset-bottom))}
+.quad-fix .qf-btns button{height:46px;background:#0d070488;border:1px solid #f3e3c466;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.quad-fix .qf-btns .qf-main{background:#f3e3c4f0}
+.qf-hint{bottom:calc(84px + env(safe-area-inset-bottom));background:#0d0704a0}
+.qf-hint{animation:qfHintFade .6s ease 5s forwards}
+@keyframes qfHintFade{to{opacity:0}}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -4942,6 +4957,47 @@ async function fixStoredWidths(){try{for(const b of books){if(!b.user||!b.spine|
     if(Math.abs(w-(b.width||0))>2){b.width=w;const el=bookButtons[b.id];if(el){el.style.setProperty('--sw',w+'px');el.style.width=(w*lib.s)+'px'}await store.put(userRecord(b))}}
     if(typeof placeDom==='function')placeDom()}catch(e){console.warn('widths',e)}}
 window.addEventListener('load',()=>setTimeout(fixStoredWidths,2500));
+
+// v59 — the corner screen keeps the camera picture: the whole frame stays behind (dimmed, where it was), the crop
+// sits over its own place as large as the screen allows, and the title, note and buttons float over it half-clear.
+// The guides live inside the visible part of the picture (object-fit: cover hides the sides of a 3:4 stream on a
+// tall phone, and the old cover guide reached past the screen). Safari ignored max-height:100% on the still, which cut
+// the top and bottom of the photo under the bars; the still is now sized by hand.
+const QF_BASE={spine:{x:.36,y:.07,w:.28,h:.84},front:{x:.07,y:.1,w:.86,h:.76},back:{x:.07,y:.1,w:.86,h:.76}};
+function qfVisible(){const f=camFit();const x0=Math.max(0,-f.ox/(f.vw*f.s)),x1=Math.min(1,(innerWidth-f.ox)/(f.vw*f.s)),y0=Math.max(0,-f.oy/(f.vh*f.s)),y1=Math.min(1,(innerHeight-f.oy)/(f.vh*f.s));return {x0,y0,w:x1-x0,h:y1-y0}}
+function qfGuides(){const v=$('camV');if(!v.videoWidth){Object.assign(QF.guide,JSON.parse(JSON.stringify(QF_BASE)));return}const vis=qfVisible();
+  for(const k in QF_BASE){const b=QF_BASE[k];QF.guide[k]={x:vis.x0+b.x*vis.w,y:vis.y0+b.y*vis.h,w:b.w*vis.w,h:b.h*vis.h}}}
+{const _draw=camDraw;camDraw=function(){try{const v=$('camV');const key=v.videoWidth+'x'+v.videoHeight+'@'+innerWidth+'x'+innerHeight;if(QF.gkey!==key){QF.gkey=key;qfGuides()}}catch(e){}return _draw()}}
+
+// the shutter: the same crop as before, plus the whole frame and where the crop sits in it
+$('camShot').onclick=async()=>{
+  const v=$('camV');if(!v.videoWidth)return;const mode=CAM.mode,r=QF.guide[mode]||QF.guide.front,vw=v.videoWidth,vh=v.videoHeight;
+  $('cam').classList.add('flash');setTimeout(()=>$('cam').classList.remove('flash'),180);
+  const full=document.createElement('canvas');full.width=vw;full.height=vh;full.getContext('2d').drawImage(v,0,0);
+  const mx=r.w*vw*(mode==='spine'?.6:.1),my=r.h*vh*.06,x0=Math.max(0,r.x*vw-mx),x1=Math.min(vw,(r.x+r.w)*vw+mx),y0=Math.max(0,r.y*vh-my),y1=Math.min(vh,(r.y+r.h)*vh+my);
+  const crop=document.createElement('canvas');crop.width=Math.round(x1-x0);crop.height=Math.round(y1-y0);crop.getContext('2d').drawImage(full,x0,y0,x1-x0,y1-y0,0,0,crop.width,crop.height);
+  const k=Math.min(1,1100/Math.max(vw,vh)),fr=document.createElement('canvas');fr.width=Math.round(vw*k);fr.height=Math.round(vh*k);fr.getContext('2d').drawImage(full,0,0,fr.width,fr.height); // a lighter copy for the backdrop
+  window.QF_FRAME={src:fr.toDataURL('image/jpeg',.8),vw,vh,x0,y0,x1,y1};
+  const resolve=CAM.resolve;CAM.resolve=null;camClose(null);
+  camDetectLines=camDetectV44;
+  const gf={x:(r.x*vw-x0)/(x1-x0),y:(r.y*vh-y0)/(y1-y0),w:r.w*vw/(x1-x0),h:r.h*vh/(y1-y0)};
+  for(;;){const q=await quadFix(crop,mode,gf);
+    if(q==='retake'){resolve(await openCamera(mode,QF.opts||{}));return}
+    const out=warpOrCrop(crop,q,mode==='spine'?1400:1200);
+    if(mode==='spine')resolve({mode,cut:cutFromCanvas(out)});else{CV.lastTight=true;resolve({mode,img:out.toDataURL('image/jpeg',.9)})}return}};
+
+// the corner screen: the crop is placed by hand (as large as the screen allows), the frame behind it at the same scale
+let QFP=null;
+function qfLayout(){const stage=$('qfStage'),img=$('qfImg'),bg=$('qfBg');if(!stage||!img)return;const W=stage.clientWidth,H=stage.clientHeight;if(!W||!H||!QFP)return;
+  const {cw,ch,F}=QFP,s=Math.min(W/cw,H/ch),w=cw*s,h=ch*s,left=(W-w)/2,top=(H-h)/2;
+  Object.assign(img.style,{position:'absolute',left:left+'px',top:top+'px',width:w+'px',height:h+'px',maxWidth:'none',maxHeight:'none'});
+  if(bg){if(F){const fs=s*(F.x1-F.x0)/cw;Object.assign(bg.style,{left:(left-F.x0*fs)+'px',top:(top-F.y0*fs)+'px',width:(F.vw*fs)+'px',height:(F.vh*fs)+'px'});bg.hidden=false}else bg.hidden=true}}
+{const _fix=quadFix;quadFix=function(crop,mode,gf){const F=window.QF_FRAME||null;window.QF_FRAME=null;const stage=$('qfStage');let bg=$('qfBg');
+  if(!bg&&stage){bg=document.createElement('img');bg.id='qfBg';bg.alt='';bg.className='qf-bg';stage.prepend(bg)}
+  if(bg){if(F&&F.src)bg.src=F.src;else bg.removeAttribute('src');bg.hidden=!(F&&F.src)}
+  $('quadFix').hidden=false;QFP={cw:crop.width,ch:crop.height,F:F&&F.src?F:null};qfLayout(); // shown first so the stage has a size to lay out in
+  const p=_fix(crop,mode,gf);p.finally(()=>{QFP=null}).catch(()=>{});return p}}
+window.addEventListener('resize',()=>{if(QFP)qfLayout()});
 
 
 
