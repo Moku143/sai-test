@@ -4519,7 +4519,7 @@ async function deglareNet(c,mode){if(!gnetOK())return c;if(!GNET.sess)await gnet
 // the corner screen's answer is the moment to read the light: the warped face is made here, the net lifts its light,
 // and warpOrCrop hands back that same canvas when the shutter asks for it
 {const _fix=quadFix;quadFix=async function(crop,mode,guide){const q=await _fix(crop,mode,guide);if(q==='retake'||!gnetOK()||!CV.m)return q;
-  try{const out=WARP_RAW(crop,q,mode==='spine'?1400:1200);if(out){let t=null;try{if(typeof showToast==='function')t=showToast('빛을 걷어내는 중…',4000)}catch(e){}
+  try{const out=WARP_RAW(crop,insetQuad(q),mode==='spine'?1400:1200);if(out){let t=null;try{if(typeof showToast==='function')t=showToast('빛을 걷어내는 중…',4000)}catch(e){}
       try{await deglareNet(out,mode)}catch(e){console.warn('glare net',e)}try{deglareCV(out,mode)}catch(e){}try{unifyCanvas(out,mode)}catch(e){}GNET.pre={crop,q,out}}}catch(e){}return q}}
 {const _w=warpOrCrop;warpOrCrop=function(full,q,maxSide){const pre=GNET.pre;if(pre&&pre.crop===full&&pre.q===q){GNET.pre=null;return pre.out}return _w(full,q,maxSide)}}
 
@@ -4691,6 +4691,29 @@ async function linesRefine(crop,mode,guide,q0){if(mode==='spine')return false;co
 // the spinner stays until the nets have had their say (GrabCut's first answer is shown underneath meanwhile), so
 // "이대로" is not pressed on the rough answer by mistake
 {const _ref=samRefine;samRefine=async function(crop,mode,guide,q0){const el=document.documentElement;el.classList.add('qf-busy');try{return await _ref(crop,mode,guide,q0)}finally{if(PEND.crop===crop)el.classList.remove('qf-busy')}}}
+
+// ===== a cover's four corners must make a box: when one corner wanders off (into the box standing above the book),
+// the top edge leans against the bottom one. That corner is rebuilt from the other three (a parallelogram), and
+// kept only if the picture agrees — an edge runs along the rebuilt side =====
+function fixCornerQuad(cv,crop,q){try{if(!q||q.length!==4)return q;const w=crop.width,h=crop.height;const P=q.map(p=>({x:p.x*w,y:p.y*h}));
+    const ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);const d=(a,b)=>Math.abs(((a-b+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI)*180/Math.PI;
+    const top=d(ang(P[0],P[1]),ang(P[3],P[2])),side=d(ang(P[0],P[3]),ang(P[1],P[2]));if(top<7&&side<7)return q;
+    // candidates: each corner rebuilt from its three neighbours; the one that makes the box most consistent wins
+    let best=null;for(let i=0;i<4;i++){const a=P[(i+1)%4],o=P[(i+2)%4],b=P[(i+3)%4];const n={x:a.x+b.x-o.x,y:a.y+b.y-o.y};const Q=P.slice();Q[i]=n;
+      const t=d(ang(Q[0],Q[1]),ang(Q[3],Q[2])),s=d(ang(Q[0],Q[3]),ang(Q[1],Q[2]));const sc=t+s;if(n.x<-w*.05||n.y<-h*.05||n.x>w*1.05||n.y>h*1.05)continue;if(!best||sc<best.sc)best={i,n,sc}}
+    if(!best||best.sc>8)return q;
+    // the picture must agree: edge strength along the two rebuilt sides vs along the old ones
+    const L=480,k=Math.min(1,L/Math.max(w,h)),sw=Math.round(w*k),sh=Math.round(h*k);const s=document.createElement('canvas');s.width=sw;s.height=sh;s.getContext('2d').drawImage(crop,0,0,sw,sh);
+    const img=cv.imread(s),gm=new cv.Mat(),ed=new cv.Mat(),edw=new cv.Mat();cv.cvtColor(img,gm,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gm,gm,new cv.Size(3,3),0);cv.Canny(gm,ed,40,120);const kd=cv.Mat.ones(5,5,cv.CV_8U);cv.dilate(ed,edw,kd);
+    const E=edw.data;const sup=(a,b)=>{let hit=0,n=0;for(let t=.05;t<=.95;t+=.03){const x=Math.round((a.x+(b.x-a.x)*t)*k),y=Math.round((a.y+(b.y-a.y)*t)*k);n++;if(x>=0&&y>=0&&x<sw&&y<sh&&E[y*sw+x])hit++}return hit/n};
+    const i=best.i,prev=P[(i+3)%4],next=P[(i+1)%4];const oldS=(sup(prev,P[i])+sup(P[i],next))/2,newS=(sup(prev,best.n)+sup(best.n,next))/2;
+    [img,gm,ed,edw,kd].forEach(m=>m.delete());window.FCQ={i,top:+top.toFixed(1),side:+side.toFixed(1),oldS:+oldS.toFixed(2),newS:+newS.toFixed(2)};
+    if(newS<.45||newS<oldS*.8)return q;const Q=q.slice();Q[i]={x:Math.max(0,Math.min(1,best.n.x/w)),y:Math.max(0,Math.min(1,best.n.y/h))};return Q}catch(e){return q}}
+{const _g=grabQuad;grabQuad=function(cv,crop,mode,guide){const q=_g(cv,crop,mode,guide);if(mode==='spine'||!q)return q;return fixCornerQuad(cv,crop,q)}}
+
+// the confirmed corners are pulled in a touch (1.2% of the face) before the warp: a book's very edge is where the
+// neighbour, the page block or a sliver of background shows, and a face cut just inside it reads as cleaner print
+function insetQuad(q,f=.012){if(!q||q.length!==4)return q;const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;return q.map(p=>({x:cx+(p.x-cx)*(1-f),y:cy+(p.y-cy)*(1-f)}))}
 
 
 
