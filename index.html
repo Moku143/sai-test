@@ -797,6 +797,32 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .qf-hint{bottom:calc(84px + env(safe-area-inset-bottom));background:#0d0704a0}
 .qf-hint{animation:qfHintFade .6s ease 5s forwards}
 @keyframes qfHintFade{to{opacity:0}}
+
+/* v78 — corner screen: tinted region, shaded outside, magnifier, blurred photo behind see-through buttons */
+.qf-poly{fill:rgba(159,224,168,.2);stroke:#9fe0a8;stroke-width:1.5;stroke-linejoin:round}
+.qf-shade{fill:rgba(8,4,2,.36);stroke:none;pointer-events:none}
+.qf-busy .qf-shade{fill:transparent}
+.qf-hit{fill:rgba(159,224,168,.07)!important}.qf-mid-hit{fill:rgba(159,224,168,.05)!important}
+.qf-mag{position:absolute;z-index:6;width:132px;height:132px;border-radius:50%;overflow:hidden;border:2px solid #f3e3c4e6;box-shadow:0 8px 26px #000a,0 0 0 1px #0006;background:#0d0704;pointer-events:none;animation:qfMagIn .12s ease-out}
+.qf-mag canvas{width:132px;height:132px;display:block}
+.qf-mag[hidden]{display:none}
+@keyframes qfMagIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+#qfAmb{position:absolute;left:-40px;top:-40px;width:calc(100% + 80px)!important;height:calc(100% + 80px)!important;max-width:none!important;max-height:none!important;object-fit:cover!important;filter:blur(26px) brightness(.5) saturate(1.15);pointer-events:none;transform:translateZ(0)}
+#qfAmb:not([src]){display:none}
+.quad-fix .qf-top{background:linear-gradient(#0d0704b3,#0d070466 65%,#0d070400)!important}
+.quad-fix .qf-btns{background:linear-gradient(#0d070400,#0d070440 45%,#0d070473)!important}
+.quad-fix .qf-btns button{background:rgba(22,12,6,.3)!important;border:1px solid rgba(243,227,196,.45)!important;color:#fff8ec!important;-webkit-backdrop-filter:blur(14px) saturate(1.3)!important;backdrop-filter:blur(14px) saturate(1.3)!important;text-shadow:0 1px 3px #000b}
+.quad-fix .qf-btns .qf-main{background:rgba(243,227,196,.58)!important;border:1px solid rgba(255,248,232,.75)!important;color:#1b110a!important;text-shadow:0 0 6px #fff6e080}
+.qf-hint{background:#0d070473!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+/* camera: see-through controls */
+.cam-bot{background:linear-gradient(transparent,#0000004d 45%,#00000073)!important}
+.cam-top button,#camTitle,#camHelp{background:rgba(0,0,0,.32)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.cam-modes button[aria-pressed=true]{background:rgba(243,227,196,.55)!important;color:#1b110a!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,248,232,.6)!important}
+.cam-hint{text-shadow:0 1px 4px #000,0 0 12px #000a}
+/* book view: see-through buttons */
+.bk-acts .bk-row button{background:rgba(36,22,13,.38)!important;border:1px solid rgba(243,227,196,.3)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+/* shelf: the 책 추가 pill lets the shelf show through too */
+.app-nav .nav-add{background:rgba(243,227,196,.6)!important;border:1px solid rgba(255,248,232,.55)!important;color:#1b110a!important}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -2838,7 +2864,7 @@ function camModes(modes){$('camModes').innerHTML=modes.map(m=>`<button data-m="$
   $('camModes').querySelectorAll('button').forEach(b=>b.onclick=()=>{CAM.mode=b.dataset.m;CAM.target=null;CAM.rect=null;CAM.lock=0;camModes(modes)})}
 async function openCamera(mode,{modes=[mode],title=''}={}){
   if(!navigator.mediaDevices?.getUserMedia)return 'fallback';
-  try{CAM.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1440}},audio:false})}catch(e){console.warn('camera',e);return 'fallback'}
+  try{CAM.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:4032},height:{ideal:3024}},audio:false})}catch(e){console.warn('camera',e);return 'fallback'}
   CAM.mode=mode;CAM.rect=null;CAM.target=null;CAM.lock=0;const v=$('camV');v.srcObject=CAM.stream;try{await v.play()}catch(e){}
   $('camTitle').textContent=title||CAM_NAME[mode]+' 찍기';camModes(modes);$('cam').hidden=false;document.body.style.overflow='hidden';
   cancelAnimationFrame(CAM.raf);CAM.raf=requestAnimationFrame(camDraw);
@@ -3253,9 +3279,9 @@ async function tightenCover(src){
   let x0=l!=null?l+1:0,x1=r!=null?r:w,y0=t!=null?t+1:0,y1=b!=null?b:h;
   if(l==null&&r==null&&t==null&&b==null)return src;if((x1-x0)/w<.45||(y1-y0)/h<.45)return src;
   const ins=1.5;x0+=ins;y0+=ins;x1-=ins;y1-=ins;
-  const sx=x0/k,sy=y0/k,sw=(x1-x0)/k,sh=(y1-y0)/k,k2=Math.min(1,1400/Math.max(sw,sh)),o=document.createElement('canvas');
+  const sx=x0/k,sy=y0/k,sw=(x1-x0)/k,sh=(y1-y0)/k,k2=Math.min(1,1800/Math.max(sw,sh)),o=document.createElement('canvas');
   o.width=Math.round(sw*k2);o.height=Math.round(sh*k2);o.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,o.width,o.height);
-  return o.toDataURL('image/jpeg',.88)}
+  return o.toDataURL('image/jpeg',.92)}
 // every cover that comes from the live camera is tightened before it is used
 {const _open=openCamera;openCamera=async function(mode,o){const r=await _open(mode,o);if(r&&r.img&&r.mode!=='spine'){try{r.img=await tightenCover(r.img)}catch(e){}}return r}}
 // the system-camera route too (front and back cover file inputs)
@@ -5013,6 +5039,142 @@ window.addEventListener('resize',()=>{if(QFP)qfLayout()});
 
 
 
+
+
+
+// v78 — (1) the viewfinder marks a found book by tinting it softly (no outline, no dark mask; the guide corners are faint
+// and fade away once a book is found), and the shot always includes the tinted book; (2) on the corner screen a dragged
+// corner or side moves with the finger (it does not jump under it) and a magnifier away from the finger shows the spot,
+// also when zoomed in; the found region is tinted and the rest shaded; (3) the buttons are see-through, with the photo
+// (blurred) behind them; (4) sharper pictures: a higher-resolution stream, the sharpest of a short burst, larger
+// outputs and a light unsharp mask.
+
+// ---------- 1. viewfinder: soft tint ----------
+const TINT={q:null,a:0,last:0};
+camDraw=function(){
+  const c=$('camO'),W=innerWidth,H=innerHeight,dpr=Math.min(2,devicePixelRatio||1);
+  if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr)}
+  const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);const now=performance.now();
+  try{const v=$('camV');const key=v.videoWidth+'x'+v.videoHeight+'@'+W+'x'+H;if(QF.gkey!==key){QF.gkey=key;qfGuides()}}catch(e){}
+  const r=QF.guide[CAM.mode]||QF.guide.front;CAM.rect={...r};CAM.target=null;
+  try{if(CAM.stream&&(!LIVE.timer||now-LIVE.timer>LIVE.every)){LIVE.timer=now;liveTick()}}catch(e){}
+  try{
+    const f=camFit(),fresh=LIVE.q&&now-LIVE.at<2500,dt=Math.min(120,Math.max(0,now-(TINT.last||now)));TINT.last=now;
+    const tgt=fresh?LIVE.q.map(p=>({x:f.ox+p.x*f.s,y:f.oy+p.y*f.s})):null;
+    if(tgt){if(!TINT.q||TINT.a<.03)TINT.q=tgt.map(p=>({...p}));else{const k=1-Math.exp(-dt/110);TINT.q.forEach((p,i)=>{p.x+=(tgt[i].x-p.x)*k;p.y+=(tgt[i].y-p.y)*k})}}
+    TINT.a+=((tgt?1:0)-TINT.a)*(1-Math.exp(-dt/(tgt?160:260)));if(TINT.a<.01&&!tgt)TINT.q=null;
+    // the guide: four faint corners, gone once a book is tinted
+    const ga=.5*(1-TINT.a);if(ga>.02){const x=f.ox+r.x*f.vw*f.s,y=f.oy+r.y*f.vh*f.s,w=r.w*f.vw*f.s,h=r.h*f.vh*f.s,L=Math.min(22,w/4,h/4);
+      g.strokeStyle=`rgba(243,227,196,${ga})`;g.lineWidth=2;g.lineCap='round';
+      for(const [cx,cy,dx,dy] of [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]]){g.beginPath();g.moveTo(cx,cy+dy*L);g.lineTo(cx,cy);g.lineTo(cx+dx*L,cy);g.stroke()}}
+    // other books the net sees: a faint wash (tap one to choose it)
+    if(LIVE.all&&fresh)for(const b of LIVE.all){if(b.chosen||b.conf<.3)continue;const x=f.ox+b.a.x*f.s,y=f.oy+b.a.y*f.s,w=(b.b.x-b.a.x)*f.s,h=(b.b.y-b.a.y)*f.s;
+      g.fillStyle='rgba(255,255,255,.07)';g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,6);else g.rect(x,y,w,h);g.fill()}
+    // the found book: a soft wash of colour with a glow at its rim — cream while it settles, green when it holds
+    if(TINT.q&&TINT.a>.01){const st=LIVE.stable>=1,col=st?'159,224,168':'243,227,196',pulse=st?.05*Math.sin(now/380):0;
+      g.save();g.beginPath();TINT.q.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.closePath();
+      g.shadowColor=`rgba(${col},${TINT.a})`;g.shadowBlur=30;g.fillStyle=`rgba(${col},${(.3+pulse)*TINT.a})`;g.fill();g.restore()}
+    if(LIVE.pick&&now-LIVE.pick.at<1200){const x=f.ox+LIVE.pick.x*f.s,y=f.oy+LIVE.pick.y*f.s,rr=14+10*(now-LIVE.pick.at)/1200;g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=2;g.beginPath();g.arc(x,y,rr,0,Math.PI*2);g.stroke()}
+    const hint=$('camHint'),sp=CAM.mode==='spine';
+    if(YNET.fail>=2&&!ynetOK()){hint.textContent='책 인식 모델을 불러오지 못해 기본 방식으로 찍어요';hint.classList.remove('ok')}
+    else if(fresh&&LIVE.stable>=1){const many=LIVE.all&&LIVE.all.filter(b=>b.conf>=.3).length>1;hint.textContent=(sp?'책등을 찾았어요':'표지를 찾았어요')+(many?' · 다른 책은 톡 치세요':' · 이대로 찍으세요');hint.classList.add('ok')}
+    else{hint.textContent=sp?'책등을 화면 가운데에 세로로 비춰 주세요':'표지 전체가 화면에 들어오게 비춰 주세요';hint.classList.remove('ok')}
+  }catch(e){}
+  CAM.raf=requestAnimationFrame(camDraw)};
+{const _close=camClose;camClose=function(v){TINT.q=null;TINT.a=0;TINT.last=0;return _close(v)}}
+
+// ---------- 4a. the shutter: the sharpest of a short burst, the tinted book always inside the crop ----------
+function v78NextFrame(v){return new Promise(res=>{let done=false;const go=()=>{if(!done){done=true;res()}};try{if(v.requestVideoFrameCallback)v.requestVideoFrameCallback(go)}catch(e){}setTimeout(go,70)})}
+// detail in three small native-resolution patches down the middle of the guide (variance of a Laplacian)
+function v78Sharp(v,r){try{const vw=v.videoWidth,vh=v.videoHeight,P=Math.max(48,Math.min(160,Math.round(Math.min(r.w*vw,r.h*vh)*.6))),c=v78Sharp.c||(v78Sharp.c=document.createElement('canvas'));
+    if(c.width!==P){c.width=P;c.height=P*3}const g=c.getContext('2d',{willReadFrequently:true});const cx=(r.x+r.w/2)*vw;
+    [.25,.5,.75].forEach((t,i)=>{const cy=(r.y+r.h*t)*vh;g.drawImage(v,Math.max(0,Math.min(vw-P,cx-P/2)),Math.max(0,Math.min(vh-P,cy-P/2)),P,P,0,i*P,P,P)});
+    const d=g.getImageData(0,0,P,P*3).data,w=P,h=P*3,L=new Float32Array(w*h);for(let i=0;i<w*h;i++)L[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];
+    let s=0,s2=0,n=0;for(let y=1;y<h-1;y++){if(y%P===0||y%P===P-1)continue;for(let x=1;x<w-1;x++){const i=y*w+x,l=4*L[i]-L[i-1]-L[i+1]-L[i-w]-L[i+w];s+=l;s2+=l*l;n++}}
+    return n?s2/n-(s/n)*(s/n):0}catch(e){return 0}}
+const QCAP=2600; // the crop handed to the corner screen: at most this many pixels on its long side (memory on phones)
+$('camShot').onclick=async()=>{
+  const v=$('camV');if(!v.videoWidth||CAM.shooting)return;CAM.shooting=true;
+  try{
+    const mode=CAM.mode,r=QF.guide[mode]||QF.guide.front,vw=v.videoWidth,vh=v.videoHeight;
+    const lq=(LIVE.q&&performance.now()-LIVE.at<2500)?LIVE.q.map(p=>({...p})):null;
+    $('cam').classList.add('flash');setTimeout(()=>$('cam').classList.remove('flash'),180);
+    const full=document.createElement('canvas');full.width=vw;full.height=vh;const fg=full.getContext('2d');let best=-1,kept=0;
+    for(let i=0;i<5;i++){if(i)await v78NextFrame(v);if(!CAM.stream||v.videoWidth!==vw)break;const s=v78Sharp(v,r);if(s>best||!kept){best=s;fg.drawImage(v,0,0,vw,vh);kept++}}
+    if(!CAM.stream){full.width=full.height=0;return}
+    let x0=Math.max(0,r.x*vw-r.w*vw*(mode==='spine'?.6:.1)),x1=Math.min(vw,(r.x+r.w)*vw+r.w*vw*(mode==='spine'?.6:.1)),y0=Math.max(0,r.y*vh-r.h*vh*.06),y1=Math.min(vh,(r.y+r.h)*vh+r.h*vh*.06);
+    if(lq){const xs=lq.map(p=>p.x),ys=lq.map(p=>p.y),bw=Math.max(...xs)-Math.min(...xs),bh=Math.max(...ys)-Math.min(...ys),ex=Math.max(bw*(mode==='spine'?.5:.08),vw*.02),ey=Math.max(bh*.05,vh*.015);
+      x0=Math.max(0,Math.min(x0,Math.min(...xs)-ex));x1=Math.min(vw,Math.max(x1,Math.max(...xs)+ex));y0=Math.max(0,Math.min(y0,Math.min(...ys)-ey));y1=Math.min(vh,Math.max(y1,Math.max(...ys)+ey))}
+    x0=Math.floor(x0);y0=Math.floor(y0);x1=Math.ceil(x1);y1=Math.ceil(y1);
+    const cw=x1-x0,ch=y1-y0,ks=Math.min(1,QCAP/Math.max(cw,ch)),crop=document.createElement('canvas');crop.width=Math.round(cw*ks);crop.height=Math.round(ch*ks);
+    const cg=crop.getContext('2d');cg.imageSmoothingQuality='high';cg.drawImage(full,x0,y0,cw,ch,0,0,crop.width,crop.height);
+    const k=Math.min(1,1100/Math.max(vw,vh)),fr=document.createElement('canvas');fr.width=Math.round(vw*k);fr.height=Math.round(vh*k);fr.getContext('2d').drawImage(full,0,0,fr.width,fr.height);
+    window.QF_FRAME={src:fr.toDataURL('image/jpeg',.8),vw,vh,x0,y0,x1,y1};full.width=full.height=0;fr.width=fr.height=0; // the big canvases are let go at once (iOS canvas memory)
+    const resolve=CAM.resolve;CAM.resolve=null;camClose(null);CAM.shooting=false;
+    camDetectLines=camDetectV44;
+    const gf={x:(r.x*vw-x0)/cw,y:(r.y*vh-y0)/ch,w:r.w*vw/cw,h:r.h*vh/ch};
+    for(;;){const q=await quadFix(crop,mode,gf);
+      if(q==='retake'){resolve(await openCamera(mode,QF.opts||{}));return}
+      const out=warpOrCrop(crop,q,mode==='spine'?1400:1200);
+      if(mode==='spine')resolve({mode,cut:cutFromCanvas(out)});else{CV.lastTight=true;resolve({mode,img:out.toDataURL('image/jpeg',.92)})}return}}
+  finally{CAM.shooting=false}};
+
+// ---------- 4b. larger straightened faces, lightly sharpened ----------
+function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)return c;const g=c.getContext('2d'),id=g.getImageData(0,0,w,h),d=id.data,s=new Uint8ClampedArray(d),W4=w*4;
+    for(let y=1;y<h-1;y++){let o=y*W4+4;for(let x=1;x<w-1;x++,o+=4){for(let ch=0;ch<3;ch++){const i=o+ch,b=(s[i-W4-4]+2*s[i-W4]+s[i-W4+4]+2*s[i-4]+4*s[i]+2*s[i+4]+s[i+W4-4]+2*s[i+W4]+s[i+W4+4])*.0625;d[i]=s[i]+amt*(s[i]-b)}}}
+    g.putImageData(id,0,0)}catch(e){}return c}
+{const _wq=warpQuad;warpQuad=function(cv,full,q,maxSide){const m=maxSide===1400?2000:maxSide===1200?1600:maxSide===1500?1800:maxSide;const out=_wq(cv,full,q,m);return out?v78Sharpen(out,.5):out}}
+
+// ---------- 2. corner screen: a magnifier away from the finger; the point moves with the finger ----------
+{const stage=$('qfStage'),svg=$('qfSvg'),img=$('qfImg'),box=$('quadFix');if(stage&&svg&&img&&box){
+  const NS='http://www.w3.org/2000/svg';
+  const mag=document.createElement('div');mag.className='qf-mag';mag.id='qfMag';mag.hidden=true;const mc=document.createElement('canvas');mag.append(mc);box.append(mag);
+  const geo=()=>{const r=img.getBoundingClientRect(),s=stage.getBoundingClientRect();return {x:r.left-s.left,y:r.top-s.top,w:r.width,h:r.height,sx:s.left,sy:s.top}};
+  const readQ=()=>{const poly=svg.querySelector('polygon');if(!poly)return null;const g=geo();return poly.getAttribute('points').trim().split(/\s+/).map(s=>{const [x,y]=s.split(',').map(Number);return {x:(x-g.x)/g.w,y:(y-g.y)/g.h}})};
+  const writeQ=q=>{SAMC.crop=PEND.crop;SAMC.q=q.map(p=>({x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))}));if($('qfAuto').onclick)$('qfAuto').onclick();$('qfNote').textContent=(window.QF_NOTES||{}).drag||'점을 놓으면 그 위치로 자릅니다'};
+  // part of the photo, clipped to the canvas it comes from (Safari draws nothing for a source rectangle that runs off the edge)
+  const sub=(x,src,sx,sy,sw,sh,dw,dh)=>{const a=Math.max(0,sx),b=Math.max(0,sy),c=Math.min(src.width,sx+sw),d=Math.min(src.height,sy+sh);if(c<=a||d<=b)return;const kx=dw/sw,ky=dh/sh;x.drawImage(src,a,b,c-a,d-b,(a-sx)*kx,(b-sy)*ky,(c-a)*kx,(d-b)*ky)};
+  let drag=null;
+  const showMag=(cx,cy)=>{const crop=PEND.crop,q=readQ();if(!crop||!q||!drag)return;let p;if(drag.corner>=0)p=q[drag.corner];else{const a=q[drag.side],b=q[(drag.side+1)%4];p={x:(a.x+b.x)/2,y:(a.y+b.y)/2}}
+    const S=132,dpr=Math.min(3,devicePixelRatio||1),N=Math.round(S*dpr);if(mc.width!==N){mc.width=N;mc.height=N}
+    const g=geo(),disp=g.w/crop.width,Z=3.2,rS=S/2/(Z*disp),sx=p.x*crop.width-rS,sy=p.y*crop.height-rS,k=N/(2*rS);
+    const x=mc.getContext('2d');x.setTransform(1,0,0,1,0,0);x.fillStyle='#0d0704';x.fillRect(0,0,N,N);x.imageSmoothingQuality='high';sub(x,crop,sx,sy,2*rS,2*rS,N,N);
+    // the four sides as they run through the loupe, and the exact point
+    x.lineWidth=2*dpr;x.strokeStyle='rgba(159,224,168,.95)';x.beginPath();q.forEach((t,i)=>{const X=(t.x*crop.width-sx)*k,Y=(t.y*crop.height-sy)*k;i?x.lineTo(X,Y):x.moveTo(X,Y)});x.closePath();x.stroke();
+    const m=N/2;x.strokeStyle='rgba(255,248,232,.95)';x.lineWidth=1.5*dpr;x.beginPath();x.moveTo(m-14*dpr,m);x.lineTo(m-5*dpr,m);x.moveTo(m+5*dpr,m);x.lineTo(m+14*dpr,m);x.moveTo(m,m-14*dpr);x.lineTo(m,m-5*dpr);x.moveTo(m,m+5*dpr);x.lineTo(m,m+14*dpr);x.stroke();
+    x.beginPath();x.arc(m,m,2.2*dpr,0,Math.PI*2);x.fillStyle='#fff8e8';x.fill();
+    // placed on the side away from the finger: top corner opposite, or above the buttons when the finger is up there
+    const W=innerWidth,H=innerHeight,tb=box.querySelector('.qf-top'),bb=box.querySelector('.qf-btns'),top=(tb?tb.getBoundingClientRect().bottom:60)-6,low=(bb?bb.getBoundingClientRect().top:H-110)-S-8;
+    const left=cx<W/2?W-S-14:14,upper=cy>top+S+30;mag.style.left=left+'px';mag.style.top=(upper?top:low)+'px';mag.hidden=false};
+  const endDrag=()=>{drag=null;mag.hidden=true};
+  stage.addEventListener('pointerdown',e=>{if(box.hidden)return;if(drag){endDrag();return} // a second finger: a pinch begins
+    // the nearest grip within reach (corners first by a hair): on a thin spine the grips crowd each other, so the
+    // finger's position decides, not which circle happens to lie on top
+    const q=readQ();if(!q||q.length!==4)return;const g=geo(),X=p=>g.sx+g.x+p.x*g.w,Y=p=>g.sy+g.y+p.y*g.h;let best=null;
+    q.forEach((p,i)=>{const d=Math.hypot(e.clientX-X(p),e.clientY-Y(p))-6;if(!best||d<best.d)best={d,corner:i,side:-1}});
+    for(let i=0;i<4;i++){const a=q[i],c=q[(i+1)%4],m={x:(a.x+c.x)/2,y:(a.y+c.y)/2},d=Math.hypot(e.clientX-X(m),e.clientY-Y(m));if(d<best.d)best={d,corner:-1,side:i}}
+    if(best.d>30)return;
+    e.stopPropagation();e.preventDefault();SAMC.touched=true;
+    drag={id:e.pointerId,q0:q.map(p=>({...p})),corner:best.corner,side:best.side,x0:e.clientX,y0:e.clientY};
+    try{stage.setPointerCapture(e.pointerId)}catch(err){}showMag(e.clientX,e.clientY)},true);
+  stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();e.preventDefault();
+    const g=geo(),dx=(e.clientX-drag.x0)/g.w,dy=(e.clientY-drag.y0)/g.h,cl=v=>Math.max(0,Math.min(1,v)),q=drag.q0.map(p=>({...p})),Q=drag.q0;
+    if(drag.corner>=0){const i=drag.corner,px=cl(Q[i].x+dx),py=cl(Q[i].y+dy);q[i]={x:px,y:py};const xp=[3,2,1,0][i],yp=[1,0,3,2][i];q[xp].x=px;q[yp].y=py}
+    else{const s=drag.side,a=s,b=(s+1)%4;if(s===0||s===2){q[a].y=cl(Q[a].y+dy);q[b].y=cl(Q[b].y+dy)}else{q[a].x=cl(Q[a].x+dx);q[b].x=cl(Q[b].x+dx)}}
+    writeQ(q);showMag(e.clientX,e.clientY)},true);
+  const up=e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();endDrag()};
+  stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
+  stage.addEventListener('touchstart',e=>{if(drag&&e.touches.length>1)endDrag()},{capture:true,passive:true});
+  // a tint inside the found shape and a shade outside it, redone with every redraw
+  const deco=()=>{const poly=svg.querySelector('polygon');if(!poly)return;
+    if(svg.querySelector('.qf-shade'))return;const W=stage.clientWidth,H=stage.clientHeight,pts=poly.getAttribute('points').trim();
+    const sh=document.createElementNS(NS,'path');sh.setAttribute('class','qf-shade');sh.setAttribute('fill-rule','evenodd');sh.setAttribute('d',`M0 0H${W}V${H}H0Z M${pts.split(/\s+/).join(' L')}Z`);svg.prepend(sh)};
+  new MutationObserver(deco).observe(svg,{childList:true});
+  {const _fix=quadFix;quadFix=function(crop,mode,gf){endDrag();const p=_fix(crop,mode,gf);
+    // ---------- 3. the photo, blurred, behind everything: the see-through buttons have something to show ----------
+    try{let amb=$('qfAmb');if(!amb){amb=document.createElement('img');amb.id='qfAmb';amb.alt=''}if(stage.firstChild!==amb)stage.prepend(amb);
+      const bg=$('qfBg'),src=(bg&&!bg.hidden&&bg.getAttribute('src'))||img.getAttribute('src');if(src)amb.src=src;else amb.removeAttribute('src')}catch(e){}
+    p.finally(endDrag).catch(()=>{});return p}}}}
 
 
 function showNotes(){document.querySelector('main').hidden=true;$('notesPanel').hidden=false;$('navShelf').classList.remove('active');$('navNotes').classList.add('active');const list=$('notesList');list.replaceChildren();const recorded=books.filter(b=>!b.gone&&b.note&&b.note.trim());if(!recorded.length){const empty=document.createElement('div');empty.className='empty-note';empty.textContent='아직 남긴 기록이 없어요. 책을 꺼내 펼친 뒤 나만의 메모를 남겨보세요.';list.append(empty)}else for(const b of recorded){const card=document.createElement('button');card.className='note-card';card.style.width='100%';card.style.textAlign='left';const title=document.createElement('h3');title.textContent=b.title;const text=document.createElement('p');text.textContent=b.note;card.append(title,text);card.onclick=()=>{$('navShelf').click();const btn=bookButtons[b.id];btn.scrollIntoView({block:'center'});openBook(b,btn);setOpened(true)};list.append(card)}}
