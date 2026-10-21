@@ -798,6 +798,7 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .qf-hint{animation:qfHintFade .6s ease 5s forwards}
 @keyframes qfHintFade{to{opacity:0}}
 
+
 /* v78 — corner screen: tinted region, shaded outside, magnifier, blurred photo behind see-through buttons */
 .qf-poly{fill:rgba(159,224,168,.2);stroke:#9fe0a8;stroke-width:1.5;stroke-linejoin:round}
 .qf-shade{fill:rgba(8,4,2,.36);stroke:none;pointer-events:none}
@@ -823,6 +824,7 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .bk-acts .bk-row button{background:rgba(36,22,13,.38)!important;border:1px solid rgba(243,227,196,.3)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 /* shelf: the 책 추가 pill lets the shelf show through too */
 .app-nav .nav-add{background:rgba(243,227,196,.6)!important;border:1px solid rgba(255,248,232,.55)!important;color:#1b110a!important}
+
 
 /* v79 — the 3D book: no dark seam between the spine and the covers. The front cover stands 2px proud of the page block,
    which left a 2px slit at the hinge; the spine now runs from the back cover to the front cover and 1px past each
@@ -5040,22 +5042,6 @@ function qfLayout(){const stage=$('qfStage'),img=$('qfImg'),bg=$('qfBg');if(!sta
 window.addEventListener('resize',()=>{if(QFP)qfLayout()});
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // v78 — (1) the viewfinder marks a found book by tinting it softly (no outline, no dark mask; the guide corners are faint
 // and fade away once a book is found), and the shot always includes the tinted book; (2) on the corner screen a dragged
 // corner or side moves with the finger (it does not jump under it) and a magnifier away from the finger shows the spot,
@@ -5171,12 +5157,14 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
     e.stopPropagation();e.preventDefault();SAMC.touched=true;
     drag={id:e.pointerId,q0:q.map(p=>({...p})),corner:best.corner,side:best.side,x0:e.clientX,y0:e.clientY};
     try{stage.setPointerCapture(e.pointerId)}catch(err){}showMag(e.clientX,e.clientY)},true);
-  stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();e.preventDefault();
+  stage.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();e.preventDefault();if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>4)drag.moved=true;
     const g=geo(),dx=(e.clientX-drag.x0)/g.w,dy=(e.clientY-drag.y0)/g.h,cl=v=>Math.max(0,Math.min(1,v)),q=drag.q0.map(p=>({...p})),Q=drag.q0;
     if(drag.corner>=0){const i=drag.corner;q[i]={x:cl(Q[i].x+dx),y:cl(Q[i].y+dy)}} // v79: only that corner moves (books lean)
     else{const s=drag.side,a=s,b=(s+1)%4;if(s===0||s===2){q[a].y=cl(Q[a].y+dy);q[b].y=cl(Q[b].y+dy)}else{q[a].x=cl(Q[a].x+dx);q[b].x=cl(Q[b].x+dx)}}
     writeQ(q);showMag(e.clientX,e.clientY)},true);
-  const up=e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();endDrag()};
+  // a tap (no movement) that lands outside the shape, even near a grip, still chooses another found book (v58 ynetRepick)
+  const up=e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();const d=drag;endDrag();
+    if(!d.moved&&typeof ynetRepick==='function'){try{const g=geo(),p={x:(d.x0-g.sx-g.x)/g.w,y:(d.y0-g.sy-g.y)/g.h},q=d.q0;let inside=false;for(let i=0,j=3;i<4;j=i++){const a=q[i],b=q[j];if((a.y>p.y)!==(b.y>p.y)&&p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside}if(!inside)ynetRepick(p)}catch(err){}}};
   stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
   stage.addEventListener('touchstart',e=>{if(drag&&e.touches.length>1)endDrag()},{capture:true,passive:true});
   // a tint inside the found shape and a shade outside it, redone with every redraw
@@ -5194,6 +5182,21 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // v79 — (1) the corner points move freely: a dragged corner no longer pulls its neighbours along (a leaning book has
 // no square to keep; the drag code is in the v78 block), and a side handle slides that side as it is; (2) the 3D book
 // has no dark seam between the covers and the spine (CSS).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
