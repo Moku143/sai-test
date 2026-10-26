@@ -850,6 +850,142 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .a2hs-share::before{content:'';position:absolute;left:50%;top:-4px;width:1.6px;height:9px;background:currentColor;transform:translateX(-50%)}
 .a2hs-share::after{content:'';position:absolute;left:50%;top:-4px;width:4px;height:4px;border-left:1.6px solid currentColor;border-top:1.6px solid currentColor;transform:translateX(-50%) rotate(45deg)}
 @keyframes a2hsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* v61 — the first run as one kind of page; the tutorial's 3D book */
+.obp{position:fixed;inset:0;z-index:1300;display:block;padding:0;color:#f3e3c4;overflow:hidden;background:radial-gradient(130% 75% at 50% 26%,#3b2515 0%,#1f120a 58%,#140a04 100%)}
+.obp[hidden]{display:none}
+.obp-page{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));animation:obpIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes obpIn{from{transform:translateX(40px);opacity:0}}
+.obp-skip{position:absolute;z-index:3;top:calc(10px + env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));height:36px;padding:0 14px;border-radius:18px;border:0;background:rgba(243,227,196,.08);color:#d9c6a5;font:inherit;font-size:13.5px}
+.obp-vis{position:relative;flex:1 1 auto;min-height:250px;margin:30px -22px 6px;overflow:hidden}
+.obp-vis::before{content:'';position:absolute;left:50%;top:44%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,206,140,.17),rgba(255,206,140,0) 70%);pointer-events:none}
+.obp-text{display:flex;flex-direction:column;gap:8px;padding:0 2px}
+.obp-text h2{margin:0;font-family:'MaruBuri',serif;font-weight:600;font-size:25px;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.obp-text p{margin:0;font-size:15px;line-height:1.6;color:#cdb898;text-wrap:pretty}
+.obp-foot{display:flex;flex-direction:column;gap:10px;padding-top:22px;flex:none}
+.obp-dots{display:flex;justify-content:center;gap:6px;margin-bottom:8px}
+.obp-dots i{width:6px;height:6px;border-radius:3px;background:rgba(243,227,196,.22);transition:width .3s,background .3s}
+.obp-dots i.on{width:18px;background:#f3e3c4}
+.obp .obp-go{height:56px;width:100%;border-radius:16px;border:0;background:#f3e3c4;color:#1f130a;font:inherit;font-size:16.5px;font-weight:700;letter-spacing:.01em;transition:transform .15s,background .2s}
+.obp .obp-go:active{transform:scale(.98)}
+.obp .obp-go:disabled{background:rgba(243,227,196,.12);color:rgba(243,227,196,.4)}
+.obp-alt{height:50px;border-radius:16px;border:1px solid rgba(243,227,196,.22);background:none;color:#e6d4b4;font:inherit;font-size:15px;font-weight:600}
+/* list pages: language, the four promises */
+.obp-list .obp-text{padding-top:max(30px,5vh)}
+.obp-scroll{flex:1 1 auto;min-height:0;overflow:auto;margin:20px -6px 0;padding:0 6px 4px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px}
+.obp-langs{display:flex;flex-direction:column;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(243,227,196,.1);overflow:hidden;flex:none}
+.obp-langs button{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:0 18px;border:0;border-top:1px solid rgba(243,227,196,.08);background:none;color:#f3e3c4;font:inherit;font-size:16px;text-align:left}
+.obp-langs button:first-child{border-top:0}
+.obp-langs button svg{opacity:0;transition:opacity .2s}
+.obp-langs button[aria-checked=true]{font-weight:700;background:rgba(243,227,196,.08)}
+.obp-langs button[aria-checked=true] svg{opacity:1}
+.obp-items{display:flex;flex-direction:column;gap:8px}
+.obp-item{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 14px 14px 13px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(243,227,196,.1);flex:none}
+.obp-item input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.obp-ck{flex:none;width:22px;height:22px;border-radius:11px;border:1.5px solid rgba(243,227,196,.45);display:grid;place-items:center;color:#1f130a;transition:background .2s,border-color .2s;margin-top:1px}
+.obp-ck svg{opacity:0}
+.obp-item input:checked+.obp-ck{background:#f3e3c4;border-color:#f3e3c4}.obp-item input:checked+.obp-ck svg{opacity:1}
+.obp-item>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.obp-item b{font-size:15px;line-height:1.4}.obp-item small{font-size:13px;line-height:1.55;color:#bfa985}
+.obp-all{background:rgba(243,227,196,.08);border-color:rgba(243,227,196,.28);align-items:center}
+.obp-terms{align-items:center;background:none;border-color:transparent;padding-top:6px;padding-bottom:6px}
+.obp-terms .ob-link{border:0;background:none;padding:0;color:#e8c27a;font:inherit;text-decoration:underline}
+/* the first bookcase */
+.obp-woods{position:relative;height:100%;display:flex;gap:10px;justify-content:center;align-items:center;padding:0 22px}
+.obp .fw-opt{flex:1;max-width:124px;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 6px 14px;border-radius:20px;border:1.5px solid rgba(243,227,196,.1);background:rgba(255,255,255,.03);color:#e6d4b4;font:inherit;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,background .3s}
+.obp .fw-opt .thumb{width:100%;aspect-ratio:1;background:center/contain no-repeat}
+.obp .fw-opt b{font-size:14.5px}
+.obp .fw-opt[aria-pressed=true]{border-color:#f3e3c4;background:rgba(243,227,196,.08);transform:translateY(-10px);color:#fff4df}
+/* the camera guide */
+.obp-guide .obp-vis{min-height:200px;margin-top:22px}
+.obp-tips{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:tip}
+.obp-tips li{display:grid;grid-template-columns:22px 1fr;column-gap:10px;row-gap:1px;counter-increment:tip}
+.obp-tips li::before{content:counter(tip);grid-row:span 2;width:22px;height:22px;border-radius:11px;background:rgba(243,227,196,.12);color:#f3e3c4;font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:1px}
+.obp-tips b{font-size:14.5px}.obp-tips span{font-size:12.8px;line-height:1.5;color:#bfa985}
+
+/* ---------- the 3D book: covers, spine, page edges and hinge as in the book viewer ---------- */
+.t3d{position:absolute;inset:0;perspective:950px;perspective-origin:50% 34%}
+.t3d-scene{position:absolute;left:50%;top:52%;width:0;height:0;transform-style:preserve-3d}
+.sc-turn .t3d-scene,.sc-note .t3d-scene{top:48%}
+.t3d-rot{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
+.t3d-book{position:absolute;left:calc(var(--W)/-2);top:calc(var(--H)/-2);width:var(--W);height:var(--H);transform-style:preserve-3d}
+.t3d-f{position:absolute;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.t3d-front{position:absolute;inset:0;transform-origin:left center;transform:translateZ(calc(var(--D)/2 + 1px));transform-style:preserve-3d}
+.t3d-front i{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:0 2px 2px 0}
+.t3d-front .out{background:var(--front,none) center/cover,var(--c);box-shadow:inset 3px 0 6px rgba(0,0,0,.18)}
+.t3d-front .out::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,rgba(255,255,255,0) 32%,rgba(255,255,255,.13) 46%,rgba(255,255,255,0) 60%)}
+.t3d-front .in{transform:rotateY(180deg) translateZ(.5px);background:linear-gradient(90deg,#d8d0bd,#ede6d7 12%,#f2ecdd);border-radius:2px 0 0 2px}
+.t3d-page{inset:3px 2px 3px 3px;transform:translateZ(calc(var(--D)/2));background:linear-gradient(90deg,#b6ae9b,#ede7d7 7%,#faf5e8 30%,#f0eadc);color:#403e35;padding:16px 14px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.t3d-page small{font:7px/1 system-ui,sans-serif;letter-spacing:.18em;color:#8d897b;border-bottom:1px solid #c8c0ab;padding-bottom:7px}
+.t3d-page b{font-family:'MaruBuri',serif;font-size:13px;font-weight:600;margin-top:4px}
+.t3d-page span{font-family:'MaruBuri',serif;font-size:9.5px;color:#6f6858}
+.t3d-page i{display:block;height:1.6px;border-radius:1px;background:#8a826f;opacity:.5;width:0;margin-top:5px}
+.t3d-back{inset:0;transform:rotateY(180deg) translateZ(calc(var(--D)/2));background:var(--c);border-radius:2px 0 0 2px;box-shadow:inset -3px 0 6px rgba(0,0,0,.18)}
+.t3d-back i{position:absolute;left:17%;right:17%;top:20%;height:30%;background:repeating-linear-gradient(180deg,var(--ink) 0 1.6px,transparent 1.6px 8px);opacity:.3}
+.t3d-back small{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-family:'MaruBuri',serif;font-size:9px;letter-spacing:.3em;color:var(--ink);opacity:.6}
+.t3d-spine{top:0;height:var(--H);width:calc(var(--D) + 2px);left:calc((var(--W) - var(--D))/2 - 1px);transform:rotateY(-90deg) translateZ(calc(var(--W)/2));background:linear-gradient(90deg,rgba(0,0,0,.2),rgba(255,255,255,.08) 28%,rgba(0,0,0,0) 62%,rgba(0,0,0,.18)),var(--c);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14% 0 7%;box-sizing:border-box}
+.t3d-spine b,.t3d-sp b{writing-mode:vertical-rl;text-orientation:mixed;font-family:'MaruBuri',serif;font-weight:600;letter-spacing:.06em;white-space:nowrap;overflow:hidden}
+.t3d-spine b{font-size:calc(var(--D)*.42)}
+.t3d-spine small{font-family:'MaruBuri',serif;font-size:calc(var(--D)*.25);opacity:.7;writing-mode:vertical-rl}
+.t3d-edge{top:3px;height:calc(var(--H) - 6px);width:calc(var(--D) - 3px);left:calc((var(--W) - var(--D))/2 + 1.5px);transform:rotateY(90deg) translateZ(calc(var(--W)/2 - 2px));background:repeating-linear-gradient(90deg,#e4decf 0,#f4efdf 1px,#e1dac8 2px)}
+.t3d-top,.t3d-bot{left:2px;width:calc(var(--W) - 5px);height:calc(var(--D) - 2px);top:calc((var(--H) - var(--D))/2 + 1px);background:repeating-linear-gradient(0deg,#e4decf 0,#f4efdf 1px,#d3cbb9 2px)}
+.t3d-top{transform:rotateX(90deg) translateZ(calc(var(--H)/2 - 3px))}
+.t3d-bot{transform:rotateX(-90deg) translateZ(calc(var(--H)/2 - 3px))}
+.t3d-floor{position:absolute;left:-110px;width:220px;top:calc(var(--H)/2 + 26px);height:28px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));transform:translateZ(-40px)}
+/* the bay, flat behind the book: back panel (fading up into the page), the other books, the board's front edge */
+.t3d-bg{position:absolute;inset:0}
+.t3d-bay{position:absolute;left:0;right:0;top:calc(52% - var(--H)/2 - 56px);height:calc(var(--H) + 56px);background:var(--panel,#2a1a0f) center/cover;filter:brightness(.5) saturate(.9);-webkit-mask-image:linear-gradient(transparent,#000 42%);mask-image:linear-gradient(transparent,#000 42%)}
+.t3d-plank{position:absolute;left:0;right:0;top:calc(52% + var(--H)/2);height:15px;background:var(--oak,#8a5a33) center/cover;box-shadow:0 14px 26px rgba(0,0,0,.55)}
+.t3d-plank::after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.12),rgba(0,0,0,.18))}
+.t3d-row{position:absolute;left:50%;top:calc(52% + var(--H)/2);width:0;height:0}
+.t3d-sp{position:absolute;bottom:0;background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(255,255,255,.07) 30%,rgba(0,0,0,0) 62%,rgba(0,0,0,.2)),var(--c);color:var(--ink);display:flex;justify-content:center;padding-top:12%;box-sizing:border-box;border-radius:1px}
+.t3d-touch{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:rgba(255,248,232,.32);box-shadow:0 0 0 2px rgba(255,248,232,.75),0 4px 14px rgba(0,0,0,.3);opacity:0}
+.t3d-frame{position:absolute;left:50%;top:52%;pointer-events:none;border:2.5px solid rgba(243,227,196,.9);border-radius:6px}
+.t3d-chips{position:absolute;left:0;right:0;bottom:4px;display:flex;justify-content:center;gap:8px}
+.t3d-chips span{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#cdb898;background:rgba(243,227,196,.06);border:1px solid rgba(243,227,196,.14);animation:t61Chip 7.2s ease-in-out infinite}
+@keyframes t61Chip{0%,30%{color:#1f130a;background:#f3e3c4;border-color:#f3e3c4}36%,100%{color:#cdb898;background:rgba(243,227,196,.06);border-color:rgba(243,227,196,.14)}}
+
+/* 1 · shelve: from the hand to its gap, spine out */
+.sc-shelve .t3d-rot{animation:t61Shelve 6s cubic-bezier(.55,.05,.25,1) infinite}
+@keyframes t61Shelve{0%,12%{transform:translate3d(70px,calc(var(--H)*-.66),70px) rotateX(-14deg) rotateY(-32deg) rotateZ(-4deg)}
+  58%,86%{transform:translate3d(0,0,calc(var(--W)/-2)) rotateX(0deg) rotateY(90deg) rotateZ(0deg)}
+  100%{transform:translate3d(70px,calc(var(--H)*-.66),70px) rotateX(-14deg) rotateY(-32deg) rotateZ(-4deg)}}
+/* 2 · turn: front, spine, back */
+.sc-turn .t3d-rot{animation:t61Turn 7.2s cubic-bezier(.62,0,.32,1) infinite}
+@keyframes t61Turn{0%,16%{transform:rotateX(-10deg) rotateY(-24deg)}33%,49%{transform:rotateX(-10deg) rotateY(66deg)}66%,82%{transform:rotateX(-10deg) rotateY(154deg)}100%{transform:rotateX(-10deg) rotateY(336deg)}}
+/* 3 · open to the reading note */
+.sc-note .t3d-rot{animation:t61NoteRot 6.4s ease-in-out infinite}
+@keyframes t61NoteRot{0%,12%{transform:translateX(0) rotateX(-10deg) rotateY(-26deg)}30%,80%{transform:translateX(calc(var(--W)*.4)) rotateX(-6deg) rotateY(-10deg)}96%,100%{transform:translateX(0) rotateX(-10deg) rotateY(-26deg)}}
+.sc-note .t3d-front{animation:t61Open 6.4s ease-in-out infinite}
+@keyframes t61Open{0%,12%{transform:translateZ(calc(var(--D)/2 + 1px)) rotateY(0deg)}30%,80%{transform:translateZ(calc(var(--D)/2 + 1px)) rotateY(-158deg)}96%,100%{transform:translateZ(calc(var(--D)/2 + 1px)) rotateY(0deg)}}
+.sc-note .t3d-page i{animation:t61Line 6.4s ease-out infinite}
+.sc-note .t3d-page i:nth-of-type(2){animation-delay:.25s}.sc-note .t3d-page i:nth-of-type(3){animation-delay:.5s}.sc-note .t3d-page i:nth-of-type(4){animation-delay:.75s}
+@keyframes t61Line{0%,34%{width:0}52%,84%{width:86%}96%,100%{width:0}}
+/* 4 · press, lift, carry to another gap (and back) */
+.sc-move .t3d-rot{animation:t61Move 4.2s cubic-bezier(.5,0,.3,1) infinite alternate}
+@keyframes t61Move{0%,16%{transform:translate3d(-64px,0,calc(var(--W)/-2)) rotateZ(0deg) rotateY(90deg)}
+  32%{transform:translate3d(-64px,-22px,calc(var(--W)/-2 + 80px)) rotateZ(-3deg) rotateY(90deg)}
+  70%{transform:translate3d(64px,-22px,calc(var(--W)/-2 + 80px)) rotateZ(3deg) rotateY(90deg)}
+  86%,100%{transform:translate3d(64px,0,calc(var(--W)/-2)) rotateZ(0deg) rotateY(90deg)}}
+.sc-move .t3d-touch{animation:t61Touch 4.2s cubic-bezier(.5,0,.3,1) infinite alternate}
+@keyframes t61Touch{0%{transform:translate3d(-64px,calc(var(--H)*-.12),40px) scale(1.4);opacity:0}
+  10%{transform:translate3d(-64px,calc(var(--H)*-.12),40px) scale(1);opacity:1}
+  32%{transform:translate3d(-64px,calc(var(--H)*-.12 - 22px),120px) scale(1);opacity:1}
+  70%{transform:translate3d(64px,calc(var(--H)*-.12 - 22px),120px) scale(1);opacity:1}
+  86%{transform:translate3d(64px,calc(var(--H)*-.12),40px) scale(1);opacity:1}
+  100%{transform:translate3d(64px,calc(var(--H)*-.12),40px) scale(1.3);opacity:0}}
+/* camera guide: the book in its bay (spine) or facing you (cover), the frame closing in and turning green */
+.sc-aim .t3d-rot{transform:translate3d(0,0,calc(var(--W)/-2)) rotateY(90deg)}
+.sc-aimc .t3d-rot{transform:rotateX(0deg) rotateY(0deg)}
+.sc-aim .t3d-frame{width:calc(var(--D) + 10px);height:calc(var(--H) + 10px);margin:calc(var(--H)/-2 - 5px) 0 0 calc(var(--D)/-2 - 5px);animation:t61Aim 3.6s cubic-bezier(.3,.7,.2,1) infinite}
+.sc-aimc .t3d-scene{top:50%}
+.sc-aimc .t3d-frame{top:50%;width:calc(var(--W) + 12px);height:calc(var(--H) + 12px);margin:calc(var(--H)/-2 - 6px) 0 0 calc(var(--W)/-2 - 6px);animation:t61Aim 3.6s cubic-bezier(.3,.7,.2,1) infinite}
+@keyframes t61Aim{0%{transform:translate(26px,-14px) scale(1.5);opacity:0;border-color:rgba(243,227,196,.9)}18%{opacity:1}55%{transform:none;border-color:rgba(243,227,196,.9)}65%,90%{transform:none;border-color:#9fe0a8;box-shadow:0 0 0 4px rgba(159,224,168,.18)}100%{transform:none;opacity:0;border-color:#9fe0a8}}
+@media (prefers-reduced-motion:reduce){
+  .obp-page{animation:none}.t3d *{animation:none!important}
+  .sc-shelve .t3d-rot{transform:translate3d(0,0,calc(var(--W)/-2)) rotateY(90deg)}.sc-turn .t3d-rot{transform:rotateX(-10deg) rotateY(-24deg)}
+  .sc-note .t3d-rot{transform:translateX(calc(var(--W)*.4)) rotateX(-6deg) rotateY(-10deg)}.sc-note .t3d-front{transform:translateZ(calc(var(--D)/2 + 1px)) rotateY(-158deg)}.sc-note .t3d-page i{width:86%}
+  .sc-move .t3d-rot{transform:translate3d(-64px,-22px,calc(var(--W)/-2 + 80px)) rotateY(90deg)}.t3d-chips span:first-child{color:#1f130a;background:#f3e3c4}}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -5200,7 +5336,7 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // runtime comes from the site itself instead of a CDN, and a test panel in 설정 shows what is running and keeps a
 // test record — each corner screen's photo with the corners the net proposed and the corners the user settled on —
 // on this device only, until the user exports it as a file to send. The panel goes before the release.
-const SAI_VER='v81';
+const SAI_VER='v82';
 const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]'); // the test site build (public.py adds the manifest), served over http(s)
 const SAI_STANDALONE=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 
@@ -5282,6 +5418,135 @@ async function tlogExport(){const recs=(await tlogAll()).sort((a,b)=>a.id-b.id);
     const g=document.createElement('div');g.className='set-group';g.innerHTML=`<button class="set-row set-act" id="setTest"><span>테스트 도구</span><span class="set-val">기록 · 모델 상태 ›</span></button>`;
     const info=card.querySelector('.set-info');if(info)info.before(g);else card.append(g);
     g.querySelector('#setTest').onclick=()=>{set.hidden=true;open()};const v=card.querySelector('.set-ver');if(v)v.textContent='사이 · 시험판 '+SAI_VER}).observe(set,{childList:true})})();
+
+// v61 — the first run, cleaned up: every step is one page of the same shape (a moving picture on top, a short title and
+// one line under it, page dots, one wide button), and the tutorial's pictures are the app's own 3D book — the same
+// covers, spine, page edges and cover hinge as the book viewer — instead of drawn icons: it is shelved, turned to show
+// front · spine · back, opened to a reading note, and lifted to another place. Order: language → four tutorial pages →
+// the four promises (consent) → the wood of the first bookcase. The camera's first-use guide takes the same page.
+
+const T61={
+  ko:{skip:'건너뛰기',next:'다음',start:'시작하기',ok:'알겠어요',faces:['앞표지','책등','뒤표지'],
+    pages:[['찍어서 꽂기','책등을 찍으면 내 책장에 그대로 꽂혀요.'],
+      ['앞표지 · 책등 · 뒤표지','세 면을 찍으면 손에 든 것 같은 한 권이 돼요.'],
+      ['책 사이에 남기는 기록','책을 톡 치면 표지가 열리고, 날짜마다 독후감을 쓸 수 있어요.'],
+      ['길게 눌러 옮기기','책을 길게 누르면 들려요. 원하는 칸으로 옮겨 꽂으세요. 두 손가락으로 벌리면 책장이 커져요.']],
+    note:['MY READING NOTE','오늘 마음에 남은 문장'],
+    wood:['책장 나무를 골라 주세요','고른 나무는 기본 디자인으로 저장돼요. 다른 무늬와 색은 꾸미기에서 언제든 바꿔 볼 수 있어요.','이 나무로 시작하기',['오크','월넛','메이플']],
+    again:'사용법 다시 보기',againSub:'처음 화면의 안내'},
+  en:{skip:'Skip',next:'Next',start:'Start',ok:'Got it',faces:['Front','Spine','Back'],
+    pages:[['Photograph and shelve','Take a picture of the spine and the book stands on your shelf.'],
+      ['Front · spine · back','Three pictures make one book you could hold.'],
+      ['Notes between the pages','Tap a book and its cover opens to a dated reading note.'],
+      ['Press and move','Press a book and it lifts; set it down in any bay. Spread two fingers to zoom the bookcase.']],
+    note:['MY READING NOTE','A line that stayed with me'],
+    wood:['Choose the wood for your bookcase','It is kept as your fixed starting design. Try other patterns and colours any time in Decorate.','Start with this wood',['Oak','Walnut','Maple']],
+    again:'See the tutorial again',againSub:'The first-run guide'}};
+const T61W={ja:['本棚の木を選んでください','選んだ木は基本デザインとして保存されます。ほかの柄や色はいつでも試せます。','この木ではじめる',['オーク','ウォルナット','メープル']],
+  zh:['请选择书架的木材','选择的木材会保存为基本设计。其他花纹和颜色随时可以尝试。','用这种木材开始',['橡木','胡桃木','枫木']],
+  es:['Elige la madera de tu estantería','Queda como diseño base fijo. Prueba otros estampados y colores cuando quieras.','Empezar con esta madera',['Roble','Nogal','Arce']]};
+const t61Lang=()=>{try{return (localStorage.getItem('sai-lang')||'ko').split('-')[0]}catch(e){return 'ko'}};
+const t61=()=>T61[t61Lang()]||T61.en;
+const t61esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CHECK61='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+// ---------- the page ----------
+function obpPage(o,{vis='',title='',sub='',body='',dots=null,skip=null,go='',alt=null,list=false,cls=''}){
+  o.className='ob obp'+(cls?' '+cls:'');o.hidden=false;
+  o.innerHTML=`<div class="obp-page${list?' obp-list':''}">${skip?`<button class="obp-skip" type="button">${skip}</button>`:''}${vis?`<div class="obp-vis" aria-hidden="true">${vis}</div>`:''}<div class="obp-text"><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div>${body}<div class="obp-foot">${dots?`<div class="obp-dots" aria-label="${dots[0]+1} / ${dots[1]}">${Array.from({length:dots[1]},(_,k)=>`<i class="${k===dots[0]?'on':''}"></i>`).join('')}</div>`:''}<button class="obp-go ob-go" type="button">${go}</button>${alt?`<button class="obp-alt" type="button">${alt}</button>`:''}</div></div>`;
+  return o.querySelector('.obp-page')}
+
+// ---------- the 3D book (the viewer's construction, at tutorial size) ----------
+function t61Book(){const b=books.find((x,i)=>i>0&&!x.user&&!x.diary&&x.color)||books[1];const i=books.indexOf(b); /* never books[0]: the photographed sample of development builds */
+  let front=null;try{front=cover(b,i)}catch(e){}return {b,front}}
+function t61BookHTML(){const {b}=t61Book(),n=t61();
+  return `<div class="t3d-book"><div class="t3d-f t3d-page"><small>${n.note[0]}</small><b>${t61esc(b.title)}</b><span>${n.note[1]}</span><i></i><i></i><i></i><i></i></div>
+    <div class="t3d-f t3d-back"><i></i><small>사이</small></div><div class="t3d-f t3d-spine"><b>${t61esc(b.title)}</b><small>사이</small></div>
+    <div class="t3d-f t3d-edge"></div><div class="t3d-f t3d-top"></div><div class="t3d-f t3d-bot"></div>
+    <div class="t3d-front"><i class="out"></i><i class="in"></i></div></div>`}
+// the rest of the bay: sample spines standing on a board in front of the back panel, with gaps left open
+function t61Row(H,gaps){const S=books.filter((x,i)=>i>1&&!x.user&&!x.diary&&x.color&&x.title);let x=-182,k=0,out='';
+  const sp=(x,w,h,b)=>`<div class="t3d-sp" style="left:${x}px;width:${w}px;height:${h}px;--c:${b.color};--ink:${b.ink};font-size:${Math.min(10.5,w*.4).toFixed(1)}px"><b>${t61esc(b.title)}</b></div>`;
+  while(x<182&&S.length){const b=S[k++%S.length],w=Math.round(Math.max(15,Math.min(31,(b.width||40)*H/228*.66))),h=Math.round(H*Math.max(.8,Math.min(1.02,(b.height||228)/246)));
+    const g=gaps.find(([a,c])=>x<c&&x+w>a);if(g){if(g[0]-x>=13)out+=sp(x,g[0]-x-2,h,b);x=g[1]+2;continue}
+    out+=sp(x,w,h,b);x+=w+2}
+  return out}
+function t61Scene(kind){const {b,front}=t61Book();const H=kind==='turn'||kind==='note'?196:kind==='aim'||kind==='aimc'?(innerHeight<740?104:126):172,W=Math.round(H*2/3),D=Math.round(Math.max(18,Math.min(40,H*(b.width||40)/(b.height||228)*.95)));
+  const vars=`--H:${H}px;--W:${W}px;--D:${D}px;--c:${b.color};--ink:${b.ink}`;
+  const shelf=kind==='shelve'||kind==='move'||kind==='aim';
+  const gaps=kind==='move'?[[-64-D/2-3,-64+D/2+3],[64-D/2-3,64+D/2+3]]:[[-D/2-3,D/2+3]];
+  // the bay is drawn flat behind the book (no 3D sorting between them: the moving book stays in front)
+  const bay=shelf?`<div class="t3d-bg"><div class="t3d-bay"></div><div class="t3d-row">${t61Row(H,gaps)}</div><div class="t3d-plank"></div></div>`:'';
+  const touch=kind==='move'?'<i class="t3d-touch"></i>':'';
+  const chips=kind==='turn'?`<div class="t3d-chips">${t61().faces.map((f,i)=>`<span style="animation-delay:${i*2.4}s">${f}</span>`).join('')}</div>`:'';
+  const frame=kind==='aim'||kind==='aimc'?'<i class="t3d-frame"></i>':'';
+  const html=`<div class="t3d sc-${kind}" style="${vars}">${bay}<div class="t3d-scene">${shelf?'':'<div class="t3d-floor"></div>'}<div class="t3d-rot">${t61BookHTML()}</div>${touch}</div>${frame}</div>${chips}`;
+  return {html,front}}
+// textures go in after the markup (data URLs inside a style attribute would need quoting)
+function t61Dress(root){const {front}=t61Book();root.querySelectorAll('.t3d').forEach(t=>{if(front)t.style.setProperty('--front',`url("${front}")`);
+  try{if(window.WOOD_TEX){t.style.setProperty('--oak',`url("${WOOD_TEX.oak}")`);t.style.setProperty('--panel',`url("${WOOD_TEX.back}")`)}}catch(e){}})}
+
+// ---------- the steps ----------
+obLang=function(){return new Promise(res=>{const o=obShell(),guess=(navigator.language||'ko').toLowerCase();let pick=(OB_LANGS.find(([c])=>guess.startsWith(c.toLowerCase()))||OB_LANGS[0])[0];
+  const draw=keep=>{const t=obT(pick),sc=keep&&o.querySelector('.obp-scroll')?o.querySelector('.obp-scroll').scrollTop:0;
+    const pg=obpPage(o,{list:true,title:t.pick,body:`<div class="obp-scroll"><div class="obp-langs" role="radiogroup" aria-label="${t61esc(t.pick)}">${OB_LANGS.map(([c,n])=>`<button role="radio" aria-checked="${c===pick}" data-c="${c}" lang="${c}" type="button"><span>${v38esc(n)}</span>${CHECK61}</button>`).join('')}</div></div>`,go:t.next});
+    if(keep)pg.style.animation='none';o.querySelector('.obp-scroll').scrollTop=sc;
+    o.querySelectorAll('.obp-langs button').forEach(b=>b.onclick=()=>{pick=b.dataset.c;draw(true)});
+    o.querySelector('.obp-go').onclick=()=>{try{localStorage.setItem('sai-lang',pick)}catch(e){}res(pick)}};
+  draw(false)})};
+obConsent=function(l,dots){return new Promise(res=>{const o=obShell(),t=obT(l),fallback=!OB_T[l]&&!OB_T[(l||'').split('-')[0]];
+  const ck=`<span class="obp-ck">${CHECK61}</span>`;
+  obpPage(o,{list:true,title:t.agreeT,sub:t.intro+(fallback?' (English until this language is ready.)':''),dots,go:t.go,
+    body:`<div class="obp-scroll"><div class="obp-items">${t.items.map(([h,p],i)=>`<label class="obp-item"><input type="checkbox" data-i="${i}">${ck}<span><b>${h}</b><small>${p}</small></span></label>`).join('')}</div>
+      <label class="obp-item obp-all"><input type="checkbox" id="obAll">${ck}<span><b>${t.all}</b></span></label>
+      <label class="obp-item obp-terms"><input type="checkbox" id="obTerms">${ck}<span><small>${t.termsAgree} · <button class="ob-link" type="button">${t.terms}</button></small></span></label></div>`});
+  o.querySelector('.obp-page').setAttribute('lang',fallback?'en':l);
+  const boxes=[...o.querySelectorAll('.obp-items input')],go=o.querySelector('.obp-go'),all=$('obAll'),terms=$('obTerms');go.disabled=true;
+  const sync=()=>{const ok=boxes.every(b=>b.checked);all.checked=ok;go.disabled=!(ok&&terms.checked)};
+  boxes.forEach(b=>b.onchange=sync);all.onchange=()=>{boxes.forEach(b=>b.checked=all.checked);sync()};terms.onchange=sync;
+  o.querySelector('.ob-link').onclick=e=>{e.preventDefault();e.stopPropagation();showLegal()};
+  go.onclick=()=>{try{localStorage.setItem('sai-consent',JSON.stringify({v:2,lang:l,at:new Date().toISOString()}))}catch(e){}res()}})};
+function t61TutPage(i,dots,last){return new Promise(res=>{const o=obShell(),n=t61(),[h,p]=n.pages[i];const kind=['shelve','turn','note','move'][i];const sc=t61Scene(kind);
+  obpPage(o,{vis:sc.html,title:h,sub:p,dots,skip:n.skip,go:last?n.start:n.next,cls:'obp-tut'});t61Dress(o);
+  o.querySelector('.obp-go').onclick=()=>res('next');o.querySelector('.obp-skip').onclick=()=>res('skip')})}
+function obWood(l,dots){if(savedLooks.some(d=>d.base))return Promise.resolve();return new Promise(res=>{const o=obShell(),W=(T61[l]||{}).wood||T61W[l]||T61.en.wood;
+  obpPage(o,{vis:'<div class="obp-woods"></div>',title:W[0],sub:W[1],dots,go:W[2],cls:'obp-wood'});
+  const box=o.querySelector('.obp-woods'),go=o.querySelector('.obp-go');let pick=null;
+  const choose=(w,btn)=>{pick=w;for(const x of box.children)x.setAttribute('aria-pressed',String(x===btn));go.disabled=false;try{applyLook(w.style,w.tint)}catch(e){}};
+  FIRST_WOODS.forEach((w,i)=>{const b=document.createElement('button');b.type='button';b.className='fw-opt';b.setAttribute('aria-pressed','false');b.innerHTML=`<span class="thumb"></span><b>${t61esc(W[3][i]||w.name)}</b>`;
+    ensurePattern(SHELF_STYLES[w.style].pat).then(()=>caseThumb(lookOf(w.style,normTint(w.tint)),220)).then(u=>{if(u)b.querySelector('.thumb').style.backgroundImage=`url("${u}")`}).catch(()=>{});
+    b.onclick=()=>choose(w,b);box.append(b)});
+  choose(FIRST_WOODS[0],box.firstChild);
+  go.className+=' fw-go';go.onclick=()=>{if(!pick)return;savedLooks=savedLooks.filter(d=>!d.base);savedLooks.unshift({id:'base',name:pick.name+' 기본',style:pick.style,tint:{...normTint(pick.tint)},at:Date.now(),base:true});storeSaved();renderSaved();
+    const nm=W[3][FIRST_WOODS.indexOf(pick)]||pick.name;showToast(t61Lang()==='ko'?`'${nm}' 책장으로 시작해요`:`Starting with ${nm}`,1800);res()}})}
+// the tutorial on its own (설정 → 사용법 다시 보기)
+obTutorial=async function(){const o=obShell(),N=4;for(let i=0;i<N;i++){const r=await t61TutPage(i,[i,N],i===N-1);if(r==='skip')break}
+  try{localStorage.setItem('sai-tutorial-v2','1');localStorage.setItem('sai-tutorial-v1','1')}catch(e){}o.hidden=true;o.innerHTML='';o.className='ob'};
+// the whole first run
+firstDesign=async function(){let seen=false,tut=false;try{seen=!!localStorage.getItem('sai-consent');tut=!!localStorage.getItem('sai-tutorial-v2')}catch(e){}
+  const wood=!savedLooks.some(d=>d.base);if(seen&&tut&&!wood)return;
+  const o=obShell();let l=t61Lang();if(!seen)l=await obLang();
+  const steps=[...(tut?[]:[0,1,2,3]),...(seen?[]:['consent']),...(wood?['wood']:[])];
+  for(let i=0;i<steps.length;i++){const s=steps[i],dots=[i,steps.length];
+    if(typeof s==='number'){const lastTut=!steps.slice(i+1).some(x=>typeof x==='number');const r=await t61TutPage(s,dots,lastTut&&i===steps.length-1);
+      if(r==='skip'||lastTut){try{localStorage.setItem('sai-tutorial-v2','1');localStorage.setItem('sai-tutorial-v1','1')}catch(e){}}
+      if(r==='skip'){const j=steps.findIndex(x=>typeof x!=='number');if(j<0)break;i=j-1}continue}
+    if(s==='consent')await obConsent(l,dots);else if(s==='wood')await obWood(l,dots)}
+  o.hidden=true;o.innerHTML='';o.className='ob'};
+
+// ---------- the camera's first-use guide: the same page, the book in its bay with the frame fitting it ----------
+showGuide=function(kind){return new Promise(res=>{let box=$('camGuide');if(!box){box=document.createElement('div');box.id='camGuide';box.setAttribute('role','dialog');document.body.append(box)}
+  const sp=kind==='spine',list=GUIDE_TEXT[sp?'spine':'cover'],sc=t61Scene(sp?'aim':'aimc'),en=t61Lang()!=='ko';
+  box.setAttribute('aria-label',sp?'책등 잘 찍는 법':'표지 잘 찍는 법');
+  obpPage(box,{vis:sc.html,title:sp?'책등 잘 찍는 법':'표지 잘 찍는 법',go:en?'Got it':'알겠어요',cls:'obp-guide',
+    body:`<ol class="obp-tips">${list.map(([a,h,p])=>`<li><b>${h}</b><span>${p}</span></li>`).join('')}</ol>`});
+  box.classList.add('guide');t61Dress(box);
+  box.querySelector('.obp-go').onclick=()=>{box.hidden=true;try{localStorage.setItem('sai-guide-'+(sp?'spine':'cover'),'1')}catch(e){}res()}})};
+
+// ---------- 설정: see the tutorial again ----------
+{const set=$('settings');if(set)new MutationObserver(()=>{const card=set.querySelector('.set-card');if(!card||card.querySelector('#setTut'))return;const n=t61();
+  const lang=card.querySelector('#setLang');if(!lang)return;const b=document.createElement('button');b.className='set-row set-act';b.id='setTut';b.innerHTML=`<span>${n.again}</span><span class="set-val">${n.againSub} ›</span>`;
+  lang.parentElement.append(b);b.onclick=()=>{set.hidden=true;document.body.style.overflow='';obTutorial()}}).observe(set,{childList:true})}
 
 
 
