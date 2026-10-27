@@ -1023,6 +1023,23 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .so-covers .none i{display:grid;place-items:center;width:64px;height:88px;border:1px dashed #5a4532;border-radius:4px;font-style:normal;font-size:11.5px;color:#8a7760}
 .so-covers figcaption{font-size:11.5px;color:#c9b597}
 .so-later{font-size:12px;color:#8a7760}
+
+
+/* v87 — the corner screen: the other books the model sees are outlined (tap one to switch); the chosen one stays tinted */
+.qf-other{fill:rgba(255,255,255,.05);stroke:rgba(243,227,196,.6);stroke-width:1.5;stroke-dasharray:5 4;pointer-events:none}
+.so-twin{font-size:12px;line-height:1.5;color:#c9b597}
+/* the design sheet hides what is behind it (the 기록 page used to show through) */
+.sheet{background:#1b110afa!important}
+/* the 3D book: page edges as fine, quiet paper (the 2px stripes broke into a zig-zag on the phone); the spine's colour
+   caps only the spine end of the top and bottom (not the open end too); a core in the book's colour sits inside, so a
+   hairline between two faces shows the book, not the dark room */
+#object .face.top,#object .face.bottom{border:0!important;background:linear-gradient(90deg,var(--bc) 0 2px,transparent 2px),linear-gradient(0deg,#0000000d,transparent 30%,transparent 70%,#0000000d),repeating-linear-gradient(0deg,#efe9db 0 1.4px,#e7e0ce 1.4px 2.8px)!important;box-shadow:inset 0 1px 0 #00000020,inset 0 -1px 0 #00000020}
+#object[data-bind=R] .face.top,#object[data-bind=R] .face.bottom{background:linear-gradient(270deg,var(--bc) 0 2px,transparent 2px),linear-gradient(0deg,#0000000d,transparent 30%,transparent 70%,#0000000d),repeating-linear-gradient(0deg,#efe9db 0 1.4px,#e7e0ce 1.4px 2.8px)!important}
+#object .face.right{border:0!important;background:linear-gradient(90deg,#0000000d,transparent 30%,transparent 70%,#0000000d),repeating-linear-gradient(90deg,#efe9db 0 1.4px,#e7e0ce 1.4px 2.8px)!important;box-shadow:inset 1px 0 0 #00000020,inset -1px 0 0 #00000020}
+#object .book-core{position:absolute;left:2px;top:2px;width:calc(var(--W,220px) - 4px);height:326px;background:var(--bc);transform:translateZ(0);pointer-events:none}
+#object.opened .book-core{display:none}
+/* the chosen book is coloured in clearly (the others only outlined) */
+.qf-poly{fill:rgba(159,224,168,.3)}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -5374,7 +5391,7 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // runtime comes from the site itself instead of a CDN, and a test panel in 설정 shows what is running and keeps a
 // test record — each corner screen's photo with the corners the net proposed and the corners the user settled on —
 // on this device only, until the user exports it as a file to send. The panel goes before the release.
-const SAI_VER='v86';
+const SAI_VER='v87';
 const SAI_APP=location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); // the TestFlight app (Capacitor)
 const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]')&&!SAI_APP; // the test site build (public.py adds the manifest), served over http(s)
 const SAI_STANDALONE=()=>{try{return SAI_APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return SAI_APP}};
@@ -5655,6 +5672,97 @@ shootNewBook=async function(){
   try{const w=await C.nativePromise('Filesystem','writeFile',{path:name,data:body,directory:'CACHE',encoding:'utf8',recursive:true});
     await C.nativePromise('Share','share',{title:'Readwood 테스트 기록',files:[w.uri]});return 'shared'}
   catch(e){const m=String(e&&e.message||e);if(/cancel/i.test(m))return 'cancel';console.warn('share',e);showToast('내보내지 못했어요: '+m.slice(0,60),2600);return 'error'}}}
+
+
+// ===== v87: what the phone showed (TestFlight 0.8.6) =====
+// "카메라에서 인식하지 말고 틀만 잡아 주고, 찍은 다음 맞춰 줘 · 여러 권이면 그 책을 칠해서 알려 주고 · 같은 크기 책인데 하나가
+//  더 크게 · 꾸미기에서 색을 끌면 책장이 사라졌다 나와 · 전부 자연스럽게"
+
+// ---------- 1. the viewfinder only frames the book; the book is found in the photo, after the shutter ----------
+// No reading of the live picture any more (no tint, no outlines, nothing that jumps around while aiming): a clear frame,
+// and the model is loaded in the background meanwhile so the corner screen answers at once.
+liveTick=async function(){LIVE.q=null;LIVE.all=null;LIVE.stable=0};
+{const _open=openCamera;openCamera=function(mode,o){try{if(ynetOK()&&!YNET.sess)ynetLoad().catch(()=>{})}catch(e){}return _open(mode,o)}}
+{const _close=camClose;camClose=function(v){LIVE.pick=null;return _close(v)}} // a stray tap while aiming chooses nothing
+{const _draw=camDraw;camDraw=function(){_draw();try{if(!CAM.stream)return;const c=$('camO'),dpr=Math.min(2,devicePixelRatio||1),g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
+    const r=QF.guide[CAM.mode]||QF.guide.front,f=camFit(),x=f.ox+r.x*f.vw*f.s,y=f.oy+r.y*f.vh*f.s,w=r.w*f.vw*f.s,h=r.h*f.vh*f.s,L=Math.min(30,w/3,h/4);
+    g.lineWidth=1;g.strokeStyle='rgba(243,227,196,.28)';g.strokeRect(x,y,w,h);
+    g.lineWidth=3;g.lineCap='round';g.lineJoin='round';g.strokeStyle='rgba(243,227,196,.92)';g.shadowColor='rgba(0,0,0,.45)';g.shadowBlur=6;
+    for(const [cx,cy,dx,dy] of [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]]){g.beginPath();g.moveTo(cx,cy+dy*L);g.lineTo(cx,cy);g.lineTo(cx+dx*L,cy);g.stroke()}
+    g.shadowBlur=0;const hint=$('camHint');if(hint){hint.classList.remove('ok');hint.textContent=CAM.mode==='spine'?'책등을 틀 안에 세로로 맞춰 찍으세요':'표지 전체를 틀 안에 맞춰 찍으세요'}}catch(e){}}}
+
+// ---------- 2. the corner screen: the chosen book is coloured in, the others are outlined, a tap switches ----------
+{const _q=ynetQuad;ynetQuad=async function(crop,mode,guide,pick){const r=await _q(crop,mode,guide,pick);if(!YNET.live)YNET.sel=r?{crop,all:(r.all||[]).filter(b=>b.conf>=.3)}:null;return r}}
+{const _r=ynetRefine;ynetRefine=async function(crop,mode,guide,q0){const ok=await _r(crop,mode,guide,q0);
+  try{if(ok&&YNET.sel&&YNET.sel.crop===crop&&YNET.sel.all.length>1)$('qfNote').textContent=(mode==='spine'?'칠해진 책등을 찾았어요':'칠해진 표지를 찾았어요')+' · 다른 책이면 그 책을 톡 치세요'}catch(e){}
+  return ok}}
+{const svg=$('qfSvg'),stage=$('qfStage'),img=$('qfImg');if(svg&&stage&&img){const NS='http://www.w3.org/2000/svg';
+  const others=()=>{if(svg.querySelector('.qf-other'))return;const S=YNET.sel;if(!S||S.crop!==PEND.crop||S.all.length<2||!SAMC.q)return;
+    const ir=img.getBoundingClientRect(),sr=stage.getBoundingClientRect(),gx=ir.left-sr.left,gy=ir.top-sr.top;
+    const cx=SAMC.q.reduce((s,p)=>s+p.x,0)/4,cy=SAMC.q.reduce((s,p)=>s+p.y,0)/4,poly=svg.querySelector('polygon');
+    for(const b of S.all){if(cx>=b.x0&&cx<=b.x1&&cy>=b.y0&&cy<=b.y1)continue;const r=document.createElementNS(NS,'rect');r.setAttribute('class','qf-other');
+      r.setAttribute('x',gx+b.x0*ir.width);r.setAttribute('y',gy+b.y0*ir.height);r.setAttribute('width',Math.max(1,(b.x1-b.x0)*ir.width));r.setAttribute('height',Math.max(1,(b.y1-b.y0)*ir.height));r.setAttribute('rx',4);
+      if(poly)svg.insertBefore(r,poly);else svg.append(r)}};
+  new MutationObserver(others).observe(svg,{childList:true})}}
+
+// ---------- 3. books of one size stay one size ----------
+// Without a ruler the size comes from the spine's proportions alone, so two volumes of one series could come out a few
+// percent apart. A new spine within 8% of a book already on the shelf takes that book's size (shown on the confirm
+// screen), and books shelved before this version are matched the same way once.
+const TWIN_TOL=.08;
+const bookAspect=b=>b.aspect||(b.width?b.height/b.width:0);
+function twinOf(aspect,except){let best=null,bd=TWIN_TOL;for(const b of books){if(!b.user||b.gone||b===except||(typeof isDiary==='function'&&isDiary(b))||!b.width||!b.height)continue;
+  const a=bookAspect(b);if(!a)continue;const d=Math.abs(a-aspect)/a;if(d<bd){bd=d;best=b}}return best}
+{const _rec=userRecord;userRecord=function(b){const r=_rec(b);if(b.aspect)r.aspect=b.aspect;if(b.twin)r.twin=b.twin;return r}}
+{const _add=addUserBook;addUserBook=function(rec){const b=_add(rec);if(rec.aspect)b.aspect=rec.aspect;if(rec.twin)b.twin=rec.twin;return b}}
+{const _c=confirmSpine;confirmSpine=function(cut,cov){const p=_c(cut,cov);
+  try{const t=twinOf(cut.aspect),info=$('soInfo');let n=info.querySelector('.so-twin');if(t){if(!n){n=document.createElement('div');n.className='so-twin'}n.textContent=`'${t.title}'과 같은 크기로 꽂을게요`;info.append(n)}else if(n)n.remove()}catch(e){}
+  return p.then(ok=>{if(ok&&ok!=='retake'){ok.aspect=cut.aspect;const t=twinOf(cut.aspect);if(t){ok.width=t.width;ok.height=t.height;ok.twin=t.key}}return ok})}}
+{const _s=shelveShot;shelveShot=async function(cut,ok){const b=await _s(cut,ok);if(b&&ok){b.aspect=ok.aspect||cut.aspect;if(ok.twin)b.twin=ok.twin;try{await store.put(userRecord(b))}catch(e){}}return b}}
+// on load: widths from the spine photos (as before), then twins share one size
+fixStoredWidths=async function(){try{let changed=false;const seen=[];
+  const mine=books.filter(b=>b.user&&b.spine&&!b.gone&&!(typeof isDiary==='function'&&isDiary(b))).sort((a,b)=>(a.added||0)-(b.added||0));
+  for(const b of mine){if(!b.aspect){const sp=await imgSize(b.spine);if(sp&&sp.w)b.aspect=sp.h/sp.w}
+    const a=b.aspect||bookAspect(b);let w=b.width,h=b.height,twin=null;
+    for(const s of seen){const sa=s.aspect||bookAspect(s);if(sa&&Math.abs(sa-a)/sa<TWIN_TOL){twin=s;break}}
+    if(twin){w=twin.width;h=twin.height}else if(a)w=Math.round(Math.max(10,Math.min(64,(b.height||228)/a)));
+    if(w!==b.width||h!==b.height||(twin&&b.twin!==twin.key)){b.width=w;b.height=h;b.twin=twin?twin.key:null;changed=true;try{await store.put(userRecord(b))}catch(e){}}
+    seen.push(b)}
+  if(changed&&typeof relayout==='function')relayout(true)}catch(e){console.warn('sizes',e)}};
+// the 3D book: twins get the same thickness (from the shelf size) and the first one's cover proportions
+{const _bd=bookDims;bookDims=async function(b){const d=await _bd(b);if(!b||!b.twin)return d;const t=books.find(x=>x.key===b.twin&&!x.gone);
+  const D=Math.max(6,Math.min(120,Math.round(330*(b.width||40)/(b.height||228))));let W=d.W;if(t&&(t.front||t.back)){try{const td=await _bd(t);W=td.W}catch(e){}}return {W,D}}}
+
+// ---------- 4. 꾸미기: colours change in place, nothing blinks ----------
+// A new look used to swap in its picture before the picture was ready, so the model (and the shelf) went blank for a
+// moment on every step of a slider. Now the new pictures are decoded first and swapped in one go, at most once a frame.
+const decodeAll=urls=>Promise.all(urls.filter(Boolean).map(u=>{const im=new Image();im.src=u;return (im.decode?im.decode():new Promise(r=>{im.onload=im.onerror=r})).catch(()=>{})}));
+paintCaseModel=(()=>{let raf=0,seq=0;return function(){if(raf)return;raf=requestAnimationFrame(async()=>{raf=0;const my=++seq;
+  const look=draftLook(),fr=faceTex(look,'frame'),bk=faceTex(look,'back'),root=$('case3d');if(!root)return;
+  await decodeAll([fr,bk]);if(my!==seq)return;
+  root.style.setProperty('--frame',fr?`url("${fr}")`:'linear-gradient(#a06a3c,#7a4e2a)');root.style.setProperty('--back',bk?`url("${bk}")`:'linear-gradient(#3a2111,#2a170b)')})}})();
+{let busy=0,again=false;const _rp=repaintShelf;repaintShelf=function(){if(busy){again=true;return}busy=setTimeout(async()=>{
+  try{// the boards are rendered first, then decoded, then put up together; rows off screen follow as before
+    const keep=[...rowsEl.children].map(r=>r.style.backgroundImage);buildTiles();
+    const rows=[...rowsEl.children],next=[];rows.forEach((row,i)=>{const b=row.getBoundingClientRect();if(b.bottom<-40||b.top>innerHeight+40)return;const t=rowTile(i);if(t)next.push([row,t])});
+    // buildTiles has already set the top and bottom boards; the rows keep their old picture until the new ones are ready
+    rows.forEach((r,i)=>{if(keep[i])r.style.backgroundImage=keep[i]});
+    await decodeAll(next.map(x=>x[1]));for(const [row,t] of next){row.style.backgroundImage=`url("${t}")`;row.dataset.tile=t.slice(-24)}
+    clearTimeout(repaintRest);repaintRest=setTimeout(()=>ensureRows(rowsEl.children.length),420)}
+  catch(e){console.warn('repaint',e);try{_rp()}catch(err){}}
+  finally{busy=0;if(again){again=false;repaintShelf()}}},70)}}
+// decorating the bookcase happens in front of the bookcase
+{const _t=toggleStyleSheet;toggleStyleSheet=function(open){const s=$('styleSheet');const willOpen=open??s.hidden;
+  if(willOpen&&$('notesPanel')&&!$('notesPanel').hidden){try{$('navShelf').click()}catch(e){}}return _t(open)}}
+
+// ---------- 5. the 3D book: a core in the book's colour behind the faces (see v64.css) ----------
+{const o=$('object');if(o&&!o.querySelector('.book-core')){const c=document.createElement('div');c.className='book-core';c.setAttribute('aria-hidden','true');o.prepend(c)}}
+
+// ---------- 6. a book bound on the right always opens the same way ----------
+// The viewer settles every book at rotateY(-28°), which shows the right-hand side: for a right-bound book that is its
+// spine, next to the front cover (as on the phone). A later turn to +28° for right-bound books ran or did not run
+// depending on timing, so the same book opened two ways; the default pose now stays at -28° for every book.
+{const _t=transform;transform=function(smooth){try{if(current&&current.bind==='R'&&ry===28&&rx===-12&&!object.classList.contains('opened'))ry=-28}catch(e){}return _t(smooth)}}
 
 
 
