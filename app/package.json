@@ -1,0 +1,17 @@
+{
+  "name": "sai-app",
+  "private": true,
+  "version": "0.8.4",
+  "description": "사이 — iOS wrapper (Capacitor) for the TestFlight build. Web content is copied from the site at build time.",
+  "scripts": {
+    "www": "node scripts/www.mjs",
+    "sync": "npm run www && npx cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

@@ -5353,12 +5353,16 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // runtime comes from the site itself instead of a CDN, and a test panel in 설정 shows what is running and keeps a
 // test record — each corner screen's photo with the corners the net proposed and the corners the user settled on —
 // on this device only, until the user exports it as a file to send. The panel goes before the release.
-const SAI_VER='v83';
-const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]'); // the test site build (public.py adds the manifest), served over http(s)
-const SAI_STANDALONE=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const SAI_VER='v84';
+const SAI_APP=location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); // the TestFlight app (Capacitor)
+const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]')&&!SAI_APP; // the test site build (public.py adds the manifest), served over http(s)
+const SAI_STANDALONE=()=>{try{return SAI_APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return SAI_APP}};
 
-// ---------- 1. the runtime from this site; the service worker; storage kept ----------
-if(SAI_SITE){SAM_URLS.ort=new URL('./ort/ort.wasm.min.js',location.href).href;SAM_URLS.wasm=new URL('./ort/',location.href).href}
+// ---------- 1. the runtime from this site (or from inside the app); the service worker; storage kept ----------
+if(SAI_SITE||SAI_APP){SAM_URLS.ort=new URL('./ort/ort.wasm.min.js',location.href).href;SAM_URLS.wasm=new URL('./ort/',location.href).href}
+// in the app the runtime's module is handed over as a blob: the app's file server may not call .mjs a script
+if(SAI_APP){const base=new URL('./ort/',location.href).href;window.SAI_RT=fetch(base+'ort-wasm-simd-threaded.mjs').then(r=>r.text()).then(t=>{SAM_URLS.wasm={mjs:URL.createObjectURL(new Blob([t],{type:'text/javascript'})),wasm:base+'ort-wasm-simd-threaded.wasm'}}).catch(e=>{console.warn('runtime module',e)});
+  for(const n of ['ynetLoad','snetLoad','gnetLoad','cnetLoad']){const f=window[n];if(typeof f!=='function')continue;window[n]=function(...a){return window.SAI_RT.then(()=>f.apply(this,a))}}}
 if(SAI_SITE&&'serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(r=>{window.SAI_SW=r}).catch(e=>{window.SAI_SW_ERR=String(e&&e.message||e)})})}
 if(SAI_STANDALONE()){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().then(v=>{window.SAI_PERSIST=v})}catch(e){}}
 

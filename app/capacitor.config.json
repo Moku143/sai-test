@@ -1,0 +1,10 @@
+{
+  "appId": "com.moku143.sai",
+  "appName": "사이",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#1b0f07",
+    "scrollEnabled": false
+  }
+}
