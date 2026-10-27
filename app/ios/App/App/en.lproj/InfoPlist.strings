@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "Readwood";
+"CFBundleName" = "Readwood";
+"NSCameraUsageDescription" = "Readwood uses the camera to add the spines and covers of your books to your shelf. Photos stay on this device.";
+"NSPhotoLibraryUsageDescription" = "Readwood opens your photo library when you add a book from a photo you already took. Photos stay on this device.";

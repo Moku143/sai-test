@@ -1,4 +1,4 @@
-# 사이 → TestFlight, without a Mac: GitHub's macOS machine builds the iOS app from the current site (index.html,
+# Readwood (리드우드) → TestFlight, without a Mac: GitHub's macOS machine builds the iOS app from the current site (index.html,
 # models, runtime) and uploads it to App Store Connect. Run it from the Actions tab (Run workflow).
 # Secrets (Settings → Secrets and variables → Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (the whole .p8 text),
 # APPLE_TEAM_ID. Signing is Apple's cloud signing through the App Store Connect API key (no certificate files here).

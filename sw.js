@@ -1,4 +1,4 @@
-// 사이 — the home-screen app's offline cache (this site only).
+// Readwood — the home-screen app's offline cache (this site only).
 // Pages: from the network first (a new version shows up as soon as there is a connection), the last copy when offline.
 // Everything else here (book models, the runtime, OpenCV, icons): from the cache at once, refreshed in the background.
 const C = 'sai-sw-1';

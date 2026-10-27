@@ -1,8 +1,8 @@
 {
-  "name": "sai-app",
+  "name": "readwood-app",
   "private": true,
   "version": "0.8.4",
-  "description": "사이 — iOS wrapper (Capacitor) for the TestFlight build. Web content is copied from the site at build time.",
+  "description": "Readwood (리드우드) — iOS wrapper (Capacitor) for the TestFlight build. Web content is copied from the site at build time.",
   "scripts": {
     "www": "node scripts/www.mjs",
     "sync": "npm run www && npx cap sync ios"

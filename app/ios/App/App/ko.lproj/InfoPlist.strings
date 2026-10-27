@@ -1,0 +1,4 @@
+"CFBundleDisplayName" = "리드우드";
+"CFBundleName" = "리드우드";
+"NSCameraUsageDescription" = "책등과 앞·뒤표지를 찍어 책장에 꽂을 때 카메라를 씁니다. 사진은 이 기기 안에만 저장돼요.";
+"NSPhotoLibraryUsageDescription" = "이미 찍어 둔 책 사진을 골라 책장에 꽂을 때 사진 보관함을 엽니다. 사진은 이 기기 안에만 저장돼요.";
