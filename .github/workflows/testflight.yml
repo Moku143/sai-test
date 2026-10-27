@@ -16,9 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check the secrets are there
+        env:
+          P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
-          for k in ASC_KEY_ID ASC_ISSUER_ID APPLE_TEAM_ID; do [ -n "${!k}" ] || { echo "::error::secret $k is missing"; exit 1; }; done
-          [ -n "${{ secrets.ASC_KEY_P8 }}" ] || { echo "::error::secret ASC_KEY_P8 is missing"; exit 1; }
+          for k in ASC_KEY_ID ASC_ISSUER_ID APPLE_TEAM_ID P8; do [ -n "${!k}" ] || { echo "::error::secret ${k/P8/ASC_KEY_P8} is missing"; exit 1; }; done
+          case "$P8" in *"BEGIN PRIVATE KEY"*) ;; *) echo "::error::ASC_KEY_P8 must be the whole .p8 text (BEGIN … END lines included)"; exit 1;; esac
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -34,27 +36,46 @@ jobs:
           npm run www
           npx cap sync ios
       - name: API key
+        env:
+          P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
           mkdir -p "$RUNNER_TEMP/keys"
-          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8"
+          printf '%s\n' "$P8" > "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8"
           /usr/libexec/PlistBuddy -c "Set :teamID $APPLE_TEAM_ID" app/ios/ExportOptions.plist
       - name: Archive (unsigned; Apple signs it in the next step)
         run: |
+          set +e
           VER=$(node -p "require('./app/package.json').version")
           BUILD=$((100 + ${{ github.run_number }}))
           echo "version $VER build $BUILD"
-          xcodebuild -quiet -project app/ios/App/App.xcodeproj -scheme App -configuration Release \
+          xcodebuild -project app/ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/App.xcarchive" \
             MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="$BUILD" DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO archive
-          test -d "$RUNNER_TEMP/App.xcarchive"
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO archive > archive.log 2>&1; st=$?
+          tail -30 archive.log
+          grep -E "error:|Error:|requires a|not found" archive.log | sort -u | head -12 | while read -r l; do echo "::error::${l:0:300}"; done
+          [ $st -eq 0 ] && test -d "$RUNNER_TEMP/App.xcarchive"
       - name: Sign and upload to App Store Connect
         run: |
+          set +e
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
             -exportOptionsPlist app/ios/ExportOptions.plist -exportPath "$RUNNER_TEMP/out" \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" > export.log 2>&1; st=$?
+          tail -40 export.log
+          grep -E "error:|Error:|No profiles|No signing|Provisioning|not registered|requires a|failed" export.log | sort -u | head -12 | while read -r l; do echo "::error::${l:0:300}"; done
+          tail -15 export.log | while read -r l; do echo "::notice::${l:0:300}"; done
+          exit $st
       - name: Clean up the key
         if: always()
         run: rm -rf "$RUNNER_TEMP/keys"
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            archive.log
+            export.log
+          if-no-files-found: ignore
