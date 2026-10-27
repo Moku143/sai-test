@@ -1,7 +1,7 @@
 # Readwood (리드우드) → TestFlight, without a Mac: GitHub's macOS machine builds the iOS app from the current site (index.html,
 # models, runtime) and uploads it to App Store Connect. Run it from the Actions tab (Run workflow).
-# Secrets (Settings → Secrets and variables → Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (the whole .p8 text),
-# APPLE_TEAM_ID. Signing is Apple's cloud signing through the App Store Connect API key (no certificate files here).
+# Secrets (Settings → Secrets and variables → Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (the whole .p8 text).
+# APPLE_TEAM_ID is optional (defaults to the team below). Signing is Apple's cloud signing through the App Store Connect API key (no certificate files here).
 name: TestFlight
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
     env:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || '9865Z67LR4' }}  # team id is public (it is in every signed app)
     steps:
       - uses: actions/checkout@v4
       - name: Check the secrets are there
