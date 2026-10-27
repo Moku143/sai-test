@@ -1040,6 +1040,137 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 #object.opened .book-core{display:none}
 /* the chosen book is coloured in clearly (the others only outlined) */
 .qf-poly{fill:rgba(159,224,168,.3)}
+
+
+/* v88 — Readwood glass. Two materials for every control:
+   glass  — warm, see-through, blurred, a lit top edge and a shaded bottom edge (it sits on the wood);
+   lamp   — the action that moves things forward, lit from cream to amber like a reading lamp.
+   One line-icon set (v65.js). Colours stay the bookcase's: dark wood, cream, amber. */
+:root{--rw-cream:#f3e3c4;--rw-ink:#24160d;--rw-muted:#c9b597;
+  --rw-glass:rgba(255,238,210,.09);--rw-glass-on:rgba(255,238,210,.19);--rw-edge:rgba(255,236,204,.2);--rw-hi:rgba(255,255,255,.18);--rw-low:rgba(0,0,0,.26);
+  --rw-lamp:linear-gradient(180deg,#fff5df 0%,#f7e4bd 52%,#ebcb93 100%);--rw-lamp-edge:rgba(255,250,236,.75);
+  --rw-blur:blur(18px) saturate(1.45)}
+
+/* ---------- glass ---------- */
+.grid-btn,.set-btn,.obp-skip,.obp-alt,#camSkip,#camX,#camHelp,.cam-modes button[aria-pressed=true],
+.qf-btns button:not(.qf-main),#soRetake,.bk-row button,.bk-bind,#deleteBook,#sendBook,.add-menu,.grid-pop,#close,
+#dmShoot,#dmDraw,#dmClear,#dmClose,.toast{
+  background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;color:var(--rw-cream)!important;text-shadow:none!important;
+  box-shadow:inset 0 1px 0 var(--rw-hi),inset 0 -1px 0 var(--rw-low),0 8px 22px rgba(0,0,0,.3)!important;
+  -webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important}
+/* panels that float over the shelf are darker glass so the books behind blur into colour, never into text */
+.add-menu,.grid-pop{background:rgba(30,18,10,.62)!important;border-radius:24px!important}
+.toast{background:rgba(30,18,10,.66)!important;border-radius:999px!important}
+
+/* ---------- lamp ---------- */
+.obp-go:not(:disabled),.so-main,.qf-btns .qf-main,#qfOk.qf-main,.app-nav .nav-add,#dmSave,.bk-main,.sheet-save,.guide-go,.ss-go,.fw-go:not(:disabled),.ob-go:not(:disabled){
+  background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;text-shadow:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 8px 22px rgba(236,196,128,.26),0 2px 6px rgba(0,0,0,.35)!important}
+.obp-go:disabled,.fw-go:disabled,.ob-go:disabled{background:var(--rw-glass)!important;color:rgba(243,227,196,.42)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+:is(.obp-go,.so-main,.qf-btns button,.app-nav button,#dmSave,.bk-row button,.bk-bind,#deleteBook,#sendBook,.grid-pop button,.add-menu button,#camSkip,.obp-alt,.obp-skip,#dmShoot,#dmDraw,#dmClear,.grid-btn,.set-btn):active{transform:scale(.965);transition:transform .08s}
+
+/* ---------- icons inside buttons ---------- */
+.rw-ico{display:inline-grid;place-items:center;width:20px;height:20px;flex:none}
+.rw-ico svg{width:100%;height:100%;display:block}
+.rw-has-ico{display:inline-flex!important;align-items:center;justify-content:center;gap:7px}
+
+/* ---------- bottom bar ---------- */
+.app-nav{background:rgba(24,14,8,.46)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi),0 16px 36px rgba(0,0,0,.45)!important;-webkit-backdrop-filter:blur(22px) saturate(1.6)!important;backdrop-filter:blur(22px) saturate(1.6)!important}
+.app-nav button{color:#d6c3a2!important}
+.app-nav button.active{background:var(--rw-glass-on)!important;color:#fff6e6!important;box-shadow:inset 0 1px 0 var(--rw-hi)}
+.app-nav .nav-add{font-weight:700!important}
+
+/* ---------- top: bays and settings ---------- */
+.grid-btn{height:38px!important;padding:0 13px 0 9px!important;gap:7px!important;border-radius:19px!important;font-weight:600!important}
+.grid-btn .rw-case{display:inline-grid;width:22px;height:18px}.grid-btn .rw-case svg{width:22px;height:18px;display:block}
+.set-btn{width:38px!important;height:38px!important;border-radius:19px!important}.set-btn .rw-ico{width:21px;height:21px}
+.grid-pop{width:auto!important;flex-direction:row!important;flex-wrap:wrap;gap:6px!important;padding:10px!important}
+.grid-pop>b{display:none!important}
+.grid-pop button{flex-direction:column!important;justify-content:center!important;width:78px;height:auto!important;padding:10px 6px 8px!important;gap:6px;border-radius:16px!important;color:#e7d5b5!important;font-size:13px!important}
+.grid-pop button svg{width:48px;height:40px;display:block}
+.grid-pop button.on{background:var(--rw-glass-on)!important;color:#fff3dc!important;box-shadow:inset 0 0 0 1px rgba(255,236,204,.42),inset 0 1px 0 var(--rw-hi)}
+.grid-pop button.on svg{color:#f6d9a2;filter:drop-shadow(0 0 6px rgba(246,217,162,.35))}
+.grid-pop button.on::after{content:none!important}
+.grid-pop small{flex-basis:100%;text-align:center;padding:2px 4px 0!important;color:#a99476!important}
+
+/* ---------- 책 추가 ---------- */
+.add-menu{padding:8px!important;gap:6px!important}
+.add-menu button{position:relative;flex-direction:row!important;align-items:center!important;gap:12px!important;padding:12px 14px 12px 12px!important;border-radius:18px!important;background:transparent!important;border:1px solid transparent!important;color:var(--rw-cream)!important}
+.add-menu button:first-child{background:var(--rw-glass-on)!important;border-color:var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)}
+.add-menu .rw-mi{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--rw-lamp);color:var(--rw-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 12px rgba(236,196,128,.22)}
+.add-menu button:not(:first-child) .rw-mi{background:rgba(255,238,210,.12);color:#f6d9a2;box-shadow:inset 0 1px 0 var(--rw-hi)}
+.add-menu .rw-mi svg{width:23px;height:23px}
+.add-menu .rw-mt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.add-menu .rw-mt b{font-size:15px;font-weight:700;color:#fff3dc}
+.add-menu .rw-mt small{font-size:12px;line-height:1.4;color:#c9b597}
+
+/* ---------- the open book ---------- */
+.bk-acts .bk-row button{height:68px!important;flex-direction:column!important;gap:5px!important;border-radius:18px!important;font-size:12.5px!important;font-weight:600!important}
+.bk-row .rw-ico{width:26px;height:26px;color:#f6d9a2}
+.bk-bind{height:46px!important;border-radius:16px!important;justify-content:flex-start!important;padding:0 12px!important;gap:10px!important;font-size:13px!important;color:#ead8b8!important}
+.bk-bind .rw-ico{width:24px;height:24px;color:#f6d9a2}.bk-bind .rw-lb{flex:1;text-align:left}
+.bk-bind .rw-sw{flex:none;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--rw-glass-on);color:#fff3dc}
+#deleteBook{height:44px!important;border-radius:16px!important;color:#ffab98!important;font-size:13px!important;background:rgba(255,120,96,.06)!important;border-color:rgba(255,160,140,.2)!important}
+#deleteBook .rw-ico{width:18px;height:18px}
+#close{border-radius:50%!important}
+
+/* ---------- corner screen and confirm ---------- */
+.qf-btns button{border-radius:18px!important;font-weight:650!important}
+.qf-btns button .rw-ico{width:18px;height:18px}
+.qf-btns .qf-main .rw-ico{width:19px;height:19px}
+.so-main{border-radius:20px!important}.so-main .rw-ico{width:22px;height:22px}
+#soRetake{border-radius:18px!important}
+
+/* ---------- camera ---------- */
+#camShot{border-color:rgba(255,246,228,.92)!important;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.35)}
+#camShot i{background:var(--rw-lamp)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(160,108,48,.25)}
+.cam-modes button[aria-pressed=true]{color:#fff3dc!important}
+
+/* ---------- the diary maker ---------- */
+#dmShoot,#dmDraw,#dmClear{flex-direction:column!important;gap:5px!important;border-radius:18px!important}
+#dmShoot .rw-ico,#dmDraw .rw-ico,#dmClear .rw-ico{width:24px;height:24px;color:#f6d9a2}
+#dmClear:disabled{opacity:.45}
+
+/* ---------- first run ---------- */
+.obp-go{border-radius:20px!important}
+.obp-skip{border-radius:999px!important}
+.obp-alt{border-radius:18px!important}
+.obp-dots i{transition:width .3s,background .3s}
+.obp-dots i.on{background:#f6d9a2!important;box-shadow:0 0 8px rgba(246,217,162,.45)}
+.obp-langs,.obp-item{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.obp-item:has(input:checked){background:var(--rw-glass-on)!important}
+.obp-item input:checked+.obp-ck{background:var(--rw-lamp)!important;border-color:var(--rw-lamp-edge)!important;color:var(--rw-ink)!important;box-shadow:0 0 10px rgba(246,217,162,.35)}
+
+/* ---------- settings: grouped glass rows, lamp switches ---------- */
+.set-group{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.set-sw.on{background:var(--rw-lamp)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+
+/* ---------- filters and segmented choices: a track of glass, the chosen one lit ---------- */
+.seg,.nt-chips{gap:4px}
+.seg{background:rgba(255,238,210,.06)!important;border:1px solid rgba(255,236,204,.12)!important;border-radius:16px!important;padding:3px!important}
+.seg button{background:transparent!important;color:#d6c3a2!important;border:1px solid transparent!important;border-radius:13px!important}
+.nt-chips button{background:var(--rw-glass)!important;color:#d6c3a2!important;border:1px solid rgba(255,236,204,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+.seg button.on,.nt-chips button.on,.nt-chips button[aria-pressed=true],.nt-chips button[aria-selected=true]{background:linear-gradient(180deg,rgba(255,242,218,.36),rgba(255,236,204,.2))!important;color:#fff6e6!important;border-color:rgba(255,236,204,.45)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 12px rgba(0,0,0,.25)!important}
+.nt-search{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.bay-plus{background:rgba(30,18,10,.5)!important;border:1px dashed rgba(255,236,204,.32)!important;color:#ead8b8!important;-webkit-backdrop-filter:var(--rw-blur);backdrop-filter:var(--rw-blur)}
+.set-group .set-row{background:transparent!important}
+button:focus-visible,:focus-visible{outline:2px solid rgba(246,217,162,.7);outline-offset:3px}
+
+/* ---------- hints over a photo: small glass labels, readable on any picture ---------- */
+.cam-hint{left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;font-size:13.5px!important;text-shadow:none!important;color:#fff3dc;
+  background:rgba(22,13,7,.42);border:1px solid rgba(255,236,204,.18);-webkit-backdrop-filter:var(--rw-blur);backdrop-filter:var(--rw-blur);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.cam-hint.ok{color:#c9f2cf}
+.qf-hint{border-radius:14px!important;background:rgba(22,13,7,.42)!important;border:1px solid rgba(255,236,204,.16)!important;-webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important;text-shadow:none!important;left:16px!important;right:16px!important;padding:8px 12px!important;font-size:12.5px!important}
+/* the confirm screen's turn buttons and title field */
+.so-rot button{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)!important;color:var(--rw-cream)!important}
+.so-title input,.dm-title input,#dmTitle{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
+/* the unlock card */
+.ul-ad{background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 8px 22px rgba(236,196,128,.24)!important}
+.ul-pass{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)!important}
+/* the diary: the same two materials */
+#dvClose,#dvStyle,#dvMore,#dvPrev,#dvNext,#dvMode,#deCancel,.dv-menu button{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;color:var(--rw-cream)!important;box-shadow:inset 0 1px 0 var(--rw-hi),inset 0 -1px 0 var(--rw-low),0 6px 16px rgba(0,0,0,.28)!important;-webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important}
+#dvWrite,#deSave{background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 6px 18px rgba(236,196,128,.24)!important}
+#dvWrite .rw-ico{width:17px;height:17px}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -5391,7 +5522,7 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // runtime comes from the site itself instead of a CDN, and a test panel in 설정 shows what is running and keeps a
 // test record — each corner screen's photo with the corners the net proposed and the corners the user settled on —
 // on this device only, until the user exports it as a file to send. The panel goes before the release.
-const SAI_VER='v87';
+const SAI_VER='v88';
 const SAI_APP=location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); // the TestFlight app (Capacitor)
 const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]')&&!SAI_APP; // the test site build (public.py adds the manifest), served over http(s)
 const SAI_STANDALONE=()=>{try{return SAI_APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return SAI_APP}};
@@ -5763,6 +5894,77 @@ paintCaseModel=(()=>{let raf=0,seq=0;return function(){if(raf)return;raf=request
 // spine, next to the front cover (as on the phone). A later turn to +28° for right-bound books ran or did not run
 // depending on timing, so the same book opened two ways; the default pose now stays at -28° for every book.
 {const _t=transform;transform=function(smooth){try{if(current&&current.bind==='R'&&ry===28&&rx===-12&&!object.classList.contains('opened'))ry=-28}catch(e){}return _t(smooth)}}
+
+
+// ===== v88 — Readwood glass: lamplight through amber glass over the wood =====
+// The reader: "버튼 UI가 너무 단색에 단조롭다 · 그르릉 날씨처럼 반투명하고 톤앤톤 · 직관적으로 · 설정은 톱니바퀴 · 칸 바꾸기는
+// 책장 그림으로". Every button now sits on warm translucent glass (v65.css); the actions that move things forward are a
+// lamp (cream to amber); icons are one line set, and the ones on the book say which face is meant.
+
+const RW_ICO=(()=>{const s=(d,extra='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${d}</svg>`;
+  const ink='var(--rw-ink,#24160d)';
+  return {
+    gear:s('<path d="M10.2 2.8h3.6l.5 2.5c.7.3 1.4.7 2 1.2l2.4-.8 1.8 3.1-1.9 1.7c.1.8.1 1.5 0 2.3l1.9 1.7-1.8 3.1-2.4-.8c-.6.5-1.3.9-2 1.2l-.5 2.5h-3.6l-.5-2.5c-.7-.3-1.4-.7-2-1.2l-2.4.8-1.8-3.1 1.9-1.7a8 8 0 0 1 0-2.3L3.5 8.8l1.8-3.1 2.4.8c.6-.5 1.3-.9 2-1.2z"/><circle cx="12" cy="12" r="2.9"/>'),
+    // the three faces of a book: the one to photograph is filled in
+    front:s(`<path d="M5 4.2 8 3v18l-3 1.2z"/><rect x="8" y="3" width="11.5" height="18" rx="1.4" fill="currentColor"/><path d="M11 8h5.5M11 10.6h3.6" stroke="${ink}" stroke-width="1.5"/>`),
+    back:s(`<path d="M19 4.2 16 3v18l3 1.2z"/><rect x="4.5" y="3" width="11.5" height="18" rx="1.4" fill="currentColor"/><path d="M7.4 14.2v3.6M8.9 14.2v3.6M10.6 14.2v3.6M11.8 14.2v3.6M13.2 14.2v3.6M7.4 7.5h5.6" stroke="${ink}" stroke-width="1.2"/>`),
+    spine:s(`<rect x="5" y="4" width="4" height="16" rx="1"/><rect x="10" y="2.5" width="4.6" height="19" rx="1.1" fill="currentColor"/><path d="M12.3 6.5v6.5" stroke="${ink}" stroke-width="1.5"/><rect x="15.6" y="5" width="3.6" height="15" rx="1"/>`),
+    camera:s('<path d="M4 8.2a2 2 0 0 1 2-2h1.6l1.3-2h6.2l1.3 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.6" r="3.5"/>'),
+    shootSpine:s('<path d="M3.5 8.2a2 2 0 0 1 2-2h1.6l1.3-2h7.2l1.3 2h1.6a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><rect x="10.3" y="8.8" width="3.4" height="8" rx=".8" fill="currentColor"/>'),
+    diary:s('<path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H6z"/><path d="M6 3.5v17M9 3.5v17"/><path d="M14 3.5v6l1.6-1.2 1.6 1.2v-6"/>'),
+    inbox:s('<path d="M4 13.5h4.2l1.3 2.2h5l1.3-2.2H20"/><path d="M5.5 6.5h13L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18v-4.5z"/><path d="M12 3.5v7M9.5 8l2.5 2.5L14.5 8"/>'),
+    retake:s('<path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 4v4.5H9"/>'),
+    auto:s('<path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8-4.8-1.7 4.8-1.7z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>'),
+    frame:s('<path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/>'),
+    check:s('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+    shelve:s('<path d="M4 20h16"/><rect x="5.5" y="7" width="3.2" height="13" rx=".7"/><rect x="9.6" y="4.5" width="3.6" height="15.5" rx=".7" fill="currentColor"/><path d="M14.6 8.6l3-.8 3 11.6-3 .8z"/>'),
+    pen:s('<path d="M14.5 5.5l4 4L9 19l-4.6.6L5 15z"/><path d="M12.8 7.2l4 4"/>'),
+    eraser:s('<path d="M9 19.5h10.5"/><path d="M4.6 14.2 13.8 5a1.8 1.8 0 0 1 2.5 0l3 3a1.8 1.8 0 0 1 0 2.5L11 18.8H8.4z"/><path d="M8.8 10l5.6 5.6"/>'),
+    trash:s('<path d="M5 7h14M10 4h4M7 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7"/>'),
+    bindL:s('<path d="M12 5.5v13"/><path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1"/><path d="M12 6.5c2-1.5 5-1.7 7.5-1v12c-2.5-.7-5.5-.5-7.5 1"/><path d="M7 10.5 5.6 12 7 13.5" stroke-width="1.5"/>'),
+    bindR:s('<path d="M12 5.5v13"/><path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1"/><path d="M12 6.5c2-1.5 5-1.7 7.5-1v12c-2.5-.7-5.5-.5-7.5 1"/><path d="M17 10.5l1.4 1.5-1.4 1.5" stroke-width="1.5"/>'),
+    send:s('<path d="M20 4 10.5 13.5"/><path d="M20 4l-6 16-3.5-6.5L4 10z"/>'),
+    open:s('<path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1 2-1.5 5-1.7 7.5-1v-12c-2.5-.7-5.5-.5-7.5 1z"/><path d="M12 6.5v12"/>')};
+})();
+// a bookcase seen from the front with n bays per shelf, three shelves, a few books in each bay
+function rwCase(n){const W=46,H=38,p=2,iw=W-2*p,ih=H-2*p;let s=`<svg viewBox="0 0 ${W} ${H}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="${p}" y="${p}" width="${iw}" height="${ih}" rx="2.6"/>`;
+  for(let i=1;i<n;i++){const x=(p+iw*i/n).toFixed(1);s+=`<path d="M${x} ${p}V${p+ih}"/>`}
+  for(let j=1;j<3;j++){const y=(p+ih*j/3).toFixed(1);s+=`<path d="M${p} ${y}H${p+iw}"/>`}
+  for(let i=0;i<n;i++)for(let j=0;j<3;j++){const x0=p+iw*i/n,bw=iw/n,base=p+ih*(j+1)/3-1.7,room=ih/3-4.4,k=Math.max(1,Math.floor((bw-3)/2.4));
+    for(let m=0;m<k;m++){const x=x0+2.4+m*2.4;if(x>x0+bw-1.8)break;const h=room*(.62+.38*(((i*7+j*3+m*5)%4)/3));s+=`<path d="M${x.toFixed(1)} ${base.toFixed(1)}v-${h.toFixed(1)}" stroke-width="1.15" opacity=".7"/>`}}
+  return s+'</svg>'}
+const rwIco=(el,key,label)=>{if(!el)return;el.innerHTML=`<span class="rw-ico">${RW_ICO[key]}</span><span class="rw-lb">${label}</span>`;el.classList.add('rw-has-ico')};
+
+// ---------- settings: a gear ----------
+{const s=$('setBtn');if(s)s.innerHTML=`<span class="rw-ico">${RW_ICO.gear}</span>`}
+
+// ---------- bays per row: three little bookcases ----------
+{const pop=$('gridPop'),btn=$('gridBtn');
+  if(pop){pop.setAttribute('aria-label','한 단에 놓을 칸 수');for(const b of pop.querySelectorAll('button[data-n]')){const n=+b.dataset.n;b.innerHTML=`${rwCase(n)}<span>${n}칸</span>`;b.setAttribute('aria-label',`한 단에 ${n}칸`)}
+    const sm=pop.querySelector('small');if(sm)sm.textContent='칸을 바꿔도 책은 제자리에 있어요'}
+  if(btn){const _m=markGrid;markGrid=function(){try{_m()}catch(e){}btn.innerHTML=`<span class="rw-case">${rwCase(SAI_GRID)}</span><span>${SAI_GRID}칸</span>`};markGrid()}}
+
+// ---------- 책 추가: what each choice does, in a line ----------
+{const row=(id,key,title,sub)=>{const b=$(id);if(!b)return;b.querySelector('.menu-ico')?.remove();const old=b.querySelector('span:not(.menu-ico)');
+    b.innerHTML=`<span class="rw-mi">${RW_ICO[key]}</span><span class="rw-mt"><b>${title}</b><small>${sub||(old?old.textContent:'')}</small></span>`};
+  row('addShoot','shootSpine','책등 찍기','책등 → 앞표지 → 뒤표지 차례로 찍어 꽂아요');
+  row('addDiary','diary','일기장 만들기','표지를 골라 나만의 일기장을 만들어요');
+  row('addDiaryOpen','inbox','받은 일기장 열기','친구가 보낸 일기장 파일(.saidiary)을 열어요')}
+
+// ---------- the open book: the face to photograph is the one filled in ----------
+rwIco($('bkFront'),'front','앞표지 찍기');rwIco($('bkBack'),'back','뒤표지 찍기');rwIco($('bkSpine'),'spine','책등 찍기');
+{const d=$('deleteBook');if(d)rwIco(d,'trash','책 지우기');const s=$('sendBook');if(s&&!s.classList.contains('rw-has-ico'))rwIco(s,'send',s.textContent.trim()||'친구에게 보내기');const j=$('bkJournal');if(j)rwIco(j,'open',j.textContent.trim()||'독후감 펼치기')}
+{const _b=bindButton;bindButton=function(b){_b(b);const el=$('bkBind');if(!el||!b)return;const R=b.bind==='R';
+  el.innerHTML=`<span class="rw-ico">${RW_ICO[R?'bindR':'bindL']}</span><span class="rw-lb">${R?'오른쪽으로 펼치는 책 · 일본 만화':'왼쪽으로 펼치는 책 · 한국·서양 책'}</span><span class="rw-sw">바꾸기</span>`}}
+
+// ---------- corner screen and confirm screen ----------
+rwIco($('qfRetake'),'retake','다시 찍기');rwIco($('qfAuto'),'auto','자동');rwIco($('qfGuide'),'frame','틀대로');rwIco($('qfOk'),'check','이대로');
+rwIco($('soAdd'),'shelve','책장에 꽂기');rwIco($('soRetake'),'retake','다시 찍기');
+
+// ---------- the diary maker's tools ----------
+rwIco($('dmShoot'),'camera','사진 찍기');rwIco($('dmDraw'),'pen','그리기');rwIco($('dmClear'),'eraser','비우기');
+// the diary's write button: the same pen as the maker
+{const w=$('dvWrite');if(w){const fix=()=>{if(w.querySelector('.rw-ico'))return;const t=w.textContent.replace(/^\s*✎\s*/,'').trim()||'쓰기';rwIco(w,'pen',t)};fix();new MutationObserver(fix).observe(w,{childList:true,characterData:true,subtree:true})}}
 
 
 
