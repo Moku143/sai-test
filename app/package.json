@@ -1,7 +1,7 @@
 {
   "name": "readwood-app",
   "private": true,
-  "version": "0.8.4",
+  "version": "0.8.6",
   "description": "Readwood (리드우드) — iOS wrapper (Capacitor) for the TestFlight build. Web content is copied from the site at build time.",
   "scripts": {
     "www": "node scripts/www.mjs",
@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@capacitor/core": "8.5.3",
-    "@capacitor/ios": "8.5.3"
+    "@capacitor/filesystem": "8.1.4",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/share": "8.0.3"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.3"
