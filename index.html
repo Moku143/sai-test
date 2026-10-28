@@ -1042,135 +1042,175 @@ html,body{overscroll-behavior:none;-webkit-overflow-scrolling:touch}
 .qf-poly{fill:rgba(159,224,168,.3)}
 
 
-/* v88 — Readwood glass. Two materials for every control:
-   glass  — warm, see-through, blurred, a lit top edge and a shaded bottom edge (it sits on the wood);
-   lamp   — the action that moves things forward, lit from cream to amber like a reading lamp.
-   One line-icon set (v65.js). Colours stay the bookcase's: dark wood, cream, amber. */
-:root{--rw-cream:#f3e3c4;--rw-ink:#24160d;--rw-muted:#c9b597;
-  --rw-glass:rgba(255,238,210,.09);--rw-glass-on:rgba(255,238,210,.19);--rw-edge:rgba(255,236,204,.2);--rw-hi:rgba(255,255,255,.18);--rw-low:rgba(0,0,0,.26);
-  --rw-lamp:linear-gradient(180deg,#fff5df 0%,#f7e4bd 52%,#ebcb93 100%);--rw-lamp-edge:rgba(255,250,236,.75);
-  --rw-blur:blur(18px) saturate(1.45)}
-
-/* ---------- glass ---------- */
-.grid-btn,.set-btn,.obp-skip,.obp-alt,#camSkip,#camX,#camHelp,.cam-modes button[aria-pressed=true],
-.qf-btns button:not(.qf-main),#soRetake,.bk-row button,.bk-bind,#deleteBook,#sendBook,.add-menu,.grid-pop,#close,
-#dmShoot,#dmDraw,#dmClear,#dmClose,.toast{
-  background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;color:var(--rw-cream)!important;text-shadow:none!important;
-  box-shadow:inset 0 1px 0 var(--rw-hi),inset 0 -1px 0 var(--rw-low),0 8px 22px rgba(0,0,0,.3)!important;
-  -webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important}
-/* panels that float over the shelf are darker glass so the books behind blur into colour, never into text */
-.add-menu,.grid-pop{background:rgba(30,18,10,.62)!important;border-radius:24px!important}
-.toast{background:rgba(30,18,10,.66)!important;border-radius:999px!important}
-
-/* ---------- lamp ---------- */
-.obp-go:not(:disabled),.so-main,.qf-btns .qf-main,#qfOk.qf-main,.app-nav .nav-add,#dmSave,.bk-main,.sheet-save,.guide-go,.ss-go,.fw-go:not(:disabled),.ob-go:not(:disabled){
-  background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;text-shadow:none!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 8px 22px rgba(236,196,128,.26),0 2px 6px rgba(0,0,0,.35)!important}
-.obp-go:disabled,.fw-go:disabled,.ob-go:disabled{background:var(--rw-glass)!important;color:rgba(243,227,196,.42)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
-:is(.obp-go,.so-main,.qf-btns button,.app-nav button,#dmSave,.bk-row button,.bk-bind,#deleteBook,#sendBook,.grid-pop button,.add-menu button,#camSkip,.obp-alt,.obp-skip,#dmShoot,#dmDraw,#dmClear,.grid-btn,.set-btn):active{transform:scale(.965);transition:transform .08s}
-
-/* ---------- icons inside buttons ---------- */
-.rw-ico{display:inline-grid;place-items:center;width:20px;height:20px;flex:none}
-.rw-ico svg{width:100%;height:100%;display:block}
-.rw-has-ico{display:inline-flex!important;align-items:center;justify-content:center;gap:7px}
+/* v89 — simple and clean. Glass only on what floats over content; solid layered wood surfaces for the rest; one flat
+   cream capsule for the main action of a screen; Phosphor line icons. */
+:root{--rw-cream:#f4e8d2;--rw-ink:#21150c;--rw-t1:#f6ecd9;--rw-t2:rgba(246,236,217,.6);--rw-amber:#ebbb72;
+  --rw-s1:#1c130c;--rw-s2:#2a1d13;--rw-s3:#36261a;--rw-sep:rgba(255,236,210,.09);
+  --rw-glass-bg:rgba(42,28,17,.5);--rw-glass-edge:rgba(255,240,220,.2)}
+.pi{display:inline-grid;place-items:center;width:22px;height:22px;flex:none;line-height:0}
+.pi svg{width:100%;height:100%;fill:currentColor;display:block}
+.rw-glass,.grid-btn,.set-btn,#camX,#camHelp,#camTitle,#camSkip,.rw-more,#close,#dvClose,#dvStyle,#dvMore,#dvPrev,#dvNext,#dvMode,#deCancel,#dmClose,.toast,.cam-hint{
+  background:var(--rw-glass-bg)!important;border:.5px solid var(--rw-glass-edge)!important;color:var(--rw-t1)!important;text-shadow:none!important;
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.3),0 8px 22px rgba(0,0,0,.3)!important;-webkit-backdrop-filter:blur(24px) saturate(1.8)!important;backdrop-filter:blur(24px) saturate(1.8)!important}
+:is(.rw-primary,.so-main,#qfOk,.obp-go,.ob-go,.fw-go,#dmSave,.sheet-save,.guide-go,.ss-go,.ul-ad,#dvWrite,#deSave):not(:disabled){
+  background:var(--rw-cream)!important;color:var(--rw-ink)!important;border:0!important;text-shadow:none!important;box-shadow:0 6px 18px rgba(0,0,0,.28)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+:is(.obp-go,.ob-go,.fw-go):disabled{background:var(--rw-s2)!important;color:rgba(246,236,217,.38)!important;border:0!important;box-shadow:none!important}
+:is(.rw-primary,.so-main,#qfOk,.obp-go,.rw-tab,.rw-add,.rw-row,.rw-face,.rw-round,.grid-btn,.set-btn,.rw-more,#camSkip,#dmShoot,#dmDraw,#dmClear,.grid-pop button):active{transform:scale(.96);transition:transform .08s}
+button:focus-visible,:focus-visible{outline:2px solid rgba(235,187,114,.7);outline-offset:3px}
 
 /* ---------- bottom bar ---------- */
-.app-nav{background:rgba(24,14,8,.46)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi),0 16px 36px rgba(0,0,0,.45)!important;-webkit-backdrop-filter:blur(22px) saturate(1.6)!important;backdrop-filter:blur(22px) saturate(1.6)!important}
-.app-nav button{color:#d6c3a2!important}
-.app-nav button.active{background:var(--rw-glass-on)!important;color:#fff6e6!important;box-shadow:inset 0 1px 0 var(--rw-hi)}
-.app-nav .nav-add{font-weight:700!important}
+.app-nav.rw-nav{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(calc(100vw - 32px),360px)!important;max-width:none!important;margin:0!important;
+  bottom:calc(16px + env(safe-area-inset-bottom))!important;height:62px!important;padding:4px 76px 4px 4px!important;gap:2px!important;
+  background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-radius:0!important;justify-content:stretch!important;align-items:stretch!important}
+.app-nav.rw-nav::before{content:'';position:absolute;left:0;top:0;bottom:0;right:72px;border-radius:31px;z-index:-1;background:var(--rw-glass-bg);border:.5px solid var(--rw-glass-edge);box-shadow:inset 0 .5px 0 rgba(255,255,255,.3),0 10px 28px rgba(0,0,0,.38);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8)}
+.app-nav .rw-tab{flex:1 1 0!important;height:54px!important;border-radius:27px!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;color:var(--rw-t2)!important;font-size:10.5px!important;font-weight:600!important;letter-spacing:0!important}
+.app-nav .rw-tab .pi{width:24px;height:24px}
+.app-nav .rw-tab .pi.on{display:none}.app-nav .rw-tab.active .pi.on{display:grid;color:var(--rw-amber)}.app-nav .rw-tab.active .pi.off{display:none}
+.app-nav .rw-tab.active{background:rgba(255,240,220,.13)!important;color:var(--rw-t1)!important}
+.app-nav .rw-add{position:absolute!important;right:0!important;top:0!important;width:62px!important;height:62px!important;min-width:0!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important;
+  background:var(--rw-cream)!important;color:var(--rw-ink)!important;border:0!important;box-shadow:0 10px 26px rgba(0,0,0,.4)!important}
+.app-nav .rw-add .pi{width:26px;height:26px}
 
-/* ---------- top: bays and settings ---------- */
-.grid-btn{height:38px!important;padding:0 13px 0 9px!important;gap:7px!important;border-radius:19px!important;font-weight:600!important}
+/* ---------- top buttons ---------- */
+.grid-btn{height:40px!important;padding:0 14px 0 11px!important;border-radius:20px!important;gap:7px!important;font-size:14px!important;font-weight:600!important}
 .grid-btn .rw-case{display:inline-grid;width:22px;height:18px}.grid-btn .rw-case svg{width:22px;height:18px;display:block}
-.set-btn{width:38px!important;height:38px!important;border-radius:19px!important}.set-btn .rw-ico{width:21px;height:21px}
-.grid-pop{width:auto!important;flex-direction:row!important;flex-wrap:wrap;gap:6px!important;padding:10px!important}
+.set-btn{width:40px!important;height:40px!important;border-radius:50%!important}.set-btn .pi{width:22px;height:22px}
+.grid-pop{width:auto!important;flex-direction:row!important;flex-wrap:wrap;gap:6px!important;padding:8px!important;border-radius:22px!important;background:var(--rw-s1)!important;border:.5px solid var(--rw-glass-edge)!important;box-shadow:0 14px 34px rgba(0,0,0,.45)!important}
 .grid-pop>b{display:none!important}
-.grid-pop button{flex-direction:column!important;justify-content:center!important;width:78px;height:auto!important;padding:10px 6px 8px!important;gap:6px;border-radius:16px!important;color:#e7d5b5!important;font-size:13px!important}
+.grid-pop button{flex-direction:column!important;justify-content:center!important;width:80px;height:auto!important;padding:12px 6px 10px!important;gap:6px;border-radius:16px!important;color:var(--rw-t2)!important;font-size:13px!important;font-weight:600!important;background:transparent!important}
 .grid-pop button svg{width:48px;height:40px;display:block}
-.grid-pop button.on{background:var(--rw-glass-on)!important;color:#fff3dc!important;box-shadow:inset 0 0 0 1px rgba(255,236,204,.42),inset 0 1px 0 var(--rw-hi)}
-.grid-pop button.on svg{color:#f6d9a2;filter:drop-shadow(0 0 6px rgba(246,217,162,.35))}
+.grid-pop button.on{background:var(--rw-s3)!important;color:var(--rw-t1)!important}.grid-pop button.on svg{color:var(--rw-amber)}
 .grid-pop button.on::after{content:none!important}
-.grid-pop small{flex-basis:100%;text-align:center;padding:2px 4px 0!important;color:#a99476!important}
+.grid-pop small{flex-basis:100%;text-align:center;padding:0 4px 4px!important;color:var(--rw-t2)!important}
 
-/* ---------- 책 추가 ---------- */
-.add-menu{padding:8px!important;gap:6px!important}
-.add-menu button{position:relative;flex-direction:row!important;align-items:center!important;gap:12px!important;padding:12px 14px 12px 12px!important;border-radius:18px!important;background:transparent!important;border:1px solid transparent!important;color:var(--rw-cream)!important}
-.add-menu button:first-child{background:var(--rw-glass-on)!important;border-color:var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)}
-.add-menu .rw-mi{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--rw-lamp);color:var(--rw-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 12px rgba(236,196,128,.22)}
-.add-menu button:not(:first-child) .rw-mi{background:rgba(255,238,210,.12);color:#f6d9a2;box-shadow:inset 0 1px 0 var(--rw-hi)}
-.add-menu .rw-mi svg{width:23px;height:23px}
-.add-menu .rw-mt{display:flex;flex-direction:column;gap:2px;min-width:0}
-.add-menu .rw-mt b{font-size:15px;font-weight:700;color:#fff3dc}
-.add-menu .rw-mt small{font-size:12px;line-height:1.4;color:#c9b597}
+/* ---------- sheets ---------- */
+.rw-dim{position:fixed;inset:0;z-index:6;background:rgba(8,4,2,.5)}
+.rw-dim[hidden]{display:none}
+.add-menu.rw-sheet{left:0!important;right:0!important;bottom:0!important;transform:none!important;width:auto!important;max-width:560px;margin:0 auto!important;border-radius:30px 30px 0 0!important;
+  background:var(--rw-s1)!important;border:0!important;border-top:.5px solid var(--rw-glass-edge)!important;box-shadow:0 -12px 40px rgba(0,0,0,.45)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  padding:8px 16px calc(22px + env(safe-area-inset-bottom))!important;gap:12px!important;z-index:7!important}
+.rw-sheet-head{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:10px;padding:0 4px}
+.rw-grab{grid-column:1/-1;justify-self:center;width:38px;height:5px;border-radius:3px;background:rgba(255,240,220,.25)}
+.rw-sheet-head b{font-family:'MaruBuri',serif;font-size:22px;font-weight:600;color:var(--rw-t1)}
+.rw-x{width:34px;height:34px;border-radius:50%;border:0;background:var(--rw-s3);color:var(--rw-t2);display:grid;place-items:center;padding:0}
+.rw-x svg{width:15px;height:15px;fill:currentColor}
+.rw-group{background:var(--rw-s2);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.add-menu .rw-row{position:static!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:14px!important;padding:14px 14px 14px 14px!important;min-height:74px;border-radius:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;color:var(--rw-t1)!important;text-align:left;width:100%}
+.add-menu .rw-row+.rw-row{border-top:.5px solid var(--rw-sep)!important}
+.add-menu .rw-row[hidden]{display:none!important}
+.rw-tile{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(235,187,114,.15);color:var(--rw-amber)}
+.rw-tile .pi{width:24px;height:24px}
+.rw-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.rw-rt b{font-size:16.5px;font-weight:650;color:var(--rw-t1)}.rw-rt small{font-size:13px;line-height:1.35;color:var(--rw-t2)}
+.add-menu .chev{width:16px;height:16px;color:rgba(246,236,217,.3)}
+.add-menu .rw-group:last-of-type .rw-row{min-height:56px}
+.add-menu .rw-group:last-of-type .rw-tile{width:34px;height:34px;border-radius:10px;background:var(--rw-s3);color:var(--rw-t2)}
+.add-menu .rw-group:last-of-type .rw-tile .pi{width:19px;height:19px}
+.add-menu .menu-ico{display:none!important}
 
 /* ---------- the open book ---------- */
-.bk-acts .bk-row button{height:68px!important;flex-direction:column!important;gap:5px!important;border-radius:18px!important;font-size:12.5px!important;font-weight:600!important}
-.bk-row .rw-ico{width:26px;height:26px;color:#f6d9a2}
-.bk-bind{height:46px!important;border-radius:16px!important;justify-content:flex-start!important;padding:0 12px!important;gap:10px!important;font-size:13px!important;color:#ead8b8!important}
-.bk-bind .rw-ico{width:24px;height:24px;color:#f6d9a2}.bk-bind .rw-lb{flex:1;text-align:left}
-.bk-bind .rw-sw{flex:none;font-size:12px;padding:5px 10px;border-radius:999px;background:var(--rw-glass-on);color:#fff3dc}
-#deleteBook{height:44px!important;border-radius:16px!important;color:#ffab98!important;font-size:13px!important;background:rgba(255,120,96,.06)!important;border-color:rgba(255,160,140,.2)!important}
-#deleteBook .rw-ico{width:18px;height:18px}
-#close{border-radius:50%!important}
+#close{left:max(16px,env(safe-area-inset-left))!important;right:auto!important;width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;padding:0!important;font-size:0!important}
+#close svg,.rw-more svg{width:18px;height:18px;fill:currentColor}
+.rw-more{position:fixed;z-index:14;top:calc(14px + env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));width:44px;height:44px;border-radius:50%;display:grid;place-items:center;padding:0}
+.modal:not(.open) .rw-more,.modal:not(.open) .rw-menu{display:none!important}
+.rw-menu{position:fixed;z-index:15;top:calc(64px + env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));width:min(280px,calc(100vw - 32px));padding:6px;border-radius:20px;background:var(--rw-s1);border:.5px solid var(--rw-glass-edge);box-shadow:0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.rw-menu[hidden]{display:none}
+.rw-menu button{height:48px!important;width:100%!important;margin:0!important;border:0!important;border-radius:14px!important;background:transparent!important;color:var(--rw-t1)!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;padding:0 12px!important;font-size:15px!important;font-weight:500!important;box-shadow:none!important}
+.rw-menu button[hidden]{display:none!important}
+.rw-menu button .pi{width:21px;height:21px;color:var(--rw-t2)}
+.rw-menu button .val{margin-left:auto;font-size:13px;color:var(--rw-amber)}
+.rw-menu #deleteBook{color:#ff9f8c!important}.rw-menu #deleteBook .pi{color:#ff9f8c}
+.bk-acts .bk-row,.bk-acts .bk-main{display:none!important}
+.bk-acts{margin:0!important}
+.rw-faces{display:flex;gap:10px;width:100%;margin-top:14px}
+.rw-face{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px 10px;border-radius:18px;border:0;background:var(--rw-s2);color:var(--rw-t1);font:inherit}
+.rw-thumb{height:70px;display:flex;align-items:flex-end;justify-content:center}
+.rw-thumb img,.rw-thumb i{display:block;height:70px;width:48px;object-fit:cover;border-radius:2px 4px 4px 2px;box-shadow:3px 5px 10px rgba(0,0,0,.4)}
+.rw-thumb[data-f=spine] img,.rw-thumb[data-f=spine] i{width:16px}
+.rw-face:not(.has) .rw-thumb i{opacity:.45}
+.rw-fl{font-size:13px;font-weight:600}
+.rw-st{position:absolute;top:8px;right:8px;width:18px;height:18px;color:var(--rw-amber)}
+.rw-face.has .rw-st{color:#a9dcae}
+.rw-st svg{width:18px;height:18px;fill:currentColor}
+.rw-fnote{margin:8px 0 0;font-size:12px;color:var(--rw-t2);text-align:center}
+.rw-primary{width:100%;height:54px;margin-top:12px;border-radius:27px;display:flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:16.5px;font-weight:700}
+.rw-primary .pi{width:20px;height:20px}
 
-/* ---------- corner screen and confirm ---------- */
-.qf-btns button{border-radius:18px!important;font-weight:650!important}
-.qf-btns button .rw-ico{width:18px;height:18px}
-.qf-btns .qf-main .rw-ico{width:19px;height:19px}
-.so-main{border-radius:20px!important}.so-main .rw-ico{width:22px;height:22px}
-#soRetake{border-radius:18px!important}
+/* ---------- corner screen ---------- */
+.qf-btns{display:grid!important;grid-template-columns:repeat(3,1fr)!important;row-gap:14px!important;column-gap:8px!important;padding:24px 16px calc(14px + env(safe-area-inset-bottom))!important;background:linear-gradient(transparent,rgba(13,7,4,.55) 40%)!important}
+.quad-fix .qf-btns button.rw-round,.qf-btns button.rw-round{height:auto!important;text-shadow:none!important;background:transparent!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;color:var(--rw-t1)!important;font-size:12px!important;font-weight:600!important;padding:0!important}
+.qf-btns .rw-c{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--rw-glass-bg);border:.5px solid var(--rw-glass-edge);box-shadow:inset 0 .5px 0 rgba(255,255,255,.3),0 8px 20px rgba(0,0,0,.3);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8)}
+.qf-btns .rw-c svg{width:24px;height:24px;fill:currentColor}
+.qf-btns .lb{text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#qfOk{grid-column:1/-1;height:54px!important;border-radius:27px!important;display:flex!important;align-items:center;justify-content:center;gap:8px;font-size:16.5px!important;font-weight:700!important}
+#qfOk .pi{width:20px;height:20px}
+.qf-hint{border-radius:14px!important;background:var(--rw-glass-bg)!important;border:.5px solid var(--rw-glass-edge)!important;-webkit-backdrop-filter:blur(24px)!important;backdrop-filter:blur(24px)!important;text-shadow:none!important;padding:8px 12px!important;bottom:calc(196px + env(safe-area-inset-bottom))!important}
 
 /* ---------- camera ---------- */
-#camShot{border-color:rgba(255,246,228,.92)!important;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.35)}
-#camShot i{background:var(--rw-lamp)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -3px 6px rgba(160,108,48,.25)}
-.cam-modes button[aria-pressed=true]{color:#fff3dc!important}
+#camX,#camHelp{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;padding:0!important}
+#camX svg,#camHelp svg{width:20px;height:20px;fill:currentColor}
+#camTitle{padding:10px 16px!important;border-radius:999px!important;font-size:15px!important;font-weight:600!important}
+.cam-modes{display:none!important}
+.cam-hint{left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:9px 16px!important;border-radius:999px!important;font-size:13.5px!important;font-weight:500!important}
+#camShot{border:4px solid var(--rw-cream)!important;box-shadow:0 8px 22px rgba(0,0,0,.4)!important}
+#camShot i{background:var(--rw-cream)!important;box-shadow:none!important}
+#camSkip{height:42px!important;padding:0 16px!important;border-radius:21px!important;font-size:14.5px!important;font-weight:600!important}
 
-/* ---------- the diary maker ---------- */
-#dmShoot,#dmDraw,#dmClear{flex-direction:column!important;gap:5px!important;border-radius:18px!important}
-#dmShoot .rw-ico,#dmDraw .rw-ico,#dmClear .rw-ico{width:24px;height:24px;color:#f6d9a2}
-#dmClear:disabled{opacity:.45}
+/* ---------- confirm ---------- */
+.so-main{height:56px!important;border-radius:28px!important;font-size:17px!important;font-weight:700!important}
+#soRetake{height:46px!important;border:0!important;background:transparent!important;color:var(--rw-t2)!important;box-shadow:none!important;font-size:15px!important}
+.so-rot button{background:var(--rw-s2)!important;border:0!important;color:var(--rw-t1)!important;border-radius:999px!important}
+.so-title input{background:var(--rw-s2)!important;border:0!important;border-radius:14px!important}
 
 /* ---------- first run ---------- */
-.obp-go{border-radius:20px!important}
-.obp-skip{border-radius:999px!important}
-.obp-alt{border-radius:18px!important}
-.obp-dots i{transition:width .3s,background .3s}
-.obp-dots i.on{background:#f6d9a2!important;box-shadow:0 0 8px rgba(246,217,162,.45)}
-.obp-langs,.obp-item{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.obp-item:has(input:checked){background:var(--rw-glass-on)!important}
-.obp-item input:checked+.obp-ck{background:var(--rw-lamp)!important;border-color:var(--rw-lamp-edge)!important;color:var(--rw-ink)!important;box-shadow:0 0 10px rgba(246,217,162,.35)}
+.obp-go{height:56px!important;border-radius:28px!important;font-size:17px!important}
+.obp-skip{height:36px!important;padding:0 14px!important;border-radius:18px!important;background:var(--rw-glass-bg)!important;border:.5px solid var(--rw-glass-edge)!important;color:var(--rw-t1)!important;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+.obp-alt{height:50px!important;border-radius:25px!important;border:0!important;background:var(--rw-s2)!important;color:var(--rw-t1)!important}
+.obp-dots i.on{background:var(--rw-amber)!important}
+.obp-langs,.obp-item{background:var(--rw-s2)!important;border:0!important;border-radius:18px!important}
+.obp-item input:checked+.obp-ck{background:var(--rw-amber)!important;border-color:var(--rw-amber)!important;color:var(--rw-ink)!important}
+.obp-terms{background:none!important}
 
-/* ---------- settings: grouped glass rows, lamp switches ---------- */
-.set-group{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-.set-sw.on{background:var(--rw-lamp)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+/* ---------- settings, filters, segmented choices ---------- */
+.set-group{background:var(--rw-s2)!important;border:0!important;border-radius:18px!important}
+.set-sw.on{background:var(--rw-amber)!important}
+.seg{background:var(--rw-s2)!important;border:0!important;border-radius:14px!important;padding:3px!important}
+.seg button{border:0!important;border-radius:11px!important;background:transparent!important;color:var(--rw-t2)!important}
+.seg button.on{background:var(--rw-s3)!important;color:var(--rw-t1)!important;box-shadow:0 2px 8px rgba(0,0,0,.25)!important}
+.nt-chips button{background:var(--rw-s2)!important;border:0!important;color:var(--rw-t2)!important;border-radius:999px!important}
+.nt-chips button[aria-pressed=true]{background:var(--rw-cream)!important;color:var(--rw-ink)!important}
+.nt-search{background:var(--rw-s2)!important;border:0!important;border-radius:14px!important}
+.bay-plus{background:rgba(28,19,12,.6)!important;border:1px dashed rgba(255,236,210,.28)!important;color:var(--rw-t1)!important}
 
-/* ---------- filters and segmented choices: a track of glass, the chosen one lit ---------- */
-.seg,.nt-chips{gap:4px}
-.seg{background:rgba(255,238,210,.06)!important;border:1px solid rgba(255,236,204,.12)!important;border-radius:16px!important;padding:3px!important}
-.seg button{background:transparent!important;color:#d6c3a2!important;border:1px solid transparent!important;border-radius:13px!important}
-.nt-chips button{background:var(--rw-glass)!important;color:#d6c3a2!important;border:1px solid rgba(255,236,204,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
-.seg button.on,.nt-chips button.on,.nt-chips button[aria-pressed=true],.nt-chips button[aria-selected=true]{background:linear-gradient(180deg,rgba(255,242,218,.36),rgba(255,236,204,.2))!important;color:#fff6e6!important;border-color:rgba(255,236,204,.45)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 12px rgba(0,0,0,.25)!important}
-.nt-search{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-.bay-plus{background:rgba(30,18,10,.5)!important;border:1px dashed rgba(255,236,204,.32)!important;color:#ead8b8!important;-webkit-backdrop-filter:var(--rw-blur);backdrop-filter:var(--rw-blur)}
-.set-group .set-row{background:transparent!important}
-button:focus-visible,:focus-visible{outline:2px solid rgba(246,217,162,.7);outline-offset:3px}
-
-/* ---------- hints over a photo: small glass labels, readable on any picture ---------- */
-.cam-hint{left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;font-size:13.5px!important;text-shadow:none!important;color:#fff3dc;
-  background:rgba(22,13,7,.42);border:1px solid rgba(255,236,204,.18);-webkit-backdrop-filter:var(--rw-blur);backdrop-filter:var(--rw-blur);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.cam-hint.ok{color:#c9f2cf}
-.qf-hint{border-radius:14px!important;background:rgba(22,13,7,.42)!important;border:1px solid rgba(255,236,204,.16)!important;-webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important;text-shadow:none!important;left:16px!important;right:16px!important;padding:8px 12px!important;font-size:12.5px!important}
-/* the confirm screen's turn buttons and title field */
-.so-rot button{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)!important;color:var(--rw-cream)!important}
-.so-title input,.dm-title input,#dmTitle{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
-/* the unlock card */
-.ul-ad{background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 8px 22px rgba(236,196,128,.24)!important}
-.ul-pass{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;box-shadow:inset 0 1px 0 var(--rw-hi)!important}
-/* the diary: the same two materials */
-#dvClose,#dvStyle,#dvMore,#dvPrev,#dvNext,#dvMode,#deCancel,.dv-menu button{background:var(--rw-glass)!important;border:1px solid var(--rw-edge)!important;color:var(--rw-cream)!important;box-shadow:inset 0 1px 0 var(--rw-hi),inset 0 -1px 0 var(--rw-low),0 6px 16px rgba(0,0,0,.28)!important;-webkit-backdrop-filter:var(--rw-blur)!important;backdrop-filter:var(--rw-blur)!important}
-#dvWrite,#deSave{background:var(--rw-lamp)!important;color:var(--rw-ink)!important;border:1px solid var(--rw-lamp-edge)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 0 rgba(160,108,48,.22),0 6px 18px rgba(236,196,128,.24)!important}
-#dvWrite .rw-ico{width:17px;height:17px}
+/* ---------- diary maker, diary ---------- */
+#dmShoot,#dmDraw,#dmClear{background:var(--rw-s2)!important;border:0!important;border-radius:16px!important;color:var(--rw-t1)!important;display:flex!important;flex-direction:column!important;align-items:center;justify-content:center;gap:6px!important;box-shadow:none!important}
+#dmShoot .pi,#dmDraw .pi,#dmClear .pi{width:24px;height:24px;color:var(--rw-amber)}
+#dmClear:disabled{opacity:.4}
+#dmClose,#dvClose,#dvMore,#deCancel{border-radius:50%!important;display:grid!important;place-items:center!important;padding:0!important}
+#dmClose svg,#dvClose svg,#dvMore svg,#deCancel svg{width:18px;height:18px;fill:currentColor}
+#dvWrite{border-radius:999px!important;display:inline-flex!important;align-items:center;gap:6px}
+#dvWrite .pi{width:17px;height:17px}
+.ul-pass{background:var(--rw-s2)!important;border:0!important}
+.toast{border-radius:999px!important}
+/* fixes: the add sheet's own controls win over the old menu styles; the book screen fits one screen */
+.add-menu .rw-x{width:34px!important;height:34px!important;min-height:0!important;padding:0!important;border-radius:50%!important;background:var(--rw-s3)!important;border:0!important;display:grid!important;place-items:center!important;color:var(--rw-t2)!important;box-shadow:none!important}
+.add-menu .rw-x svg{width:15px;height:15px;fill:currentColor}
+.add-menu .rw-tile{color:var(--rw-amber)!important;font-size:inherit!important;line-height:0!important}
+.add-menu .rw-group:last-of-type .rw-tile{color:var(--rw-t2)!important}
+.add-menu .rw-rt{color:var(--rw-t1)!important;font-size:inherit!important;line-height:normal!important}
+.add-menu .rw-rt small{font-size:13px!important;color:var(--rw-t2)!important}
+.add-menu .chev{color:rgba(246,236,217,.3)!important;line-height:0!important}
+.add-menu .pi{font-size:inherit!important}
+.stage{height:min(46vh,400px)!important}
+.rw-faces{margin-top:10px}.rw-thumb,.rw-thumb img,.rw-thumb i{height:58px}.rw-thumb img,.rw-thumb i{width:40px}
+.rw-svgthumb{display:block;height:58px;width:14px;overflow:hidden;border-radius:2px;box-shadow:3px 5px 10px rgba(0,0,0,.4)}
+.rw-svgthumb svg{width:100%;height:100%;display:block}
+#close:focus{outline:none}
+.add-menu .rw-tile .pi{color:inherit!important}
+.add-menu .chev{color:rgba(246,236,217,.32)!important}
+#modal .book-hint{margin:4px 0 0!important;font-size:12px;color:var(--rw-t3,#8a7760)}
 </style></head><body><main id="library" class="library"><div class="lib-crown" aria-hidden="true"></div><div id="rows" class="lib-rows" aria-label="나의 책장"></div><div class="lib-plinth" aria-hidden="true"></div></main><section id="notesPanel" class="notes-panel" hidden><h2>내가 남긴 기록</h2><div id="notesList"></div></section><nav class="app-nav" aria-label="앱 메뉴"><button id="navShelf" class="active"><span>▤</span>책장</button><button id="navNotes"><span>▧</span>기록</button><button id="navAdd" class="nav-add" aria-label="책 추가: 책등 사진 찍기 또는 고르기"><span>＋</span>책 추가</button><button id="navStyle" aria-haspopup="dialog"><span>◐</span>꾸미기</button></nav><input type="file" accept="image/*" capture="environment" id="addPhoto" hidden><input type="file" accept=".saibook,.txt,application/json,text/plain" id="importCard" hidden><div class="add-menu" id="addMenu" role="menu" hidden><button id="addShoot" role="menuitem"><b>책등 찍기</b><span>카메라로 바로 찍어요. 사진은 이 앱 안에만 저장돼요.</span></button><button id="addCard" role="menuitem"><b>받은 책 열기</b><span>친구가 에어드롭으로 보낸 책 카드(.saibook)를 꽂아요.</span></button></div><div class="ask" id="ask" hidden role="dialog" aria-modal="true" aria-labelledby="askMsg"><div class="ask-card"><p id="askMsg"></p><input id="askInput" type="text" maxlength="40" hidden aria-label="이름"><div class="ask-btns"><button id="askNo">취소</button><button id="askYes">확인</button></div></div></div><div class="sheet" id="styleSheet" role="dialog" aria-label="책장 꾸미기" hidden><div class="sheet-head"><h3>책장 꾸미기</h3><button class="sheet-x" id="styleClose" aria-label="닫기">✕</button></div><div class="case-stage" id="caseStage" aria-label="책장 미리보기, 드래그해서 돌려보기"><div class="case3d" id="case3d"></div><span class="case-hint">드래그해서 돌려보기</span></div><div class="style-groups" id="styleGroups"></div><div class="strip"><button class="strip-arrow prev" id="stripPrev" aria-label="이전 디자인">‹</button><div class="style-list" id="styleList" role="listbox" aria-label="책장 디자인"></div><button class="strip-arrow next" id="stripNext" aria-label="다음 디자인">›</button></div><div class="tint"><div class="tint-top"><div class="seg" id="tintParts"><button data-part="ink">무늬색</button><button data-part="base">바탕색</button><button data-part="back">뒷판</button></div><span class="tint-chip" id="tintChip"></span><span class="tint-hex" id="tintHex"></span><button class="tint-reset" id="tintReset">원래 색</button></div><div class="inks" id="tintInks"></div></div><div class="saved"><div class="saved-head"><h4>내 디자인</h4><span class="saved-count" id="savedCount"></span></div><div class="strip saved-strip"><button class="strip-arrow prev" id="savedPrev" aria-label="이전 내 디자인">‹</button><div class="saved-list" id="savedList" aria-label="내 디자인"></div><button class="strip-arrow next" id="savedNext" aria-label="다음 내 디자인">›</button></div></div></div><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="bookTitle"><button class="close" id="close" aria-label="책장으로 돌아가기">×</button><div class="viewer-wrap"><div class="stage" id="stage"><div class="object" id="object"><div class="inside-page" id="insidePage"><div class="page-label">MY READING NOTE</div><h3 id="pageTitle"></h3><p id="pageText"></p><span class="page-number">1</span></div><div class="face front" id="front"></div><div class="face back" id="back"></div><div class="face left" id="left"></div><div class="face right"></div><div class="face top"></div><div class="face bottom"></div></div><div class="hint">누른 채 움직이면 회전 · 짧게 누르면 펼치기<br>휠로 확대 · 방향키로 회전</div></div><div class="info"><span class="eyebrow" id="ordinal"></span><h2 id="bookTitle"></h2><span class="badge" id="photoBadge"></span><p id="description"></p><div class="controls"><button data-view="front">앞표지</button><button data-view="back">뒷표지</button><button data-view="spine">책등</button><button data-view="top">위쪽</button><button data-view="bottom">아래쪽</button><button data-view="reset">기본 각도</button></div><button class="open-btn" id="openToggle" aria-pressed="false">책 펼치기</button><div class="actions"><button id="auto">자동 회전</button><button id="return">책장에 꽂기</button></div><label class="range">확대<input id="zoom" type="range" min="65" max="135" value="100" aria-label="책 확대 비율"></label><label class="note-label" for="note">펼친 페이지에 내 메모 써보기</label><textarea class="page-note" id="note" placeholder="이 책에서 기억하고 싶은 이야기를 적어보세요."></textarea><label class="upload-label">＋ 이 책 앞표지 찍기<input type="file" accept="image/*" capture="environment" id="upload" hidden></label><p style="font-size:11px">사진이 없는 면은 책등과 같은 색으로 채워요.<br>찍은 사진은 이 앱 안에만 저장되고, 휴대폰 사진 앱에는 저장되지 않아요.</p><p class="gift-note" id="giftNote" hidden></p><div class="actions book-extra"><button id="sendBook">친구에게 보내기</button><button id="deleteBook" class="danger">책 지우기</button></div></div></div></div><div class="toast" id="toast"></div><script>/* planck.js 1.4.3 (MIT License, Copyright (c) Erin Catto, Ali Shakiba) - https://github.com/piqnt/planck.js */
 (function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?factory(exports):typeof define==="function"&&define.amd?define(["exports"],factory):(global=typeof globalThis!=="undefined"?globalThis:global||self,factory(global.planck={}))})(this,function(exports2){"use strict";
 /**
@@ -4012,7 +4052,7 @@ function showLegal(){const box=$('legalBox')||(()=>{const d=document.createEleme
   <li>일기장 파일은 처음 주고받은 두 사람 사이에서만 열려요. 받은 일기장을 제3자에게 전달해도 열리지 않아요.</li>
   <li>앱 운영자는 기기 안의 기록을 복구할 수 없어요. 소중한 기록은 일기장 보내기 등으로 따로 보관해 주세요.</li></ul>
   <h3>오픈소스 · 글꼴</h3>
-  <ul><li>planck.js — MIT License</li><li>OpenCV — Apache License 2.0</li><li>Tesseract.js — Apache License 2.0</li><li>Galmuri11 · 마루 부리 · 나눔손글씨 — SIL Open Font License 1.1</li></ul>
+  <ul><li>planck.js — MIT License</li><li>ONNX Runtime Web — MIT License</li><li>Phosphor Icons — MIT License</li><li>Capacitor · Share · Filesystem (iOS 앱) — MIT License</li><li>OpenCV — Apache License 2.0</li><li>Tesseract.js — Apache License 2.0</li><li>Galmuri11 · 마루 부리 · 나눔손글씨 — SIL Open Font License 1.1</li></ul>
   </div></div>`;box.hidden=false;box.querySelector('.legal-x').onclick=()=>{box.hidden=true};box.onclick=e=>{if(e.target===box)box.hidden=true}}
 
 // ---------- settings ----------
@@ -5522,7 +5562,7 @@ function v78Sharpen(c,amt){try{const w=c.width,h=c.height;if(w<8||h<8||w*h>9e6)r
 // runtime comes from the site itself instead of a CDN, and a test panel in 설정 shows what is running and keeps a
 // test record — each corner screen's photo with the corners the net proposed and the corners the user settled on —
 // on this device only, until the user exports it as a file to send. The panel goes before the release.
-const SAI_VER='v88';
+const SAI_VER='v89';
 const SAI_APP=location.protocol==='capacitor:'||!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform()); // the TestFlight app (Capacitor)
 const SAI_SITE=/^https?:$/.test(location.protocol)&&!window.claude&&!!document.querySelector('link[rel=manifest]')&&!SAI_APP; // the test site build (public.py adds the manifest), served over http(s)
 const SAI_STANDALONE=()=>{try{return SAI_APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return SAI_APP}};
@@ -5895,76 +5935,95 @@ paintCaseModel=(()=>{let raf=0,seq=0;return function(){if(raf)return;raf=request
 // depending on timing, so the same book opened two ways; the default pose now stays at -28° for every book.
 {const _t=transform;transform=function(smooth){try{if(current&&current.bind==='R'&&ry===28&&rx===-12&&!object.classList.contains('opened'))ry=-28}catch(e){}return _t(smooth)}}
 
+// Phosphor Icons (MIT, phosphoricons.com) — the icons Readwood uses, inlined (no network)
+const PH={"books": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm6.62,31.47,46.82-10.05,3.34,15.9L146,97.53Zm6.64,31.57,46.82-10.06,13.3,63.24-46.82,10.06ZM216,197.94l-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm0,32h48v96H56Zm48,128H56V192h48v16Z\"/></svg>", "books-fill": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M231.65,194.55,198.46,36.75a16,16,0,0,0-19-12.39L132.65,34.42a16.08,16.08,0,0,0-12.3,19l33.19,157.8A16,16,0,0,0,169.16,224a16.25,16.25,0,0,0,3.38-.36l46.81-10.06A16.09,16.09,0,0,0,231.65,194.55ZM136,50.15c0-.06,0-.09,0-.09l46.8-10,3.33,15.87L139.33,66Zm10,47.38-3.35-15.9,46.82-10.06,3.34,15.9Zm70,100.41-46.8,10-3.33-15.87L212.67,182,216,197.85C216,197.91,216,197.94,216,197.94ZM104,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32ZM56,48h48V64H56Zm48,160H56V192h48v16Z\"/></svg>", "notepad": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M168,128a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,128Zm-8,24H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16ZM216,40V200a32,32,0,0,1-32,32H72a32,32,0,0,1-32-32V40a8,8,0,0,1,8-8H72V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h24A8,8,0,0,1,216,40Zm-16,8H184v8a8,8,0,0,1-16,0V48H136v8a8,8,0,0,1-16,0V48H88v8a8,8,0,0,1-16,0V48H56V200a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16Z\"/></svg>", "notepad-fill": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M208,32H184V24a8,8,0,0,0-16,0v8H136V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48a8,8,0,0,0-8,8V200a32,32,0,0,0,32,32H184a32,32,0,0,0,32-32V40A8,8,0,0,0,208,32ZM120,56a8,8,0,0,1,16,0v8a8,8,0,0,1-16,0ZM80,72a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0v8A8,8,0,0,1,80,72Zm80,96H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm24-72a8,8,0,0,1-16,0V56a8,8,0,0,1,16,0Z\"/></svg>", "paint-brush": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M232,32a8,8,0,0,0-8-8c-44.08,0-89.31,49.71-114.43,82.63A60,60,0,0,0,32,164c0,30.88-19.54,44.73-20.47,45.37A8,8,0,0,0,16,224H92a60,60,0,0,0,57.37-77.57C182.3,121.31,232,76.08,232,32ZM92,208H34.63C41.38,198.41,48,183.92,48,164a44,44,0,1,1,44,44Zm32.42-94.45q5.14-6.66,10.09-12.55A76.23,76.23,0,0,1,155,121.49q-5.9,4.94-12.55,10.09A60.54,60.54,0,0,0,124.42,113.55Zm42.7-2.68a92.57,92.57,0,0,0-22-22c31.78-34.53,55.75-45,69.9-47.91C212.17,55.12,201.65,79.09,167.12,110.87Z\"/></svg>", "paint-brush-fill": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M232,32a8,8,0,0,0-8-8c-44.08,0-89.31,49.71-114.43,82.63A60,60,0,0,0,32,164c0,30.88-19.54,44.73-20.47,45.37A8,8,0,0,0,16,224H92a60,60,0,0,0,57.37-77.57C182.3,121.31,232,76.08,232,32ZM124.42,113.55q5.14-6.66,10.09-12.55A76.23,76.23,0,0,1,155,121.49q-5.9,4.94-12.55,10.09A60.54,60.54,0,0,0,124.42,113.55Zm42.7-2.68a92.57,92.57,0,0,0-22-22c31.78-34.53,55.75-45,69.9-47.91C212.17,55.12,201.65,79.09,167.12,110.87Z\"/></svg>", "plus": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/></svg>", "gear-six": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z\"/></svg>", "camera": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V80a8,8,0,0,1,8-8H80a8,8,0,0,0,6.66-3.56L100.28,48h55.43l13.63,20.44A8,8,0,0,0,176,72h32a8,8,0,0,1,8,8ZM128,88a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,88Zm0,72a28,28,0,1,1,28-28A28,28,0,0,1,128,160Z\"/></svg>", "notebook": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M184,112a8,8,0,0,1-8,8H112a8,8,0,0,1,0-16h64A8,8,0,0,1,184,112Zm-8,24H112a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm48-88V208a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM48,208H72V48H48Zm160,0V48H88V208H208Z\"/></svg>", "tray-arrow-down": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,16V152h-28.7A15.86,15.86,0,0,0,168,156.69L148.69,176H107.31L88,156.69A15.86,15.86,0,0,0,76.69,152H48V48Zm0,160H48V168H76.69L96,187.31A15.86,15.86,0,0,0,107.31,192h41.38A15.86,15.86,0,0,0,160,187.31L179.31,168H208v40ZM90.34,125.66a8,8,0,0,1,11.32-11.32L120,132.69V72a8,8,0,0,1,16,0v60.69l18.34-18.35a8,8,0,0,1,11.32,11.32l-32,32a8,8,0,0,1-11.32,0Z\"/></svg>", "x": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z\"/></svg>", "dots-three": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M144,128a16,16,0,1,1-16-16A16,16,0,0,1,144,128ZM60,112a16,16,0,1,0,16,16A16,16,0,0,0,60,112Zm136,0a16,16,0,1,0,16,16A16,16,0,0,0,196,112Z\"/></svg>", "check": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/></svg>", "arrow-counter-clockwise": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z\"/></svg>", "magic-wand": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M48,64a8,8,0,0,1,8-8H72V40a8,8,0,0,1,16,0V56h16a8,8,0,0,1,0,16H88V88a8,8,0,0,1-16,0V72H56A8,8,0,0,1,48,64ZM184,192h-8v-8a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0v-8h8a8,8,0,0,0,0-16Zm56-48H224V128a8,8,0,0,0-16,0v16H192a8,8,0,0,0,0,16h16v16a8,8,0,0,0,16,0V160h16a8,8,0,0,0,0-16ZM219.31,80,80,219.31a16,16,0,0,1-22.62,0L36.68,198.63a16,16,0,0,1,0-22.63L176,36.69a16,16,0,0,1,22.63,0l20.68,20.68A16,16,0,0,1,219.31,80Zm-54.63,32L144,91.31l-96,96L68.68,208ZM208,68.69,187.31,48l-32,32L176,100.69Z\"/></svg>", "frame-corners": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M200,80v32a8,8,0,0,1-16,0V88H160a8,8,0,0,1,0-16h32A8,8,0,0,1,200,80ZM96,168H72V144a8,8,0,0,0-16,0v32a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16ZM232,56V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z\"/></svg>", "question": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z\"/></svg>", "pencil-simple-line": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M227.32,73.37,182.63,28.69a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H216a8,8,0,0,0,0-16H115.32l112-112A16,16,0,0,0,227.32,73.37ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.69,147.32,64l24-24L216,84.69Z\"/></svg>", "trash": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z\"/></svg>", "paper-plane-tilt": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0-.07-40.06-82.3,48-48a8,8,0,0,0-11.31-11.31l-48,48L24.08,98.25l-.07,0,.14,0L216,40Z\"/></svg>", "eraser": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M225,80.4,183.6,39a24,24,0,0,0-33.94,0L31,157.66a24,24,0,0,0,0,33.94l30.06,30.06A8,8,0,0,0,66.74,224H216a8,8,0,0,0,0-16h-84.7L225,114.34A24,24,0,0,0,225,80.4ZM108.68,208H70.05L42.33,180.28a8,8,0,0,1,0-11.31L96,115.31,148.69,168Zm105-105L160,156.69,107.31,104,161,50.34a8,8,0,0,1,11.32,0l41.38,41.38a8,8,0,0,1,0,11.31Z\"/></svg>", "pencil-simple": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z\"/></svg>", "caret-right": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M184.49,136.49l-80,80a12,12,0,0,1-17-17L159,128,87.51,56.49a12,12,0,1,1,17-17l80,80A12,12,0,0,1,184.49,136.49Z\"/></svg>", "check-circle-fill": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z\"/></svg>", "camera-plus": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M168,136a8,8,0,0,1-8,8H136v24a8,8,0,0,1-16,0V144H96a8,8,0,0,1,0-16h24V104a8,8,0,0,1,16,0v24h24A8,8,0,0,1,168,136Zm64-56V192a24,24,0,0,1-24,24H48a24,24,0,0,1-24-24V80A24,24,0,0,1,48,56H75.72L87,39.12A16,16,0,0,1,100.28,32h55.44A16,16,0,0,1,169,39.12L180.28,56H208A24,24,0,0,1,232,80Zm-16,0a8,8,0,0,0-8-8H176a8,8,0,0,1-6.66-3.56L155.72,48H100.28L86.66,68.44A8,8,0,0,1,80,72H48a8,8,0,0,0-8,8V192a8,8,0,0,0,8,8H208a8,8,0,0,0,8-8Z\"/></svg>", "arrows-left-right": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z\"/></svg>", "arrow-clockwise": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z\"/></svg>", "skip-forward": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M200,32a8,8,0,0,0-8,8v69.23L72.43,34.45A15.95,15.95,0,0,0,48,47.88V208.12a16,16,0,0,0,24.43,13.43L192,146.77V216a8,8,0,0,0,16,0V40A8,8,0,0,0,200,32ZM64,207.93V48.05l127.84,80Z\"/></svg>", "image": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM40,172l52-52,80,80H40Zm176,28H194.63l-36-36,20-20L216,181.38V200ZM144,100a12,12,0,1,1,12,12A12,12,0,0,1,144,100Z\"/></svg>", "book-open": "<svg aria-hidden=\"true\" viewBox=\"0 0 256 256\" fill=\"currentColor\"><path d=\"M232,48H160a40,40,0,0,0-32,16A40,40,0,0,0,96,48H24a8,8,0,0,0-8,8V200a8,8,0,0,0,8,8H96a24,24,0,0,1,24,24,8,8,0,0,0,16,0,24,24,0,0,1,24-24h72a8,8,0,0,0,8-8V56A8,8,0,0,0,232,48ZM96,192H32V64H96a24,24,0,0,1,24,24V200A39.81,39.81,0,0,0,96,192Zm128,0H160a39.81,39.81,0,0,0-24,8V88a24,24,0,0,1,24-24h64Z\"/></svg>"};
 
-// ===== v88 — Readwood glass: lamplight through amber glass over the wood =====
-// The reader: "버튼 UI가 너무 단색에 단조롭다 · 그르릉 날씨처럼 반투명하고 톤앤톤 · 직관적으로 · 설정은 톱니바퀴 · 칸 바꾸기는
-// 책장 그림으로". Every button now sits on warm translucent glass (v65.css); the actions that move things forward are a
-// lamp (cream to amber); icons are one line set, and the ones on the book say which face is meant.
 
-const RW_ICO=(()=>{const s=(d,extra='')=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${d}</svg>`;
-  const ink='var(--rw-ink,#24160d)';
-  return {
-    gear:s('<path d="M10.2 2.8h3.6l.5 2.5c.7.3 1.4.7 2 1.2l2.4-.8 1.8 3.1-1.9 1.7c.1.8.1 1.5 0 2.3l1.9 1.7-1.8 3.1-2.4-.8c-.6.5-1.3.9-2 1.2l-.5 2.5h-3.6l-.5-2.5c-.7-.3-1.4-.7-2-1.2l-2.4.8-1.8-3.1 1.9-1.7a8 8 0 0 1 0-2.3L3.5 8.8l1.8-3.1 2.4.8c.6-.5 1.3-.9 2-1.2z"/><circle cx="12" cy="12" r="2.9"/>'),
-    // the three faces of a book: the one to photograph is filled in
-    front:s(`<path d="M5 4.2 8 3v18l-3 1.2z"/><rect x="8" y="3" width="11.5" height="18" rx="1.4" fill="currentColor"/><path d="M11 8h5.5M11 10.6h3.6" stroke="${ink}" stroke-width="1.5"/>`),
-    back:s(`<path d="M19 4.2 16 3v18l3 1.2z"/><rect x="4.5" y="3" width="11.5" height="18" rx="1.4" fill="currentColor"/><path d="M7.4 14.2v3.6M8.9 14.2v3.6M10.6 14.2v3.6M11.8 14.2v3.6M13.2 14.2v3.6M7.4 7.5h5.6" stroke="${ink}" stroke-width="1.2"/>`),
-    spine:s(`<rect x="5" y="4" width="4" height="16" rx="1"/><rect x="10" y="2.5" width="4.6" height="19" rx="1.1" fill="currentColor"/><path d="M12.3 6.5v6.5" stroke="${ink}" stroke-width="1.5"/><rect x="15.6" y="5" width="3.6" height="15" rx="1"/>`),
-    camera:s('<path d="M4 8.2a2 2 0 0 1 2-2h1.6l1.3-2h6.2l1.3 2H18a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.6" r="3.5"/>'),
-    shootSpine:s('<path d="M3.5 8.2a2 2 0 0 1 2-2h1.6l1.3-2h7.2l1.3 2h1.6a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><rect x="10.3" y="8.8" width="3.4" height="8" rx=".8" fill="currentColor"/>'),
-    diary:s('<path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H6z"/><path d="M6 3.5v17M9 3.5v17"/><path d="M14 3.5v6l1.6-1.2 1.6 1.2v-6"/>'),
-    inbox:s('<path d="M4 13.5h4.2l1.3 2.2h5l1.3-2.2H20"/><path d="M5.5 6.5h13L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18v-4.5z"/><path d="M12 3.5v7M9.5 8l2.5 2.5L14.5 8"/>'),
-    retake:s('<path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 4v4.5H9"/>'),
-    auto:s('<path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8-4.8-1.7 4.8-1.7z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>'),
-    frame:s('<path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/>'),
-    check:s('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
-    shelve:s('<path d="M4 20h16"/><rect x="5.5" y="7" width="3.2" height="13" rx=".7"/><rect x="9.6" y="4.5" width="3.6" height="15.5" rx=".7" fill="currentColor"/><path d="M14.6 8.6l3-.8 3 11.6-3 .8z"/>'),
-    pen:s('<path d="M14.5 5.5l4 4L9 19l-4.6.6L5 15z"/><path d="M12.8 7.2l4 4"/>'),
-    eraser:s('<path d="M9 19.5h10.5"/><path d="M4.6 14.2 13.8 5a1.8 1.8 0 0 1 2.5 0l3 3a1.8 1.8 0 0 1 0 2.5L11 18.8H8.4z"/><path d="M8.8 10l5.6 5.6"/>'),
-    trash:s('<path d="M5 7h14M10 4h4M7 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 7"/>'),
-    bindL:s('<path d="M12 5.5v13"/><path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1"/><path d="M12 6.5c2-1.5 5-1.7 7.5-1v12c-2.5-.7-5.5-.5-7.5 1"/><path d="M7 10.5 5.6 12 7 13.5" stroke-width="1.5"/>'),
-    bindR:s('<path d="M12 5.5v13"/><path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1"/><path d="M12 6.5c2-1.5 5-1.7 7.5-1v12c-2.5-.7-5.5-.5-7.5 1"/><path d="M17 10.5l1.4 1.5-1.4 1.5" stroke-width="1.5"/>'),
-    send:s('<path d="M20 4 10.5 13.5"/><path d="M20 4l-6 16-3.5-6.5L4 10z"/>'),
-    open:s('<path d="M12 6.5C10 5 7 4.8 4.5 5.5v12c2.5-.7 5.5-.5 7.5 1 2-1.5 5-1.7 7.5-1v-12c-2.5-.7-5.5-.5-7.5 1z"/><path d="M12 6.5v12"/>')};
-})();
-// a bookcase seen from the front with n bays per shelf, three shelves, a few books in each bay
-function rwCase(n){const W=46,H=38,p=2,iw=W-2*p,ih=H-2*p;let s=`<svg viewBox="0 0 ${W} ${H}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="${p}" y="${p}" width="${iw}" height="${ih}" rx="2.6"/>`;
+// ===== v89 — simple and clean (replaces v65's glass) =====
+// The reader, after the v88 restyle: "조금 구려 · 좀 더 심플하게 깔끔하게". Following iOS 27 structure (as in the open-source
+// @rdlabo/ionic-theme-ios27 and Konsta UI): see-through glass only on controls that float over content (the tab bar, the
+// round buttons at the top, toasts); everything else on solid, layered dark-wood surfaces; one primary action per screen,
+// a flat cream capsule; Phosphor line icons (MIT, v66_ph.js) instead of hand-drawn ones.
+
+const pi=(name,cls='')=>`<span class="pi ${cls}">${PH[name]||''}</span>`;
+// a bookcase seen from the front, n bays per shelf, three shelves (the bays picker)
+function rwCase(n){const W=46,H=38,p=2,iw=W-2*p,ih=H-2*p;let s=`<svg viewBox="0 0 ${W} ${H}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="${p}" y="${p}" width="${iw}" height="${ih}" rx="3"/>`;
   for(let i=1;i<n;i++){const x=(p+iw*i/n).toFixed(1);s+=`<path d="M${x} ${p}V${p+ih}"/>`}
   for(let j=1;j<3;j++){const y=(p+ih*j/3).toFixed(1);s+=`<path d="M${p} ${y}H${p+iw}"/>`}
-  for(let i=0;i<n;i++)for(let j=0;j<3;j++){const x0=p+iw*i/n,bw=iw/n,base=p+ih*(j+1)/3-1.7,room=ih/3-4.4,k=Math.max(1,Math.floor((bw-3)/2.4));
-    for(let m=0;m<k;m++){const x=x0+2.4+m*2.4;if(x>x0+bw-1.8)break;const h=room*(.62+.38*(((i*7+j*3+m*5)%4)/3));s+=`<path d="M${x.toFixed(1)} ${base.toFixed(1)}v-${h.toFixed(1)}" stroke-width="1.15" opacity=".7"/>`}}
+  for(let i=0;i<n;i++)for(let j=0;j<3;j++){const x0=p+iw*i/n,bw=iw/n,base=p+ih*(j+1)/3-1.8,room=ih/3-4.6,k=Math.max(1,Math.floor((bw-3)/2.6));
+    for(let m=0;m<k;m++){const x=x0+2.5+m*2.6;if(x>x0+bw-1.8)break;const h=room*(.62+.38*(((i*7+j*3+m*5)%4)/3));s+=`<path d="M${x.toFixed(1)} ${base.toFixed(1)}v-${h.toFixed(1)}" stroke-width="1.3" opacity=".75"/>`}}
   return s+'</svg>'}
-const rwIco=(el,key,label)=>{if(!el)return;el.innerHTML=`<span class="rw-ico">${RW_ICO[key]}</span><span class="rw-lb">${label}</span>`;el.classList.add('rw-has-ico')};
+const setIcoLabel=(el,ico,label,cls='')=>{if(!el)return;el.innerHTML=`${pi(ico)}<span class="lb">${label}</span>`;el.classList.add('rw-btn');if(cls)el.classList.add(cls)};
 
-// ---------- settings: a gear ----------
-{const s=$('setBtn');if(s)s.innerHTML=`<span class="rw-ico">${RW_ICO.gear}</span>`}
+// ---------- 1. the bottom bar: three tabs in a floating capsule, 책 추가 as its own round button ----------
+{const nav=document.querySelector('.app-nav');
+  const tab=(id,ico,label)=>{const b=$(id);if(b){b.innerHTML=`${pi(ico,'off')}${pi(ico+'-fill','on')}<span class="lb">${label}</span>`;b.classList.add('rw-tab')}};
+  tab('navShelf','books','책장');tab('navNotes','notepad','기록');tab('navStyle','paint-brush','꾸미기');
+  const add=$('navAdd');if(add){add.innerHTML=pi('plus');add.setAttribute('aria-label','책 추가');add.classList.add('rw-add')}
+  if(nav)nav.classList.add('rw-nav')}
 
-// ---------- bays per row: three little bookcases ----------
+// ---------- 2. top: bays and settings ----------
+{const s=$('setBtn');if(s)s.innerHTML=pi('gear-six')}
 {const pop=$('gridPop'),btn=$('gridBtn');
-  if(pop){pop.setAttribute('aria-label','한 단에 놓을 칸 수');for(const b of pop.querySelectorAll('button[data-n]')){const n=+b.dataset.n;b.innerHTML=`${rwCase(n)}<span>${n}칸</span>`;b.setAttribute('aria-label',`한 단에 ${n}칸`)}
+  if(pop){for(const b of pop.querySelectorAll('button[data-n]')){const n=+b.dataset.n;b.innerHTML=`${rwCase(n)}<span>${n}칸</span>`;b.setAttribute('aria-label',`한 단에 ${n}칸`)}
     const sm=pop.querySelector('small');if(sm)sm.textContent='칸을 바꿔도 책은 제자리에 있어요'}
   if(btn){const _m=markGrid;markGrid=function(){try{_m()}catch(e){}btn.innerHTML=`<span class="rw-case">${rwCase(SAI_GRID)}</span><span>${SAI_GRID}칸</span>`};markGrid()}}
 
-// ---------- 책 추가: what each choice does, in a line ----------
-{const row=(id,key,title,sub)=>{const b=$(id);if(!b)return;b.querySelector('.menu-ico')?.remove();const old=b.querySelector('span:not(.menu-ico)');
-    b.innerHTML=`<span class="rw-mi">${RW_ICO[key]}</span><span class="rw-mt"><b>${title}</b><small>${sub||(old?old.textContent:'')}</small></span>`};
-  row('addShoot','shootSpine','책등 찍기','책등 → 앞표지 → 뒤표지 차례로 찍어 꽂아요');
-  row('addDiary','diary','일기장 만들기','표지를 골라 나만의 일기장을 만들어요');
-  row('addDiaryOpen','inbox','받은 일기장 열기','친구가 보낸 일기장 파일(.saidiary)을 열어요')}
+// ---------- 3. 책 추가: a sheet from the bottom ----------
+{const m=$('addMenu');if(m){
+  const row=(id,ico,title,sub)=>{const b=$(id);if(!b)return null;b.innerHTML=`<span class="rw-tile">${pi(ico)}</span><span class="rw-rt"><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span>${pi('caret-right','chev')}`;b.classList.add('rw-row');return b};
+  const a=row('addShoot','camera','책 찍기','책등 → 앞표지 → 뒤표지 차례로 찍으면 바로 꽂혀요'),d=row('addDiary','notebook','일기장 만들기','표지를 골라 나만의 일기장을 만들어요'),o=row('addDiaryOpen','tray-arrow-down','받은 일기장 열기','');
+  const head=document.createElement('div');head.className='rw-sheet-head';head.innerHTML=`<i class="rw-grab"></i><b>책 추가</b><button type="button" class="rw-x" aria-label="닫기">${PH.x}</button>`;
+  const g1=document.createElement('div');g1.className='rw-group';[a,d].forEach(x=>x&&g1.append(x));
+  const g2=document.createElement('div');g2.className='rw-group';if(o)g2.append(o);
+  m.prepend(head,g1,g2);m.classList.add('rw-sheet');
+  head.querySelector('.rw-x').onclick=e=>{e.stopPropagation();m.hidden=true};
+  const dim=document.createElement('div');dim.className='rw-dim';dim.hidden=true;m.before(dim);
+  dim.addEventListener('click',()=>{m.hidden=true});
+  const sync=()=>{dim.hidden=m.hidden};new MutationObserver(sync).observe(m,{attributes:true,attributeFilter:['hidden']});sync()}}
 
-// ---------- the open book: the face to photograph is the one filled in ----------
-rwIco($('bkFront'),'front','앞표지 찍기');rwIco($('bkBack'),'back','뒤표지 찍기');rwIco($('bkSpine'),'spine','책등 찍기');
-{const d=$('deleteBook');if(d)rwIco(d,'trash','책 지우기');const s=$('sendBook');if(s&&!s.classList.contains('rw-has-ico'))rwIco(s,'send',s.textContent.trim()||'친구에게 보내기');const j=$('bkJournal');if(j)rwIco(j,'open',j.textContent.trim()||'독후감 펼치기')}
-{const _b=bindButton;bindButton=function(b){_b(b);const el=$('bkBind');if(!el||!b)return;const R=b.bind==='R';
-  el.innerHTML=`<span class="rw-ico">${RW_ICO[R?'bindR':'bindL']}</span><span class="rw-lb">${R?'오른쪽으로 펼치는 책 · 일본 만화':'왼쪽으로 펼치는 책 · 한국·서양 책'}</span><span class="rw-sw">바꾸기</span>`}}
+// ---------- 4. the open book: its three faces as pictures, one action, the rest under ⋯ ----------
+{const info=document.querySelector('#modal .info'),acts=document.querySelector('.bk-acts');
+  if(info&&acts){
+    const faces=document.createElement('div');faces.className='rw-faces';
+    faces.innerHTML=['front','back','spine'].map(f=>`<button type="button" class="rw-face" data-f="${f}"><span class="rw-thumb"></span><span class="rw-fl">${{front:'앞표지',back:'뒤표지',spine:'책등'}[f]}</span><span class="rw-st"></span></button>`).join('');
+    const note=document.createElement('div');note.className='rw-fnote';
+    const journal=document.createElement('button');journal.type='button';journal.id='rwJournal';journal.className='rw-primary';journal.innerHTML=`${pi('pencil-simple-line')}<span>독후감 쓰기</span>`;
+    acts.before(faces,note,journal);
+    for(const t of faces.querySelectorAll('.rw-face'))t.onclick=()=>{({front:$('bkFront'),back:$('bkBack'),spine:$('bkSpine')})[t.dataset.f]?.click()};
+    journal.onclick=()=>{if(current&&typeof openJournal==='function')openJournal(current)};
+    // ⋯ : binding, sending, deleting
+    const more=document.createElement('button');more.type='button';more.id='rwMore';more.className='rw-more';more.setAttribute('aria-label','더 보기');more.innerHTML=PH['dots-three'];
+    const menu=document.createElement('div');menu.id='rwMoreMenu';menu.className='rw-menu';menu.hidden=true;
+    for(const id of ['bkBind','sendBook','deleteBook']){const el=$(id);if(el)menu.append(el)}
+    $('modal').append(more,menu);
+    more.onclick=e=>{e.stopPropagation();menu.hidden=!menu.hidden};
+    document.addEventListener('pointerdown',e=>{if(!menu.hidden&&!menu.contains(e.target)&&e.target!==more&&!more.contains(e.target))menu.hidden=true});
+    const paint=()=>{const b=current;if(!b||(typeof isDiary==='function'&&isDiary(b)))return;let missing=[];
+      for(const t of faces.querySelectorAll('.rw-face')){const f=t.dataset.f,src=b[f],th=t.querySelector('.rw-thumb'),st=t.querySelector('.rw-st');
+        th.innerHTML=!src?`<i style="background:${b.color||'#3a2a1d'}"></i>`:String(src).startsWith('<')?`<span class="rw-svgthumb">${src}</span>`:`<img alt="" src="${src}">`;th.dataset.f=f;
+        const has=!!src;st.innerHTML=has?PH['check-circle-fill']:PH['camera-plus'];t.classList.toggle('has',has);if(!has)missing.push({front:'앞표지',back:'뒤표지',spine:'책등'}[f])}
+      note.textContent=missing.length?`${missing.join(' · ')} 사진이 없어요 · 누르면 바로 찍어요`:'누르면 그 면을 다시 찍어요';menu.hidden=true};
+    {const _o=openBook;openBook=function(b,btn){const r=_o(b,btn);try{paint()}catch(e){}return r}}
+    {const _u=updatePhoto;updatePhoto=function(){const r=_u();try{paint()}catch(e){}return r}}
+    // the bind toggle reads as one line in the menu
+    {const _b=bindButton;bindButton=function(b){_b(b);const el=$('bkBind');if(!el||!b)return;el.innerHTML=`${pi('arrows-left-right')}<span class="lb">펼치는 방향</span><span class="val">${b.bind==='R'?'오른쪽 (일본 만화)':'왼쪽'}</span>`}}
+    setIcoLabel($('sendBook'),'paper-plane-tilt','친구에게 보내기');setIcoLabel($('deleteBook'),'trash','책 지우기');
+    $('close').innerHTML=PH.x;
+    // the hint under the book: what the fingers do, briefly
+    for(const p of document.querySelectorAll('#modal p,#modal .hint'))if(/한 손가락|두 손가락/.test(p.textContent)&&!p.closest('.object')){p.textContent='한 손가락으로 돌려 보고 · 두 손가락으로 크게 봐요';if(p.classList.contains('book-hint'))faces.before(p)}}}
 
-// ---------- corner screen and confirm screen ----------
-rwIco($('qfRetake'),'retake','다시 찍기');rwIco($('qfAuto'),'auto','자동');rwIco($('qfGuide'),'frame','틀대로');rwIco($('qfOk'),'check','이대로');
-rwIco($('soAdd'),'shelve','책장에 꽂기');rwIco($('soRetake'),'retake','다시 찍기');
+// ---------- 5. corner screen, camera, confirm ----------
+{const c=(id,ico,label)=>{const b=$(id);if(b){b.innerHTML=`<span class="rw-c">${PH[ico]}</span><span class="lb">${label}</span>`;b.classList.add('rw-round')}};
+  c('qfRetake','arrow-counter-clockwise','다시 찍기');c('qfAuto','magic-wand','자동 맞춤');c('qfGuide','frame-corners','틀대로');
+  const ok=$('qfOk');if(ok)ok.innerHTML=`${pi('check')}<span>이대로 쓰기</span>`;
+  const x=$('camX');if(x)x.innerHTML=PH.x;const h=$('camHelp');if(h)h.innerHTML=PH.question;
+  const sa=$('soAdd');if(sa)sa.innerHTML='<span>책장에 꽂기</span>';const sr=$('soRetake');if(sr)sr.innerHTML='<span>다시 찍기</span>'}
 
-// ---------- the diary maker's tools ----------
-rwIco($('dmShoot'),'camera','사진 찍기');rwIco($('dmDraw'),'pen','그리기');rwIco($('dmClear'),'eraser','비우기');
-// the diary's write button: the same pen as the maker
-{const w=$('dvWrite');if(w){const fix=()=>{if(w.querySelector('.rw-ico'))return;const t=w.textContent.replace(/^\s*✎\s*/,'').trim()||'쓰기';rwIco(w,'pen',t)};fix();new MutationObserver(fix).observe(w,{childList:true,characterData:true,subtree:true})}}
+// ---------- 6. the diary maker and the diary ----------
+setIcoLabel($('dmShoot'),'camera','사진 찍기');setIcoLabel($('dmDraw'),'pencil-simple','그리기');setIcoLabel($('dmClear'),'eraser','비우기');
+{const x=$('dmClose');if(x)x.innerHTML=PH.x;const dc=$('dvClose');if(dc)dc.innerHTML=PH.x;const dm=$('dvMore');if(dm)dm.innerHTML=PH['dots-three'];const de=$('deCancel');if(de)de.innerHTML=PH.x}
+{const w=$('dvWrite');if(w){const fix=()=>{if(w.querySelector('.pi'))return;const t=w.textContent.replace(/^\s*✎\s*/,'').trim()||'쓰기';w.innerHTML=`${pi('pencil-simple-line')}<span>${t}</span>`};fix();new MutationObserver(fix).observe(w,{childList:true,characterData:true,subtree:true})}}
 
 
 
